@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Esse arquivo é usado pelo processo de publicação/pacote do seu projeto Web. É possível personalizar o comportamento deste processo
+ao editar este arquivo MSBuild. Para saber mais sobre isso, visite https://go.microsoft.com/fwlink/?LinkID=208121. 
+-->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <TimeStampOfAssociatedLegacyPublishXmlFile />
+    <EncryptedPassword>AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAAQ7rHg3QtaEKFwXkKp4g06QAAAAACAAAAAAAQZgAAAAEAACAAAAAenW8c+pacmghdW1D4c0WZp3eTIF79BzvJW3kDFwz8tgAAAAAOgAAAAAIAACAAAAAc2k1R8lqybXXEArZfryNAzXgGAS+KhuLg7lrL3y5qtqAAAAA5qzIGxDBZZz8JJ52JqT1ZiEP7s5LHGk05yh8FFTKQImX2oK+MChc57a+UpModvCrq3+GDH0hAUuFTx08Yj6s8XnpU+Q7QESpF8DoyYFM/tXmwAcS0GGzbzH64XnAHVvc3M/Dh0mERmDXn6bO1mcK7QdObWa6l4fjGqWiXTclwRszh64Zl3R64C4v8qSqUYbGvakcArLBueGRqctvQA+frQAAAAPbpX45m4grkBPkkIaWQ4rpYJ8un8Bdq1llAbpJl4QLldCTla5Yt8mbNsngUvxOaQ3O70IT3VCXx5lGru4GpLHw=</EncryptedPassword>
+    <_PublishTargetUrl>ftp://waws-prod-dm1-109.ftp.azurewebsites.windows.net/site/wwwroot</_PublishTargetUrl>
+    <History>False|2024-11-30T01:52:42.1800008Z;False|2024-11-29T22:51:25.1209175-03:00;False|2024-11-29T22:42:51.8000649-03:00;True|2024-10-31T20:11:51.6097809-03:00;True|2024-09-26T19:07:16.6291113-03:00;True|2024-02-25T16:09:52.0818949-03:00;False|2023-07-27T08:44:26.5597418-03:00;</History>
+  </PropertyGroup>
+  <ItemGroup>
+    <File Include="appsettings.json">
+      <publishTime>09/26/2024 18:56:36</publishTime>
+    </File>
+    <File Include="BouncyCastle.Crypto.dll">
+      <publishTime>02/07/2019 23:50:10</publishTime>
+    </File>
+    <File Include="Dapper.dll">
+      <publishTime>09/27/2019 06:55:40</publishTime>
+    </File>
+    <File Include="Google.Apis.Auth.dll">
+      <publishTime>01/06/2020 09:59:30</publishTime>
+    </File>
+    <File Include="Google.Apis.Auth.PlatformServices.dll">
+      <publishTime>01/06/2020 09:59:32</publishTime>
+    </File>
+    <File Include="Google.Apis.Core.dll">
+      <publishTime>01/06/2020 09:59:28</publishTime>
+    </File>
+    <File Include="Google.Apis.dll">
+      <publishTime>01/06/2020 09:59:28</publishTime>
+    </File>
+    <File Include="Google.Apis.Vision.v1.dll">
+      <publishTime>01/16/2020 05:11:08</publishTime>
+    </File>
+    <File Include="MailKit.dll">
+      <publishTime>01/18/2020 12:56:22</publishTime>
+    </File>
+    <File Include="Microsoft.AspNetCore.Authentication.JwtBearer.dll">
+      <publishTime>09/15/2019 18:01:48</publishTime>
+    </File>
+    <File Include="Microsoft.AspNetCore.JsonPatch.dll">
+      <publishTime>09/15/2019 18:00:46</publishTime>
+    </File>
+    <File Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson.dll">
+      <publishTime>09/15/2019 18:06:06</publishTime>
+    </File>
+    <File Include="Microsoft.IdentityModel.JsonWebTokens.dll">
+      <publishTime>10/18/2019 20:39:24</publishTime>
+    </File>
+    <File Include="Microsoft.IdentityModel.Logging.dll">
+      <publishTime>10/18/2019 20:40:20</publishTime>
+    </File>
+    <File Include="Microsoft.IdentityModel.Protocols.dll">
+      <publishTime>06/24/2019 16:54:24</publishTime>
+    </File>
+    <File Include="Microsoft.IdentityModel.Protocols.OpenIdConnect.dll">
+      <publishTime>06/24/2019 16:59:32</publishTime>
+    </File>
+    <File Include="Microsoft.IdentityModel.Tokens.dll">
+      <publishTime>01/01/0001 00:00:00</publishTime>
+    </File>
+    <File Include="Microsoft.WindowsAzure.Storage.dll">
+      <publishTime>01/01/0001 00:00:00</publishTime>
+    </File>
+    <File Include="MimeKit.dll">
+      <publishTime>01/01/0001 00:00:00</publishTime>
+    </File>
+    <File Include="Newtonsoft.Json.Bson.dll">
+      <publishTime>01/01/0001 00:00:00</publishTime>
+    </File>
+    <File Include="Newtonsoft.Json.dll">
+      <publishTime>11/08/2019 21:56:44</publishTime>
+    </File>
+    <File Include="runtimes/unix/lib/netcoreapp2.1/System.Data.SqlClient.dll">
+      <publishTime>09/12/2019 23:41:04</publishTime>
+    </File>
+    <File Include="runtimes/win-arm64/native/sni.dll">
+      <publishTime>07/12/2017 08:24:24</publishTime>
+    </File>
+    <File Include="runtimes/win-x64/native/sni.dll">
+      <publishTime>07/12/2017 08:24:22</publishTime>
+    </File>
+    <File Include="runtimes/win-x86/native/sni.dll">
+      <publishTime>07/12/2017 08:24:22</publishTime>
+    </File>
+    <File Include="runtimes/win/lib/netcoreapp2.1/System.Data.SqlClient.dll">
+      <publishTime>09/12/2019 23:41:08</publishTime>
+    </File>
+    <File Include="System.Data.SqlClient.dll">
+      <publishTime>09/12/2019 23:29:22</publishTime>
+    </File>
+    <File Include="System.IdentityModel.Tokens.Jwt.dll">
+      <publishTime>01/01/0001 00:00:00</publishTime>
+    </File>
+    <File Include="web.config">
+      <publishTime>01/01/0001 00:00:00</publishTime>
+    </File>
+    <File Include="WebApi.deps.json">
+      <publishTime>01/01/0001 00:00:00</publishTime>
+    </File>
+    <File Include="WebApi.dll">
+      <publishTime>01/01/0001 00:00:00</publishTime>
+    </File>
+    <File Include="WebApi.exe">
+      <publishTime>01/01/0001 00:00:00</publishTime>
+    </File>
+    <File Include="WebApi.pdb">
+      <publishTime>01/01/0001 00:00:00</publishTime>
+    </File>
+    <File Include="WebApi.runtimeconfig.json">
+      <publishTime>01/01/0001 00:00:00</publishTime>
+    </File>
+  </ItemGroup>
+</Project>
