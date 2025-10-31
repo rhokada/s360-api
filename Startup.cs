@@ -8,6 +8,8 @@ using System.Text;
 using WebApi.Helpers;
 using WebApi.Services;
 using WebApi.Services.Interfaces;
+using System;
+using System.Threading.Tasks; // <<<<< Adicione esta linha
 
 namespace WebApi
 {
@@ -65,6 +67,33 @@ namespace WebApi
                     ValidateIssuer = false,
                     ValidateAudience = false
                 };
+
+                // >>>>>>>>>>>>>>>>>>>>>> INÍCIO DO NOVO CÓDIGO A SER ADICIONADO <<<<<<<<<<<<<<<<<<<<
+                x.Events = new JwtBearerEvents
+                {
+                    OnAuthenticationFailed = context =>
+                    {
+                        // >>>>>> COLOQUE SEU BREAKPOINT AQUI <<<<<<
+                        Console.WriteLine($"[JWT ERROR] Authentication failed: {context.Exception.GetType().Name} - {context.Exception.Message}");
+                        // Inspecione 'context.Exception' para detalhes
+                        return Task.CompletedTask;
+                    },
+                    OnTokenValidated = context =>
+                    {
+                        // >>>>>> COLOQUE SEU BREAKPOINT AQUI <<<<<<
+                        Console.WriteLine("[JWT INFO] Token validated successfully.");
+                        // Inspecione 'context.Principal' para ver as claims do usuário
+                        return Task.CompletedTask;
+                    },
+                    OnMessageReceived = context =>
+                    {
+                        // Este é opcional, mas útil para verificar se o token está chegando no cabeçalho
+                        // string authorization = context.Request.Headers["Authorization"].FirstOrDefault();
+                        // Console.WriteLine($"[JWT INFO] Token received in request: {authorization}");
+                        return Task.CompletedTask;
+                    }
+                };
+                // >>>>>>>>>>>>>>>>> FIM DO NOVO CÓDIGO A SER ADICIONADO <<<<<<<<<<<<<<<<<
             });
 
             // configure DI for application services
@@ -73,11 +102,22 @@ namespace WebApi
             services.AddScoped<ReCaptchaService>();
             services.AddScoped<IPromotionService, PromotionService>();
             services.AddScoped<ISgpService, SgpService>();
+            services.AddScoped<IAppService, AppService>(); // <<<< AQUI!
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseDeveloperExceptionPage(); // Isso mostrará a exceção detalhada no navegador para desenvolvimento
+                                             // Seu middleware de log
+            app.Use(async (context, next) =>
+            {
+                Console.WriteLine($"[DEBUG LOG] Requisição Recebida: {context.Request.Method} {context.Request.Path}");
+                await next();
+            });
+
+
+
             app.UseRouting();
 
             // global cors policy
