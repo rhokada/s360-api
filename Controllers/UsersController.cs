@@ -43,18 +43,18 @@ namespace WebApi.Controllers
       [HttpPost("authenticate")]
       public IActionResult Authenticate([FromBody] AuthenticateModel model)
       {
-         if (!_reCaptchaService.ValidaReCaptcha(model.recaptcha))
-            return BadRequest(new { message = "ReCaptcha inválido" });
+         /*if (!_reCaptchaService.ValidaReCaptcha(model.recaptcha))
+            return BadRequest(new { message = "ReCaptcha inválido" });*/
 
          var user = _userService.Authenticate(model.Username, model.Password, model.AppId);
 
          if (user == null)
-            return BadRequest(new { message = "E-mail, CPF ou senha inválidos. Favor conferir." });
+            return BadRequest(new { message = "E-mail ou senha inválidos. Favor conferir." });
 
          return Ok(user);
       }
 
-      [AllowAnonymous]
+ /*     [AllowAnonymous]
       [HttpPost("authenticateSGP")]
       public IActionResult AuthenticateSGP([FromBody] AuthenticateModelSGP model)
       {
@@ -65,7 +65,7 @@ namespace WebApi.Controllers
 
          return Ok(user);
       }
-
+ */
       [HttpGet]
       public IActionResult GetAll()
       {

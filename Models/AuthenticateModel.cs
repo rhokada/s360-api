@@ -12,7 +12,7 @@ namespace WebApi.Models
 
       [Required]
       public string AppId { get; set; }
-      [Required]
-      public string recaptcha { get; set; }
+     // [Required]
+      //public string recaptcha { get; set; }
    }
 }

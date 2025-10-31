@@ -16,8 +16,8 @@ namespace WebApi.Services
 {
     public interface IUserService
     {
-        User Authenticate(string username, string password, string appId);
-        User AuthenticateSGP(string user, string password);
+        User Authenticate(string user, string password, string appCd);
+//        User AuthenticateSGP(string user, string password);
         IEnumerable<User> GetAll();
     }
 
@@ -26,7 +26,7 @@ namespace WebApi.Services
         // users hardcoded for simplicity, store in a db with hashed passwords in production applications
         private List<User> _users = new List<User>
         {
-            new User { Id = 1, FirstName = "Test", LastName = "User", Username = "test", Password = "test" }
+            new User { UserId = 1, Email = "Test", Name = "Test", Password = "test" }
         };
 
         private readonly AppSettings _appSettings;
@@ -41,20 +41,18 @@ namespace WebApi.Services
 
         public User Authenticate(string user, string password, string appId)
         {
-
             using (var con = new SqlConnection(_connectionStrings.Default.ToString()))
             {
                 try
                 {
-                    var passwordCript = Util.CalculateMD5Hash(("AppleStore@promo-clicks.com").ToLower(), password);
                     con.Open();
-                    var query = "SP_WebPromo_CustomerAuthenticated";
+                    var query = "SP_UserAuthenticated";
 
-                    var userInfo = con.Query<Customer>(query, new
+                    var userInfo = con.Query<User>(query, new
                     {
                         user = user,
                         appId = appId,
-                        passwordCript = passwordCript
+                        password = password
                     }, commandType: CommandType.StoredProcedure).SingleOrDefault();
 
                     // return null if user not found
@@ -68,9 +66,9 @@ namespace WebApi.Services
                     {
                         Subject = new ClaimsIdentity(new Claim[]
                         {
-                            new Claim("Name", userInfo.CustomerName.ToString()),
-                            new Claim("Email", userInfo.Email != null ? userInfo.Email.ToString() : ""),
-                            new Claim("SubjectId", userInfo.CustomerId.ToString()),
+                            new Claim("Name", userInfo.Name),
+                            new Claim("Email", userInfo.Email ??""),
+                            new Claim("SubjectId", userInfo.UserId.ToString()),
                         }),
                         Expires = DateTime.UtcNow.AddMinutes(_appSettings.TimeSession), //tempo de validade do token jwt
                         SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
@@ -79,10 +77,9 @@ namespace WebApi.Services
 
                     var retUser = new User()
                     {
-                        Id = userInfo.CustomerId.Value,
-                        FirstName = userInfo.CustomerName,
-                        LastName = userInfo.LastName,
-                        Username = user,
+                        UserId = userInfo.UserId,
+                        Name = userInfo.Name,
+                        Email = user,
                         Password = password,
                         Token = ""
                     };
@@ -103,7 +100,7 @@ namespace WebApi.Services
 
         }
 
-        public User AuthenticateSGP(string user, string password)
+/*        public User AuthenticateSGP(string user, string password)
         {
 
             using (var con = new SqlConnection(_connectionStrings.Default.ToString()))
@@ -166,6 +163,7 @@ namespace WebApi.Services
 
 
         }
+*/
 
         public IEnumerable<User> GetAll()
         {
