@@ -116,8 +116,6 @@ namespace WebApi
                 await next();
             });
 
-
-
             app.UseRouting();
 
             // global cors policy

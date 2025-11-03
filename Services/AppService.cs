@@ -48,7 +48,6 @@ namespace WebApi.Services
             throw new NotImplementedException();
         }
 
-
         public dynamic AppSupSellersList(int UserId)
         {
             using (var con = new SqlConnection(_connectionStrings.Default.ToString()))
@@ -57,12 +56,10 @@ namespace WebApi.Services
                 {
                     con.Open();
                     var query = "SP_SupSellersList";
-
                     var ret = con.Query(query, new
                     {
                         SupUserId = UserId
                     }, commandType: CommandType.StoredProcedure).ToList();
-
                     return ret;
                 }
                 catch (Exception ex)
@@ -74,8 +71,31 @@ namespace WebApi.Services
                     con.Close();
                 }
             }
+        }
 
-
+        public dynamic AppSupCustomersList(int UserId)
+        {
+            using (var con = new SqlConnection(_connectionStrings.Default.ToString()))
+            {
+                try
+                {
+                    con.Open();
+                    var query = "SP_SupCustomersList";
+                    var ret = con.Query(query, new
+                    {
+                        SupUserId = UserId
+                    }, commandType: CommandType.StoredProcedure).ToList();
+                    return ret;
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+                finally
+                {
+                    con.Close();
+                }
+            }
         }
 
         public dynamic CheckExistEmail(string Email, string AppId)

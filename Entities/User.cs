@@ -9,5 +9,6 @@ namespace WebApi.Entities
         public int? CompanyId { get; set; }
         public string Password { get; set; }
         public string Token { get; set; }
+        public string Msg { get; set; }
     }
 }

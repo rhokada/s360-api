@@ -54,19 +54,36 @@ namespace WebApi.Controllers
          return Ok(user);
       }
 
- /*     [AllowAnonymous]
-      [HttpPost("authenticateSGP")]
-      public IActionResult AuthenticateSGP([FromBody] AuthenticateModelSGP model)
+
+      [AllowAnonymous]
+      [HttpPost("NewTempPassword")]
+      public IActionResult NewTempPassword([FromBody] NewTempPasswordModel model)
       {
-         var user = _userService.AuthenticateSGP(model.Username, model.Password);
+          /*if (!_reCaptchaService.ValidaReCaptcha(model.recaptcha))
+                return BadRequest(new { message = "ReCaptcha inválido" });*/
 
-         if (user == null)
-            return BadRequest(new { message = "Username or password is incorrect" });
+          var user = _userService.NewTempPassword(model.Username, model.AppId);
 
-         return Ok(user);
+          if (user == null)
+              return BadRequest(new { message = "E-mail inválidos. Favor conferir." });
+
+          return Ok(user);
       }
- */
-      [HttpGet]
+
+        
+        /*     [AllowAnonymous]
+             [HttpPost("authenticateSGP")]
+             public IActionResult AuthenticateSGP([FromBody] AuthenticateModelSGP model)
+             {
+                var user = _userService.AuthenticateSGP(model.Username, model.Password);
+
+                if (user == null)
+                   return BadRequest(new { message = "Username or password is incorrect" });
+
+                return Ok(user);
+             }
+        */
+        [HttpGet]
       public IActionResult GetAll()
       {
          var users = _userService.GetAll();

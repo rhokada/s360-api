@@ -8,7 +8,8 @@ namespace WebApi.Services.Interfaces
     {
         IEnumerable<Customer> GetAll();
         dynamic AppSupSellersList(int UserId);
-
+        dynamic AppSupCustomersList(int UserId);
+        
         dynamic CheckExistEmail(string Email, string AppId);
         dynamic Wa_CheckExistCell(string Cell, string AppId);
         dynamic CheckExistCell(string Cell, string AppId);

@@ -11,13 +11,15 @@ using System.Security.Claims;
 using System.Text;
 using WebApi.Entities;
 using WebApi.Helpers;
+using Newtonsoft.Json;
 
 namespace WebApi.Services
 {
     public interface IUserService
     {
         User Authenticate(string user, string password, string appCd);
-//        User AuthenticateSGP(string user, string password);
+        User NewTempPassword(string user, string appCd);
+        //        User AuthenticateSGP(string user, string password);
         IEnumerable<User> GetAll();
     }
 
@@ -30,12 +32,13 @@ namespace WebApi.Services
         };
 
         private readonly AppSettings _appSettings;
-
+        private readonly IOptions<ConfigEmailBase> _configEmail;
         private readonly ConnectionStrings _connectionStrings;
 
-        public UserService(IOptions<AppSettings> appSettings, IOptions<ConnectionStrings> connectionStrings)
+        public UserService(IOptions<AppSettings> appSettings, IOptions<ConfigEmailBase> configEmail, IOptions<ConnectionStrings> connectionStrings)
         {
             _appSettings = appSettings.Value;
+            _configEmail = configEmail;
             _connectionStrings = connectionStrings.Value;
         }
 
@@ -100,56 +103,50 @@ namespace WebApi.Services
 
         }
 
-/*        public User AuthenticateSGP(string user, string password)
+        public User NewTempPassword(string user, string appId)
         {
-
             using (var con = new SqlConnection(_connectionStrings.Default.ToString()))
             {
                 try
                 {
                     con.Open();
-                    var query = "SP_SGP_CustomerAuthenticated";
+                    var query = "SP_UserNewTempPassword";
 
-                    var userInfo = con.Query<CustomerSGP>(query, new
+                    var userInfo = con.Query<User>(query, new
                     {
                         user = user,
-                        password = password
+                        appId = appId
                     }, commandType: CommandType.StoredProcedure).SingleOrDefault();
 
                     // return null if user not found
                     if (userInfo == null)
                         return null;
 
-                    // authentication successful so generate jwt token
-                    var tokenHandler = new JwtSecurityTokenHandler();
-                    var key = Encoding.ASCII.GetBytes(_appSettings.Secret);
-                    var tokenDescriptor = new SecurityTokenDescriptor
-                    {
-                        Subject = new ClaimsIdentity(new Claim[]
+                // --- Lógica de Envio de E-mail ---
+
+                    // 1. Verificar e desserializar a propriedade 'Msg'
+                    if (string.IsNullOrEmpty(userInfo.Msg))
                         {
-                            new Claim("Name", userInfo.Name.ToString()),
-                            new Claim("Email", userInfo.Email != null ? userInfo.Email.ToString() : ""),
-                            new Claim("SubjectId", userInfo.UserId.ToString()),
-                            new Claim("CompanyId", userInfo.CompanyId.ToString()),
-                        }),
-                        Expires = DateTime.UtcNow.AddDays(7),
-                        SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-                    };
-                    var token = tokenHandler.CreateToken(tokenDescriptor);
+                    //        Console.WriteLine($"WARNING: A propriedade 'Msg' do usuário '{userInfo.Email}' está vazia. Não é possível enviar o e-mail de redefinição.");
+                            // Você pode optar por lançar uma exceção, ou apenas retornar userInfo sem enviar e-mail.
+                            return userInfo;
+                        }
 
-                    var retUser = new User()
-                    {
-                        Id = userInfo.UserId.Value,
-                        FirstName = userInfo.Name,
-                        ProfileId = userInfo.ProfileId,
-                        CompanyId = userInfo.CompanyId,
-                        Username = user,
-                        Password = password,
-                        Token = ""
-                    };
-                    retUser.Token = tokenHandler.WriteToken(token);
+                    var configEmail = this._configEmail.Value;
 
-                    return retUser.WithoutPassword();
+                    // 2. Substituir o placeholder <<TEMP_PASSWORD>> no corpo da mensagem
+                    var item = JsonConvert.DeserializeObject<dynamic>(Convert.ToString(userInfo.Msg));
+                    string emailBody = item.Message;
+                    emailBody = emailBody.Replace("<<TEMP_PASSWORD>>", userInfo.Password);
+
+                    // 4. Enviar o e-mail usando os dados extraídos
+                //    Mail.Send(Convert.ToString(item.To), Convert.ToString(item.NameTo), "", "", Convert.ToString(item.Subject), Convert.ToString(item.Message), confEmail);
+                    Mail.Send(Convert.ToString(user), Convert.ToString(userInfo.Name),  "", "", Convert.ToString(item.Subject), Convert.ToString(emailBody), configEmail );
+
+                //    Console.WriteLine($"INFO: E-mail de senha temporária enviado para '{userInfo.Email}'.");
+
+                    return userInfo;
+
                 }
                 catch (Exception ex)
                 {
@@ -163,7 +160,71 @@ namespace WebApi.Services
 
 
         }
-*/
+        
+        /*        public User AuthenticateSGP(string user, string password)
+                {
+
+                    using (var con = new SqlConnection(_connectionStrings.Default.ToString()))
+                    {
+                        try
+                        {
+                            con.Open();
+                            var query = "SP_SGP_CustomerAuthenticated";
+
+                            var userInfo = con.Query<CustomerSGP>(query, new
+                            {
+                                user = user,
+                                password = password
+                            }, commandType: CommandType.StoredProcedure).SingleOrDefault();
+
+                            // return null if user not found
+                            if (userInfo == null)
+                                return null;
+
+                            // authentication successful so generate jwt token
+                            var tokenHandler = new JwtSecurityTokenHandler();
+                            var key = Encoding.ASCII.GetBytes(_appSettings.Secret);
+                            var tokenDescriptor = new SecurityTokenDescriptor
+                            {
+                                Subject = new ClaimsIdentity(new Claim[]
+                                {
+                                    new Claim("Name", userInfo.Name.ToString()),
+                                    new Claim("Email", userInfo.Email != null ? userInfo.Email.ToString() : ""),
+                                    new Claim("SubjectId", userInfo.UserId.ToString()),
+                                    new Claim("CompanyId", userInfo.CompanyId.ToString()),
+                                }),
+                                Expires = DateTime.UtcNow.AddDays(7),
+                                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+                            };
+                            var token = tokenHandler.CreateToken(tokenDescriptor);
+
+                            var retUser = new User()
+                            {
+                                Id = userInfo.UserId.Value,
+                                FirstName = userInfo.Name,
+                                ProfileId = userInfo.ProfileId,
+                                CompanyId = userInfo.CompanyId,
+                                Username = user,
+                                Password = password,
+                                Token = ""
+                            };
+                            retUser.Token = tokenHandler.WriteToken(token);
+
+                            return retUser.WithoutPassword();
+                        }
+                        catch (Exception ex)
+                        {
+                            throw ex;
+                        }
+                        finally
+                        {
+                            con.Close();
+                        }
+                    }
+
+
+                }
+        */
 
         public IEnumerable<User> GetAll()
         {

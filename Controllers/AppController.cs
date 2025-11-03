@@ -42,10 +42,18 @@ namespace WebApi.Controllers
 
       [HttpPost("AppSupSellersList")]
       public IActionResult AppSupSellersList()
-        {
+       {
             int UserId = Convert.ToInt32(User.FindFirst("SubjectId")?.Value);
             return OkDyn(_AppService.AppSupSellersList(UserId));
-        }
+       }
+
+      [HttpPost("AppSupCustomersList")]
+      public IActionResult AppSupCustomersList()
+      {
+           int UserId = Convert.ToInt32(User.FindFirst("SubjectId")?.Value);
+          return OkDyn(_AppService.AppSupCustomersList(UserId));
+      }
+        
 
       [AllowAnonymous]
       [HttpGet("Wa_CheckExistCell")]
