@@ -19,6 +19,7 @@ namespace WebApi.Services
     {
         User Authenticate(string user, string password, string appCd);
         User NewTempPassword(string user, string appCd);
+        User ChangePassword(string user, string password, string newpassword, string appCd);
         //        User AuthenticateSGP(string user, string password);
         IEnumerable<User> GetAll();
     }
@@ -160,7 +161,42 @@ namespace WebApi.Services
 
 
         }
-        
+
+        public User ChangePassword(string user, string password, string newpassword, string appId)
+        {
+            using (var con = new SqlConnection(_connectionStrings.Default.ToString()))
+            {
+                try
+                {
+                    con.Open();
+                    var query = "SP_UserChangePassword";
+
+                    var userInfo = con.Query<User>(query, new
+                    {
+                        user = user,
+                        appId = appId,
+                        password = password,
+                        newpassword = newpassword
+                    }, commandType: CommandType.StoredProcedure).SingleOrDefault();
+
+                    // return null if user not found
+
+
+                    return userInfo;
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+                finally
+                {
+                    con.Close();
+                }
+            }
+
+
+        }
+
         /*        public User AuthenticateSGP(string user, string password)
                 {
 

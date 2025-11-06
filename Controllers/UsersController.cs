@@ -70,7 +70,20 @@ namespace WebApi.Controllers
           return Ok(user);
       }
 
-        
+      [AllowAnonymous]
+      [HttpPost("ChangePassword")]
+      public IActionResult ChangePassword([FromBody] ChangePasswordModel model)
+      {
+            /*if (!_reCaptchaService.ValidaReCaptcha(model.recaptcha))
+               return BadRequest(new { message = "ReCaptcha inválido" });*/
+
+          var user = _userService.ChangePassword(model.Username, model.Password, model.NewPassword, model.AppId);
+
+          if (user == null)
+              return BadRequest(new { message = "E-mail ou senha inválidos. Favor conferir." });
+
+          return Ok(user);
+      }
         /*     [AllowAnonymous]
              [HttpPost("authenticateSGP")]
              public IActionResult AuthenticateSGP([FromBody] AuthenticateModelSGP model)

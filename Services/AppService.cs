@@ -98,6 +98,122 @@ namespace WebApi.Services
             }
         }
 
+        public dynamic AppSupQuestionsList(int UserId, string SurveyTypeCd)
+        {
+            using (var con = new SqlConnection(_connectionStrings.Default.ToString()))
+            {
+                try
+                {
+                    con.Open();
+                    var query = "SP_SupQuestionsList";
+                    var ret = con.Query(query, new
+                    {
+                        SupUserId = UserId,
+                        SurveyTypeCd = SurveyTypeCd
+                    }, commandType: CommandType.StoredProcedure).ToList();
+                    return ret;
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+                finally
+                {
+                    con.Close();
+                }
+            }
+        }
+
+
+        public dynamic AppSaveSupportRequest(SupportRequest supportrequest)
+        {
+            using (var con = new SqlConnection(_connectionStrings.Default.ToString()))
+            {
+
+ /*               if (contactForm.ImageName != null && contactForm.ImageName.Trim() != "")
+                {
+                    //var uploads = Path.Combine(this._env.ContentRootPath, "upload", "ContactForm");
+                    //if (!Directory.Exists(uploads))
+                    //{
+                    //    Directory.CreateDirectory(uploads);
+                    //}
+
+                    Guid guidId = Guid.NewGuid();
+                    string nomeArquivo = guidId.ToString() + ".jpg";
+                    //File.WriteAllBytes(Path.Combine(uploads, nomeArquivo), Convert.FromBase64String(contactForm.ImageName));
+
+                    string imageRet = StorageHelpers.upload(contactForm.ImageName, contactForm.PromotionId + "-" + nomeArquivo, _storageConfig.Value, _storageConfig.Value.ImageContactForm).Result;
+                    contactForm.ImageName = imageRet;
+                }
+ */
+                try
+                {
+                    con.Open();
+                    var query = "SP_SaveSupportRequest";
+
+                    var ret = con.Query<dynamic>(query, supportrequest, commandType: CommandType.StoredProcedure).ToList();
+
+                    var resProc = ret.First();
+
+                    // Usa o Titulo da procedure no lugar do assunto fixo
+                    string titulo = Convert.ToString(resProc.Msg) ?? "Registro de Suporte";
+
+                    string body = "" +
+                                   "<b>Nome:</b>  " + supportrequest.UserName + " <br> " +
+                                   "<b>Telefone:</b> " + supportrequest.DddCell + " - " + supportrequest.NrCell + " <br> " +
+                                   "<b>E-mail:</b> " + supportrequest.UserEmail + " <br> " +
+                                   "<b>Assunto:</b> " + supportrequest.Subject + " <br> " +
+                               //    ((contactForm.ImageName != null && contactForm.ImageName.Trim() != "") ? "<b>Anexo</b> <a href=\"" + contactForm.ImageName + "\">abrir anexo</a> <br>" : "") +
+                                   "<b>Mensagem:</b> <br> " + supportrequest.Message.Replace("\n", "<br>");
+                 
+                    var confEmail = this._configEmail.Value;
+
+                    confEmail.FromEmail = Convert.ToString(resProc.From);
+                    confEmail.FromText = Convert.ToString(resProc.FromName);
+
+                    Mail.Send(resProc.ToSupport, resProc.ToSupportName, supportrequest.UserEmail, supportrequest.UserName, titulo, body, confEmail);
+
+                    return ret;
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+                finally
+                {
+                    con.Close();
+                }
+            }
+        }
+        
+
+        public dynamic AppSupportRequestTypeList ()
+        {
+            using (var con = new SqlConnection(_connectionStrings.Default.ToString()))
+            {
+                try
+                {
+                    con.Open();
+                    var query = "SP_SupportRequestTypeList";
+
+                    var ret = con.Query<dynamic>(query, new { }, commandType: CommandType.StoredProcedure).ToList();
+
+                    return ret;
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+                finally
+                {
+                    con.Close();
+                }
+            }
+
+
+        }
+
+        //######################################################################################
         public dynamic CheckExistEmail(string Email, string AppId)
         {
             using (var con = new SqlConnection(_connectionStrings.Default.ToString()))

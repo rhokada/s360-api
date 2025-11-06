@@ -9,7 +9,10 @@ namespace WebApi.Services.Interfaces
         IEnumerable<Customer> GetAll();
         dynamic AppSupSellersList(int UserId);
         dynamic AppSupCustomersList(int UserId);
-        
+        dynamic AppSupQuestionsList(int UserId, string SurveyTypeCd);
+        dynamic AppSaveSupportRequest(SupportRequest supportrequest);
+        dynamic AppSupportRequestTypeList ();
+
         dynamic CheckExistEmail(string Email, string AppId);
         dynamic Wa_CheckExistCell(string Cell, string AppId);
         dynamic CheckExistCell(string Cell, string AppId);

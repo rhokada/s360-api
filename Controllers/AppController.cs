@@ -53,8 +53,30 @@ namespace WebApi.Controllers
            int UserId = Convert.ToInt32(User.FindFirst("SubjectId")?.Value);
           return OkDyn(_AppService.AppSupCustomersList(UserId));
       }
-        
 
+      [HttpPost("AppSupQuestionsList")]
+      public IActionResult AppSupQuestionsList(string SurveyTypeCd)
+      {
+          int UserId = Convert.ToInt32(User.FindFirst("SubjectId")?.Value);
+          return OkDyn(_AppService.AppSupQuestionsList(UserId, SurveyTypeCd));
+      }
+
+
+      [HttpPost("AppSaveSupportRequest")]
+      public IActionResult AppSaveSupportRequest(SupportRequest supportrequest)
+      {
+          int UserId = Convert.ToInt32(User.FindFirst("SubjectId")?.Value);
+          return OkDyn(_AppService.AppSaveSupportRequest(supportrequest));
+      }
+
+      [AllowAnonymous]
+      [HttpGet("SupportRequestTypeList")]
+      public IActionResult AppSupportRequestTypeList ()
+        {
+            return OkDyn(_AppService.AppSupportRequestTypeList());
+        }
+
+        // ***************************************************************
       [AllowAnonymous]
       [HttpGet("Wa_CheckExistCell")]
       public IActionResult Validation(string Cell, string AppId)
