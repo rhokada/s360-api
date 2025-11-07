@@ -72,14 +72,14 @@ namespace WebApi.Controllers
 
       [AllowAnonymous]
       [HttpPost("ChangePassword")]
-      public IActionResult ChangePassword([FromBody] ChangePasswordModel model)
+      public IActionResult ChangePassword ([FromBody] ChangePasswordModel changepassword)
       {
             /*if (!_reCaptchaService.ValidaReCaptcha(model.recaptcha))
                return BadRequest(new { message = "ReCaptcha inválido" });*/
+            changepassword.userId = Convert.ToInt32(User.FindFirst("SubjectId")?.Value);
+            var user = _userService.ChangePassword(changepassword.userId, changepassword.Password, changepassword.NewPassword, changepassword.AppId);
 
-          var user = _userService.ChangePassword(model.Username, model.Password, model.NewPassword, model.AppId);
-
-          if (user == null)
+          if (user.Email == null)
               return BadRequest(new { message = "E-mail ou senha inválidos. Favor conferir." });
 
           return Ok(user);

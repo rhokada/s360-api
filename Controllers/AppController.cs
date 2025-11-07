@@ -55,19 +55,20 @@ namespace WebApi.Controllers
       }
 
       [HttpPost("AppSupQuestionsList")]
-      public IActionResult AppSupQuestionsList(string SurveyTypeCd)
+      public IActionResult AppSupQuestionsList([FromBody] AppSupQuestionsListModel AppSupQuestionsList)
       {
           int UserId = Convert.ToInt32(User.FindFirst("SubjectId")?.Value);
-          return OkDyn(_AppService.AppSupQuestionsList(UserId, SurveyTypeCd));
+          return OkDyn(_AppService.AppSupQuestionsList(UserId, AppSupQuestionsList.SurveyTypeCd));
       }
 
-
+      [AllowAnonymous]
       [HttpPost("AppSaveSupportRequest")]
       public IActionResult AppSaveSupportRequest(SupportRequest supportrequest)
       {
           int UserId = Convert.ToInt32(User.FindFirst("SubjectId")?.Value);
           return OkDyn(_AppService.AppSaveSupportRequest(supportrequest));
       }
+
 
       [AllowAnonymous]
       [HttpGet("SupportRequestTypeList")]

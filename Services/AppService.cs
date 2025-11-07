@@ -84,7 +84,7 @@ namespace WebApi.Services
                     var ret = con.Query(query, new
                     {
                         SupUserId = UserId
-                    }, commandType: CommandType.StoredProcedure).ToList();
+                    }, commandType: CommandType.StoredProcedure).ToString();
                     return ret;
                 }
                 catch (Exception ex)
@@ -156,16 +156,17 @@ namespace WebApi.Services
                     var resProc = ret.First();
 
                     // Usa o Titulo da procedure no lugar do assunto fixo
-                    string titulo = Convert.ToString(resProc.Msg) ?? "Registro de Suporte";
+                    string titulo = Convert.ToString(resProc.Subject) ?? "Registro de Suporte";
 
                     string body = "" +
                                    "<b>Nome:</b>  " + supportrequest.UserName + " <br> " +
-                                   "<b>Telefone:</b> " + supportrequest.DddCell + " - " + supportrequest.NrCell + " <br> " +
+                                   "<b>Telefone:</b> (" + supportrequest.DddCell + ") " + supportrequest.NrCell + " <br> " +
                                    "<b>E-mail:</b> " + supportrequest.UserEmail + " <br> " +
                                    "<b>Assunto:</b> " + supportrequest.Subject + " <br> " +
                                //    ((contactForm.ImageName != null && contactForm.ImageName.Trim() != "") ? "<b>Anexo</b> <a href=\"" + contactForm.ImageName + "\">abrir anexo</a> <br>" : "") +
-                                   "<b>Mensagem:</b> <br> " + supportrequest.Message.Replace("\n", "<br>");
-                 
+//                                   "<b>Mensagem:</b> <br> " + supportrequest.Message.Replace("\n", "<br>");
+                                  "<b>Mensagem:</b> <br> " + resProc.Message.Replace("\n", "<br>");
+
                     var confEmail = this._configEmail.Value;
 
                     confEmail.FromEmail = Convert.ToString(resProc.From);
@@ -209,10 +210,7 @@ namespace WebApi.Services
                     con.Close();
                 }
             }
-
-
         }
-
         //######################################################################################
         public dynamic CheckExistEmail(string Email, string AppId)
         {
