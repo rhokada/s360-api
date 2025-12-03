@@ -1,0 +1,28 @@
+{
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://127.0.0.1:4000", // Alterado
+      "sslPort": 44305
+    }
+  },
+  "profiles": {
+    "IIS Express": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://127.0.0.1:44305;http://127.0.0.1:4000" // Adicionado e alterado
+    },
+    "WebApi": {
+      "commandName": "Project",
+      "launchBrowser": true, // Adicionado (opcional)
+      "applicationUrl": "https://127.0.0.1:44305;http://127.0.0.1:4000", // Adicionado e alterado
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development" // Adicionado (opcional)
+      }
+    }
+  }
+}

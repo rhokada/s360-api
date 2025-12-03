@@ -55,10 +55,10 @@ namespace WebApi.Controllers
       }
 
       [HttpPost("AppSupQuestionsList")]
-      public IActionResult AppSupQuestionsList([FromBody] AppSupQuestionsListModel AppSupQuestionsList)
+      public IActionResult AppSupQuestionsList() //[FromBody] AppSupQuestionsListModel AppSupQuestionsList)
       {
           int UserId = Convert.ToInt32(User.FindFirst("SubjectId")?.Value);
-          return OkDyn(_AppService.AppSupQuestionsList(UserId, AppSupQuestionsList.SurveyTypeCd));
+            return OkDyn(_AppService.AppSupQuestionsList(UserId)); //, AppSupQuestionsList.SurveyTypeCd) );
       }
 
       [AllowAnonymous]

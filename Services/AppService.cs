@@ -84,7 +84,7 @@ namespace WebApi.Services
                     var ret = con.Query(query, new
                     {
                         SupUserId = UserId
-                    }, commandType: CommandType.StoredProcedure).ToString();
+                    }, commandType: CommandType.StoredProcedure).ToList();
                     return ret;
                 }
                 catch (Exception ex)
@@ -98,7 +98,7 @@ namespace WebApi.Services
             }
         }
 
-        public dynamic AppSupQuestionsList(int UserId, string SurveyTypeCd)
+        public dynamic AppSupQuestionsList(int UserId) //, string SurveyTypeCd)
         {
             using (var con = new SqlConnection(_connectionStrings.Default.ToString()))
             {
@@ -108,8 +108,8 @@ namespace WebApi.Services
                     var query = "SP_SupQuestionsList";
                     var ret = con.Query(query, new
                     {
-                        SupUserId = UserId,
-                        SurveyTypeCd = SurveyTypeCd
+                        SupUserId = UserId
+                        //,SurveyTypeCd = SurveyTypeCd
                     }, commandType: CommandType.StoredProcedure).ToList();
                     return ret;
                 }
