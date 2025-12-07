@@ -40,6 +40,13 @@ namespace WebApi.Controllers
          return Content(ret, "application/json");
       }
 
+      [HttpPost("AppUserHomeData")]
+      public IActionResult AppUserHomeData()
+      {
+          int UserId = Convert.ToInt32(User.FindFirst("SubjectId")?.Value);
+          return OkDyn(_AppService.AppUserHomeData(UserId));
+      }
+
       [HttpPost("AppSupSellersList")]
       public IActionResult AppSupSellersList()
        {

@@ -7,6 +7,7 @@ namespace WebApi.Services.Interfaces
     public interface IAppService
     {
         IEnumerable<Customer> GetAll();
+        dynamic AppUserHomeData(int UserId);
         dynamic AppSupSellersList(int UserId);
         dynamic AppSupCustomersList(int UserId);
         dynamic AppSupQuestionsList(int UserId); //, string SurveyTypeCd);

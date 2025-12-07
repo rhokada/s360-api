@@ -48,6 +48,31 @@ namespace WebApi.Services
             throw new NotImplementedException();
         }
 
+        public dynamic AppUserHomeData(int UserId)
+        {
+            using (var con = new SqlConnection(_connectionStrings.Default.ToString()))
+            {
+                try
+                {
+                    con.Open();
+                    var query = "SP_UserHomeData";
+                    var ret = con.Query(query, new
+                    {
+                        UserId = UserId
+                    }, commandType: CommandType.StoredProcedure).ToList();
+                    return ret;
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+                finally
+                {
+                    con.Close();
+                }
+            }
+        }
+
         public dynamic AppSupSellersList(int UserId)
         {
             using (var con = new SqlConnection(_connectionStrings.Default.ToString()))
@@ -186,7 +211,8 @@ namespace WebApi.Services
                 }
             }
         }
-        
+
+       
 
         public dynamic AppSupportRequestTypeList ()
         {
