@@ -13,6 +13,7 @@ namespace WebApi.Services.Interfaces
         dynamic AppSupQuestionsList(int UserId); //, string SurveyTypeCd);
         dynamic AppSaveSupportRequest(SupportRequest supportrequest);
         dynamic AppSupportRequestTypeList ();
+        dynamic AppDataImport(DataImport dataimport);
         dynamic CheckExistEmail(string Email, string AppId);
         dynamic Wa_CheckExistCell(string Cell, string AppId);
         dynamic CheckExistCell(string Cell, string AppId);

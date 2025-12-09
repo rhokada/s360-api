@@ -84,6 +84,14 @@ namespace WebApi.Controllers
             return OkDyn(_AppService.AppSupportRequestTypeList());
         }
 
+
+      [HttpPost("AppDataImport")]
+      public IActionResult AppDataImport([FromBody] DataImport dataimport)
+      {
+        dataimport.UserId = Convert.ToInt32(User.FindFirst("SubjectId")?.Value);
+        return OkDyn(_AppService.AppDataImport(dataimport));
+      }
+
         // ***************************************************************
       [AllowAnonymous]
       [HttpGet("Wa_CheckExistCell")]

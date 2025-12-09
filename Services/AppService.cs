@@ -14,6 +14,7 @@ using WebApi.Entities;
 using WebApi.Helpers;
 using WebApi.Models;
 using WebApi.Services.Interfaces;
+using System.Diagnostics;
 
 namespace WebApi.Services
 {
@@ -212,7 +213,31 @@ namespace WebApi.Services
             }
         }
 
-       
+        public dynamic AppDataImport(DataImport dataimport)
+        {
+            using (var con = new SqlConnection(_connectionStrings.Default.ToString()))
+            {
+                try
+                {
+                    con.Open();
+                    var query = "SP_DataImport";
+
+                    var ret = con.Query<dynamic>(query, dataimport, commandType: CommandType.StoredProcedure).ToList();
+                    
+                    return ret;
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+                finally
+                {
+                    con.Close();
+                }
+            }
+        }
+
+
 
         public dynamic AppSupportRequestTypeList ()
         {
