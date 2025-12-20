@@ -68,6 +68,13 @@ namespace WebApi.Controllers
             return OkDyn(_AppService.AppSupQuestionsList(UserId)); //, AppSupQuestionsList.SurveyTypeCd) );
       }
 
+      [HttpPost("AppSupSellerFupList")]
+      public IActionResult AppSupSellerFupList() //[FromBody] AppSupQuestionsListModel AppSupQuestionsList)
+      {
+          int UserId = Convert.ToInt32(User.FindFirst("SubjectId")?.Value);
+          return OkDyn(_AppService.AppSupSellerFupList(UserId)); 
+      }
+
       [AllowAnonymous]
       [HttpPost("AppSaveSupportRequest")]
       public IActionResult AppSaveSupportRequest(SupportRequest supportrequest)

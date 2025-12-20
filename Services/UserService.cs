@@ -20,7 +20,7 @@ namespace WebApi.Services
         User Authenticate(string user, string password, string appCd);
         User NewTempPassword(string user, string appCd);
         User ChangePassword(int userId, string password, string newpassword, string appCd);
-        //        User AuthenticateSGP(string user, string password);
+        dynamic GetPermissions(int userId);
         IEnumerable<User> GetAll();
     }
 
@@ -170,7 +170,6 @@ namespace WebApi.Services
                 {
                     con.Open();
                     var query = "SP_UserChangePassword";
-
                     var userInfo = con.Query<User>(query, new
                     {
                         userId = userId,
@@ -178,10 +177,6 @@ namespace WebApi.Services
                         password = password,
                         newpassword = newpassword
                     }, commandType: CommandType.StoredProcedure).SingleOrDefault();
-
-                    // return null if user not found
-
-
                     return userInfo;
                 }
                 catch (Exception ex)
@@ -193,74 +188,32 @@ namespace WebApi.Services
                     con.Close();
                 }
             }
-
-
         }
 
-        /*        public User AuthenticateSGP(string user, string password)
+        public dynamic GetPermissions(int userId)
+        {
+            using (var con = new SqlConnection(_connectionStrings.Default.ToString()))
+            {
+                try
                 {
-
-                    using (var con = new SqlConnection(_connectionStrings.Default.ToString()))
+                    con.Open();
+                    var query = "SP_UserPermissions";
+                    var ret = con.Query(query, new
                     {
-                        try
-                        {
-                            con.Open();
-                            var query = "SP_SGP_CustomerAuthenticated";
-
-                            var userInfo = con.Query<CustomerSGP>(query, new
-                            {
-                                user = user,
-                                password = password
-                            }, commandType: CommandType.StoredProcedure).SingleOrDefault();
-
-                            // return null if user not found
-                            if (userInfo == null)
-                                return null;
-
-                            // authentication successful so generate jwt token
-                            var tokenHandler = new JwtSecurityTokenHandler();
-                            var key = Encoding.ASCII.GetBytes(_appSettings.Secret);
-                            var tokenDescriptor = new SecurityTokenDescriptor
-                            {
-                                Subject = new ClaimsIdentity(new Claim[]
-                                {
-                                    new Claim("Name", userInfo.Name.ToString()),
-                                    new Claim("Email", userInfo.Email != null ? userInfo.Email.ToString() : ""),
-                                    new Claim("SubjectId", userInfo.UserId.ToString()),
-                                    new Claim("CompanyId", userInfo.CompanyId.ToString()),
-                                }),
-                                Expires = DateTime.UtcNow.AddDays(7),
-                                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-                            };
-                            var token = tokenHandler.CreateToken(tokenDescriptor);
-
-                            var retUser = new User()
-                            {
-                                Id = userInfo.UserId.Value,
-                                FirstName = userInfo.Name,
-                                ProfileId = userInfo.ProfileId,
-                                CompanyId = userInfo.CompanyId,
-                                Username = user,
-                                Password = password,
-                                Token = ""
-                            };
-                            retUser.Token = tokenHandler.WriteToken(token);
-
-                            return retUser.WithoutPassword();
-                        }
-                        catch (Exception ex)
-                        {
-                            throw ex;
-                        }
-                        finally
-                        {
-                            con.Close();
-                        }
-                    }
-
-
+                        userId = userId
+                    }, commandType: CommandType.StoredProcedure).ToList();
+                    return ret;
                 }
-        */
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+                finally
+                {
+                    con.Close();
+                }
+            }
+        }
 
         public IEnumerable<User> GetAll()
         {

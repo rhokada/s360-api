@@ -150,6 +150,30 @@ namespace WebApi.Services
             }
         }
 
+        public dynamic AppSupSellerFupList(int UserId) //, string SurveyTypeCd)
+        {
+            using (var con = new SqlConnection(_connectionStrings.Default.ToString()))
+            {
+                try
+                {
+                    con.Open();
+                    var query = "SP_SupSellerFupList";
+                    var ret = con.Query(query, new
+                    {
+                        SupUserId = UserId
+                    }, commandType: CommandType.StoredProcedure).ToList();
+                    return ret;
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+                finally
+                {
+                    con.Close();
+                }
+            }
+        }
 
         public dynamic AppSaveSupportRequest(SupportRequest supportrequest)
         {

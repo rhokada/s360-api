@@ -84,42 +84,14 @@ namespace WebApi.Controllers
 
           return Ok(user);
       }
-        /*     [AllowAnonymous]
-             [HttpPost("authenticateSGP")]
-             public IActionResult AuthenticateSGP([FromBody] AuthenticateModelSGP model)
-             {
-                var user = _userService.AuthenticateSGP(model.Username, model.Password);
 
-                if (user == null)
-                   return BadRequest(new { message = "Username or password is incorrect" });
-
-                return Ok(user);
-             }
-        */
-        [HttpGet]
-      public IActionResult GetAll()
+      [HttpPost("GetPermissions")]
+      public IActionResult GetPermissions()
       {
-         var users = _userService.GetAll();
-         using (var con = new SqlConnection(_ConnectionStrings.Default.ToString()))
-         {
-            try
-            {
-               con.Open();
-               var query = "SELECT TOP 10 * FROM Customer";
+            var userId = Convert.ToInt32(User.FindFirst("SubjectId")?.Value);
+            var ret = _userService.GetPermissions(userId);
 
-               return Ok(con.Query(query).ToList());
-            }
-            catch (Exception ex)
-            {
-               throw ex;
-            }
-            finally
-            {
-               con.Close();
-            }
-         }
-
-
-      }
-   }
+            return OkDyn(ret);
+        }
+    }
 }
