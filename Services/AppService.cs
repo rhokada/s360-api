@@ -261,6 +261,38 @@ namespace WebApi.Services
             }
         }
 
+        public dynamic AppDataExport(DataImport dataimport)
+        {
+            using (var con = new SqlConnection(_connectionStrings.Default.ToString()))
+            {
+                try
+                {
+                    con.Open();
+                    var query = "SP_DataExport";
+
+                    //                   var ret = con.Query<dynamic>(query, dataimport, commandType: CommandType.StoredProcedure).ToList();
+                    List<string> jsonFragments = con.Query<string>(query, dataimport, commandType: CommandType.StoredProcedure).ToList();
+
+                    // PASSO 2: Unir todos os fragmentos de string em uma única string JSON completa.
+                    string fullJsonResult = string.Join("", jsonFragments);
+
+                    // PASSO 3: Desserializar a string JSON completa em um objeto dinâmico (ou um modelo C# forte).
+                    // Como o SP retorna um array JSON ([...]), 'dynamic' é adequado.
+                    dynamic ret = JsonConvert.DeserializeObject<dynamic>(fullJsonResult);
+
+                    return ret; // Retorna o objeto JSON completo e desserializado.
+
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+                finally
+                {
+                    con.Close();
+                }
+            }
+        }
 
 
         public dynamic AppSupportRequestTypeList ()
