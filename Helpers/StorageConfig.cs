@@ -14,6 +14,8 @@ namespace WebApi.Helpers
         public string ImageProducts { get; set; }
         public string ImageContactForm { get; set; }
         public string ImagePurchaseReceipt { get; set; }
+        public string s360audio { get; set; }
+        public string s360images { get; set; }
     }
 
     public class StorageHelpers
