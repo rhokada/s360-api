@@ -308,16 +308,30 @@ namespace WebApi.Services
                             attachmentObject.TryGetValue("filename", StringComparison.OrdinalIgnoreCase, out var filenameToken))
                         {
                             string audioBase64String = filepathToken.ToString();
-                            string fileName = filenameToken.ToString();
+                            string originalFileName = filenameToken.ToString();
+
+                            int userId = 0; // Valor padrão caso não encontre ou para testes.
+                            if (dataimport.GetType().GetProperty("UserId") != null)
+                            {
+                                userId = (int)dataimport.GetType().GetProperty("UserId").GetValue(dataimport, null);
+                            }
+                            else
+                            {
+                                Console.WriteLine("A propriedade 'UserId' não foi encontrada no objeto 'DataImport'. O nome do arquivo usará '0' como ID de usuário.");
+                                // Você pode lançar uma exceção ou usar um ID genérico/default, ou buscar em outro lugar.
+                            }
+
+                            string baseOriginalFileName = Path.GetFileNameWithoutExtension(originalFileName);
+                            string newFormattedFileName = $"AUDIO-{userId}-{baseOriginalFileName}.webm";
 
                             try
                             {
-                                dynamic saveResult = AppSaveAudioWebmFromBase64(audioBase64String, fileName);
-                                Console.WriteLine($"Processamento de áudio '{fileName}': Sucesso = {saveResult.success}, Mensagem = {saveResult.message}");
+                                dynamic saveResult = AppSaveAudioWebmFromBase64(audioBase64String, newFormattedFileName);
+                                Console.WriteLine($"Processamento de áudio '{newFormattedFileName}': Sucesso = {saveResult.success}, Mensagem = {saveResult.message}");
                             }
                             catch (Exception audioEx)
                             {
-                                Console.WriteLine($"Erro ao salvar anexo de áudio WEBM '{fileName}': {audioEx.Message}");
+                                Console.WriteLine($"Erro ao salvar anexo de áudio WEBM '{newFormattedFileName}': {audioEx.Message}");
                             }
                         }
                     }
