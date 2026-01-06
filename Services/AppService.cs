@@ -239,6 +239,106 @@ namespace WebApi.Services
             }
         }
 
+        //public dynamic AppDataImport(DataImport dataimport)
+        //{
+        //    using (var con = new SqlConnection(_connectionStrings.Default.ToString()))
+        //    {
+        //        try
+        //        {
+        //            con.Open();
+        //            var query = "SP_DataImport";
+
+        //            var ret = con.Query<dynamic>(query, dataimport, commandType: CommandType.StoredProcedure).ToList();
+
+        //            return ret;
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            throw ex;
+        //        }
+        //        finally
+        //        {
+        //            con.Close();
+        //        //}
+        //        //}
+
+        //        // --- Parte 2: Processar os áudios WebM na propriedade Data ---
+        //            JToken parsedData = null;
+        //            string rawDataString = dataimport.Data.ToString();
+        //            try
+        //            {
+        //                // Tenta analisar como JArray primeiro, pois o último exemplo mostrou um array.
+        //                parsedData = JArray.Parse(rawDataString);
+        //            }
+        //            catch (JsonReaderException) // Catch específico para erro de leitura JSON
+        //            {
+        //                // Se não foi um array, tenta analisar como um JObject (para a estrutura original, se aplicável)
+        //                try
+        //                {
+        //                    parsedData = JObject.Parse(rawDataString);
+        //                }
+        //                catch (JsonReaderException ex)
+        //                {
+        //                    Console.WriteLine($"Erro ao analisar JSON da propriedade Data: Não é um JArray nem um JObject válido. {ex.Message}. Conteúdo da Data: {rawDataString}");
+        //                    //return ret; // Não conseguiu analisar, retorna o resultado da SP
+        //                }
+        //                catch (Exception ex) // Outras exceções inesperadas ao tentar JObject.Parse
+        //                {
+        //                    Console.WriteLine($"Erro inesperado ao tentar analisar JSON como JObject: {ex.Message}. Conteúdo da Data: {rawDataString}");
+        //                    //return ret;
+        //                }
+        //            }
+        //            catch (Exception ex) // Outras exceções inesperadas ao tentar JArray.Parse
+        //            {
+        //                Console.WriteLine($"Erro inesperado ao tentar analisar JSON como JArray: {ex.Message}. Conteúdo da Data: {rawDataString}");
+        //                //return ret;
+        //            }
+
+        //            // Se parsedData ainda for null, houve um erro no parsing.
+        //            if (parsedData == null)
+        //            {
+        //                Console.WriteLine("Não foi possível extrair um JSON válido da propriedade 'Data' para processamento de áudio.");
+        //                //return ret;
+        //            }
+
+        //            // Usa a função auxiliar para encontrar todos os objetos de anexo de áudio
+        //            foreach (var attachmentObject in FindAllAudioAttachments(parsedData))
+        //            {
+        //                if (attachmentObject.TryGetValue("filepath", StringComparison.OrdinalIgnoreCase, out var filepathToken) &&
+        //                    attachmentObject.TryGetValue("filename", StringComparison.OrdinalIgnoreCase, out var filenameToken))
+        //                {
+        //                    string audioBase64String = filepathToken.ToString();
+        //                    string originalFileName = filenameToken.ToString();
+
+        //                    int userId = 0; // Valor padrão caso não encontre ou para testes.
+        //                    if (dataimport.GetType().GetProperty("UserId") != null)
+        //                    {
+        //                        userId = (int)dataimport.GetType().GetProperty("UserId").GetValue(dataimport, null);
+        //                    }
+        //                    else
+        //                    {
+        //                        Console.WriteLine("A propriedade 'UserId' não foi encontrada no objeto 'DataImport'. O nome do arquivo usará '0' como ID de usuário.");
+        //                        // Você pode lançar uma exceção ou usar um ID genérico/default, ou buscar em outro lugar.
+        //                    }
+
+        //                    string baseOriginalFileName = Path.GetFileNameWithoutExtension(originalFileName);
+        //                    string newFormattedFileName = $"AUDIO-{userId}-{baseOriginalFileName}.webm";
+
+        //                    try
+        //                    {
+        //                        dynamic saveResult = AppSaveAudioWebmFromBase64(audioBase64String, newFormattedFileName);
+        //                        Console.WriteLine($"Processamento de áudio '{newFormattedFileName}': Sucesso = {saveResult.success}, Mensagem = {saveResult.message}");
+        //                    }
+        //                    catch (Exception audioEx)
+        //                    {
+        //                        Console.WriteLine($"Erro ao salvar anexo de áudio WEBM '{newFormattedFileName}': {audioEx.Message}");
+        //                    }
+        //                }
+        //            }
+        //        }
+        //    }
+        //}
+
         public dynamic AppDataImport(DataImport dataimport)
         {
             using (var con = new SqlConnection(_connectionStrings.Default.ToString()))
@@ -250,24 +350,12 @@ namespace WebApi.Services
 
                     var ret = con.Query<dynamic>(query, dataimport, commandType: CommandType.StoredProcedure).ToList();
 
-                    return ret;
-                }
-                catch (Exception ex)
-                {
-                    throw ex;
-                }
-                finally
-                {
-                    con.Close();
-                //}
-                //}
-
-                // --- Parte 2: Processar os áudios WebM na propriedade Data ---
+                    // --- Parte 1: Análise e Desserialização do JSON da propriedade Data ---
                     JToken parsedData = null;
                     string rawDataString = dataimport.Data.ToString();
                     try
                     {
-                        // Tenta analisar como JArray primeiro, pois o último exemplo mostrou um array.
+                        // Tenta analisar como JArray primeiro, pois os exemplos mostraram um array.
                         parsedData = JArray.Parse(rawDataString);
                     }
                     catch (JsonReaderException) // Catch específico para erro de leitura JSON
@@ -280,61 +368,148 @@ namespace WebApi.Services
                         catch (JsonReaderException ex)
                         {
                             Console.WriteLine($"Erro ao analisar JSON da propriedade Data: Não é um JArray nem um JObject válido. {ex.Message}. Conteúdo da Data: {rawDataString}");
-                            //return ret; // Não conseguiu analisar, retorna o resultado da SP
+                            // return ret; // Não conseguiu analisar, retorna o resultado da SP
                         }
                         catch (Exception ex) // Outras exceções inesperadas ao tentar JObject.Parse
                         {
                             Console.WriteLine($"Erro inesperado ao tentar analisar JSON como JObject: {ex.Message}. Conteúdo da Data: {rawDataString}");
-                            //return ret;
+                            // return ret;
                         }
                     }
                     catch (Exception ex) // Outras exceções inesperadas ao tentar JArray.Parse
                     {
                         Console.WriteLine($"Erro inesperado ao tentar analisar JSON como JArray: {ex.Message}. Conteúdo da Data: {rawDataString}");
-                        //return ret;
+                        // return ret;
                     }
 
                     // Se parsedData ainda for null, houve um erro no parsing.
                     if (parsedData == null)
                     {
-                        Console.WriteLine("Não foi possível extrair um JSON válido da propriedade 'Data' para processamento de áudio.");
-                        //return ret;
+                        Console.WriteLine("Não foi possível extrair um JSON válido da propriedade 'Data' para processamento de anexos.");
+                        return ret; // Retorna o resultado da SP
                     }
 
-                    // Usa a função auxiliar para encontrar todos os objetos de anexo de áudio
-                    foreach (var attachmentObject in FindAllAudioAttachments(parsedData))
+                    // --- Extração do CustomerId e SellerCode ---
+                    // Tenta obter o CustomerId e SellerCode do JSON.
+                    //int customerId = 0; // Mantido caso necessário para outras lógicas, mas não para o nome do arquivo
+                    string sellerCode = "UNKNOWN"; // Valor padrão para caso não encontre
+                    string dtSurvey = "NODATE"; // Valor padrão para caso não encontre
+
+                    if (parsedData is JArray jArray && jArray.Any())
                     {
-                        if (attachmentObject.TryGetValue("filepath", StringComparison.OrdinalIgnoreCase, out var filepathToken) &&
-                            attachmentObject.TryGetValue("filename", StringComparison.OrdinalIgnoreCase, out var filenameToken))
+                        var firstItem = jArray.First as JObject;
+                        if (firstItem != null)
                         {
-                            string audioBase64String = filepathToken.ToString();
-                            string originalFileName = filenameToken.ToString();
-
-                            int userId = 0; // Valor padrão caso não encontre ou para testes.
-                            if (dataimport.GetType().GetProperty("UserId") != null)
+                            //if (firstItem.TryGetValue("customerId", StringComparison.OrdinalIgnoreCase, out var customerIdToken))
+                            //{
+                            //    customerId = customerIdToken.ToObject<int>();
+                            //}
+                            if (firstItem.TryGetValue("sellerCode", StringComparison.OrdinalIgnoreCase, out var sellerCodeToken) && !string.IsNullOrWhiteSpace(sellerCodeToken.ToString()))
                             {
-                                userId = (int)dataimport.GetType().GetProperty("UserId").GetValue(dataimport, null);
+                                sellerCode = sellerCodeToken.ToString();
                             }
-                            else
+                            // Extrai DtSurvey
+                            if (firstItem.TryGetValue("DtSurvey", StringComparison.OrdinalIgnoreCase, out var dtSurveyToken) && !string.IsNullOrWhiteSpace(dtSurveyToken.ToString()))
                             {
-                                Console.WriteLine("A propriedade 'UserId' não foi encontrada no objeto 'DataImport'. O nome do arquivo usará '0' como ID de usuário.");
-                                // Você pode lançar uma exceção ou usar um ID genérico/default, ou buscar em outro lugar.
-                            }
-
-                            string baseOriginalFileName = Path.GetFileNameWithoutExtension(originalFileName);
-                            string newFormattedFileName = $"AUDIO-{userId}-{baseOriginalFileName}.webm";
-
-                            try
-                            {
-                                dynamic saveResult = AppSaveAudioWebmFromBase64(audioBase64String, newFormattedFileName);
-                                Console.WriteLine($"Processamento de áudio '{newFormattedFileName}': Sucesso = {saveResult.success}, Mensagem = {saveResult.message}");
-                            }
-                            catch (Exception audioEx)
-                            {
-                                Console.WriteLine($"Erro ao salvar anexo de áudio WEBM '{newFormattedFileName}': {audioEx.Message}");
+                                dtSurvey = dtSurveyToken.ToString();
                             }
                         }
                     }
+                    else if (parsedData is JObject jObject)
+                    {
+                        //if (jObject.TryGetValue("customerId", StringComparison.OrdinalIgnoreCase, out var customerIdToken))
+                        //{
+                        //    customerId = customerIdToken.ToObject<int>();
+                        //}
+                        if (jObject.TryGetValue("sellerCode", StringComparison.OrdinalIgnoreCase, out var sellerCodeToken) && !string.IsNullOrWhiteSpace(sellerCodeToken.ToString()))
+                        {
+                            sellerCode = sellerCodeToken.ToString();
+                        }
+                        // Extrai DtSurvey
+                        if (jObject.TryGetValue("DtSurvey", StringComparison.OrdinalIgnoreCase, out var dtSurveyToken) && !string.IsNullOrWhiteSpace(dtSurveyToken.ToString()))
+                        {
+                            dtSurvey = dtSurveyToken.ToString();
+                        }
+                    }
+
+                    if (string.Equals(sellerCode, "UNKNOWN", StringComparison.OrdinalIgnoreCase)) // Se sellerCode ainda não foi encontrado no JSON
+                    {
+                        Console.WriteLine("A propriedade 'sellerCode' não foi encontrada no JSON da propriedade 'Data'. O nome do arquivo usará 'UNKNOWN' como código do vendedor.");
+                        // Aqui você poderia tentar obter de dataimport se existisse, ou de um contexto de usuário.
+                    }
+                    if (string.Equals(dtSurvey, "NODATE", StringComparison.OrdinalIgnoreCase))
+                    {
+                        Console.WriteLine("A propriedade 'DtSurvey' não foi encontrada no JSON da propriedade 'Data'. O nome do arquivo usará 'NODATE' como data.");
+                    }
+
+                    // --- Parte 2 e 3: Processar os áudios e imagens na propriedade Data ---
+                    // Usa a função auxiliar para encontrar todos os objetos de anexo
+                    foreach (var attachmentObject in FindAllAttachments(parsedData))
+                    {
+                        if (attachmentObject.TryGetValue("filepath", StringComparison.OrdinalIgnoreCase, out var filepathToken) &&
+                            attachmentObject.TryGetValue("filename", StringComparison.OrdinalIgnoreCase, out var filenameToken) &&
+                            attachmentObject.TryGetValue("type", StringComparison.OrdinalIgnoreCase, out var attachmentTypeToken))
+                        {
+                            string base64String = filepathToken.ToString();
+                            string originalFileName = filenameToken.ToString();
+                            string attachmentType = attachmentTypeToken.ToString();
+
+                            // Gera um novo GUID para a unicidade
+                            //Guid newGuid = Guid.NewGuid();
+
+                            // Extrai o nome do arquivo original sem extensão para evitar duplicidades na extensão
+                            string baseOriginalFileName = Path.GetFileNameWithoutExtension(originalFileName);
+                            string formattedFileName;
+
+                            if (attachmentType.Equals("audio", StringComparison.OrdinalIgnoreCase))
+                            {
+                                // Formata o nome para áudio: AUDIO-sellercode-nomeoriginal.webm
+                                formattedFileName = $"AUDIO-{sellerCode}-{dtSurvey}_{baseOriginalFileName}.webm";
+                                try
+                                {
+                                    dynamic saveResult = AppSaveAudioWebmFromBase64(base64String, formattedFileName);
+                                    Console.WriteLine($"Processamento de áudio '{formattedFileName}': Sucesso = {saveResult.success}, Mensagem = {saveResult.message}");
+                                }
+                                catch (Exception audioEx)
+                                {
+                                    Console.WriteLine($"Erro ao salvar anexo de áudio WEBM '{formattedFileName}': {audioEx.Message}");
+                                }
+                            }
+                            // --- Parte 3: Processamento de imagens ---
+                            else if (attachmentType.Equals("image", StringComparison.OrdinalIgnoreCase))
+                            {
+                                // Formata o nome para imagem: IMAGE-sellercode-nomeoriginal.jpg
+                                // Note: Mesmo que o original seja .png, o requisito é salvar como .jpg
+                                formattedFileName = $"IMAGE-{sellerCode}-{dtSurvey}_{baseOriginalFileName}.jpg";
+                                try
+                                {
+                                    dynamic saveResult = AppSaveImageFromBase64(base64String, formattedFileName);
+                                    Console.WriteLine($"Processamento de imagem '{formattedFileName}': Sucesso = {saveResult.success}, Mensagem = {saveResult.message}");
+                                }
+                                catch (Exception imageEx)
+                                {
+                                    Console.WriteLine($"Erro ao salvar anexo de imagem JPG '{formattedFileName}': {imageEx.Message}");
+                                }
+                            }
+                            else
+                            {
+                                Console.WriteLine($"Tipo de anexo desconhecido '{attachmentType}' encontrado para o arquivo '{originalFileName}'. Ignorando.");
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("Anexo encontrado sem todas as propriedades esperadas (filepath, filename, type). Ignorando.");
+                        }
+                    }
+                    return ret; // Retorna o resultado inicial da SP
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+                finally
+                {
+                    con.Close();
                 }
             }
         }
@@ -348,7 +523,6 @@ namespace WebApi.Services
                     con.Open();
                     var query = "SP_DataExport";
 
-                    //                   var ret = con.Query<dynamic>(query, dataimport, commandType: CommandType.StoredProcedure).ToList();
                     List<string> jsonFragments = con.Query<string>(query, dataimport, commandType: CommandType.StoredProcedure).ToList();
 
                     // PASSO 2: Unir todos os fragmentos de string em uma única string JSON completa.
@@ -381,7 +555,6 @@ namespace WebApi.Services
                 {
                     con.Open();
                     var query = "SP_SupportRequestTypeList";
-
                     var ret = con.Query<dynamic>(query, new { }, commandType: CommandType.StoredProcedure).ToList();
 
                     return ret;
@@ -397,10 +570,71 @@ namespace WebApi.Services
             }
         }
 
+        // MÓDULO AUXILIAR: Para encontrar todos os anexos (áudio, imagem, etc.), independente da estrutura JSON
+        private IEnumerable<JObject> FindAllAttachments(JToken token)
+        {
+            if (token == null) yield break;
+
+            if (token is JArray topLevelArray)
+            {
+                foreach (var itemInArray in topLevelArray)
+                {
+                    if (itemInArray is JObject itemObject)
+                    {
+                        if (itemObject.TryGetValue("answers", StringComparison.OrdinalIgnoreCase, out var answersToken) && answersToken is JObject answersObject)
+                        {
+                            foreach (var answerProperty in answersObject.Properties())
+                            {
+                                if (answerProperty.Value is JObject answerObject)
+                                {
+                                    if (answerObject.TryGetValue("timeline", StringComparison.OrdinalIgnoreCase, out var timelineToken) && timelineToken is JArray timelineArray)
+                                    {
+                                        foreach (var timelineEntry in timelineArray)
+                                        {
+                                            if (timelineEntry is JObject attachmentCandidate &&
+                                                attachmentCandidate.TryGetValue("type", StringComparison.OrdinalIgnoreCase, out var typeVal) &&
+                                                typeVal.ToString().Equals("attachment", StringComparison.OrdinalIgnoreCase) &&
+                                                attachmentCandidate.TryGetValue("attachment", StringComparison.OrdinalIgnoreCase, out var attachmentDetailsToken) &&
+                                                attachmentDetailsToken is JObject attachmentDetailsObject)
+                                            {
+                                                yield return attachmentDetailsObject;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            else if (token is JObject topLevelObject)
+            {
+                foreach (var property in topLevelObject.Properties())
+                {
+                    if (property.Value is JObject itemObject)
+                    {
+                        if (itemObject.TryGetValue("timeline", StringComparison.OrdinalIgnoreCase, out var timelineToken) && timelineToken is JArray timelineArray)
+                        {
+                            foreach (var timelineEntry in timelineArray)
+                            {
+                                if (timelineEntry is JObject attachmentCandidate &&
+                                    attachmentCandidate.TryGetValue("type", StringComparison.OrdinalIgnoreCase, out var typeVal) &&
+                                    typeVal.ToString().Equals("attachment", StringComparison.OrdinalIgnoreCase) &&
+                                    attachmentCandidate.TryGetValue("attachment", StringComparison.OrdinalIgnoreCase, out var attachmentDetailsToken) &&
+                                    attachmentDetailsToken is JObject attachmentDetailsObject)
+                                {
+                                    yield return attachmentDetailsObject;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
 
         public dynamic AppSaveAudioWebmFromBase64(string audioWebmBase64String, string fileName)
         {
-
             if (string.IsNullOrWhiteSpace(audioWebmBase64String))
             {
                 return new { success = false, message = "A string Base64 do áudio WebM está vazia ou nula. Por favor, forneça um conteúdo de áudio válido." };
@@ -414,28 +648,18 @@ namespace WebApi.Services
             }
             try
             {
-                // 1. Decodificar a string Base64 para um array de bytes
                 byte[] audioBytes = Convert.FromBase64String(base64Data);
 
-                // 2. Definir o diretório de upload local
-                // Sugestão: Crie uma pasta específica para WebM ou uma mais genérica para áudios.
                 var uploadsPath = Path.Combine(_env.ContentRootPath, "upload", "AUDIO");
                 if (!Directory.Exists(uploadsPath))
                 {
                     Directory.CreateDirectory(uploadsPath);
                 }
 
-                // 3. Local do arquivo Local
                 string fullLocalPath = Path.Combine(uploadsPath, fileName);
-
-                // 4. Salvar o arquivo MP3 localmente
-                // Usamos WriteAllBytesAsync para não bloquear a thread principal, melhorando a responsividade da aplicação.
                 File.WriteAllBytesAsync(fullLocalPath, audioBytes);
 
-                // 5. Upload para o serviço de armazenamento externo
-                string mimeType = "audio/webm"; // Definindo o MIME type para o upload
-
-                // Chamar o método de upload do StorageHelpers com o MIME type
+                string mimeType = "audio/webm";
                 string storageUrl = StorageHelpers.upload(base64Data, fileName, _storageConfig.Value, _storageConfig.Value.s360audio).Result;
 
                 return new { success = true, message = "Áudio WebM salvo com sucesso.", localPath = fullLocalPath, storageUrl = storageUrl };
@@ -446,86 +670,51 @@ namespace WebApi.Services
             }
             catch (Exception ex)
             {
-                // Captura outras exceções que podem ocorrer durante o processo de escrita ou upload.
                 return new { success = false, message = $"Ocorreu um erro inesperado ao processar e salvar o áudio WebM: {ex.Message}", details = ex.ToString() };
             }
         }
 
-        // MÉTODO AUXILIAR: Para encontrar todos os anexos de áudio, independente da estrutura JSON
-        private IEnumerable<JObject> FindAllAudioAttachments(JToken token)
+
+        public dynamic AppSaveImageFromBase64(string imageBase64String, string fileName)
         {
-            if (token == null) yield break;
+            if (string.IsNullOrWhiteSpace(imageBase64String))
+            {
+                return new { success = false, message = "A string Base64 da imagem está vazia ou nula. Por favor, forneça um conteúdo de imagem válido." };
+            }
 
-            // Caso a estrutura seja um ARRAY de objetos (como no seu último exemplo)
-            if (token is JArray topLevelArray)
+            string base64Data = imageBase64String;
+            int commaIndex = base64Data.IndexOf(',');
+            if (commaIndex > -1)
             {
-                foreach (var itemInArray in topLevelArray)
-                {
-                    // Cada item do array é esperado ser um objeto {"id": ..., "answers": {...}}
-                    if (itemInArray is JObject itemObject)
-                    {
-                        // Busca pela propriedade "answers"
-                        if (itemObject.TryGetValue("answers", StringComparison.OrdinalIgnoreCase, out var answersToken) && answersToken is JObject answersObject)
-                        {
-                            // Itera pelas propriedades de "answers" (ex: "30")
-                            foreach (var answerProperty in answersObject.Properties())
-                            {
-                                if (answerProperty.Value is JObject answerObject)
-                                {
-                                    // Agora busca pela "timeline" dentro do objeto de resposta
-                                    if (answerObject.TryGetValue("timeline", StringComparison.OrdinalIgnoreCase, out var timelineToken) && timelineToken is JArray timelineArray)
-                                    {
-                                        foreach (var timelineEntry in timelineArray)
-                                        {
-                                            if (timelineEntry is JObject attachmentCandidate &&
-                                                attachmentCandidate.TryGetValue("type", StringComparison.OrdinalIgnoreCase, out var typeVal) &&
-                                                typeVal.ToString().Equals("attachment", StringComparison.OrdinalIgnoreCase) &&
-                                                attachmentCandidate.TryGetValue("attachment", StringComparison.OrdinalIgnoreCase, out var attachmentDetailsToken) &&
-                                                attachmentDetailsToken is JObject attachmentDetailsObject &&
-                                                attachmentDetailsObject.TryGetValue("type", StringComparison.OrdinalIgnoreCase, out var attachmentTypeVal) &&
-                                                attachmentTypeVal.ToString().Equals("audio", StringComparison.OrdinalIgnoreCase))
-                                            {
-                                                yield return attachmentDetailsObject; // Retorna o objeto 'attachment' que contém filepath e filename
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                base64Data = base64Data.Substring(commaIndex + 1);
             }
-            // Caso a estrutura seja um OBJETO diretamente (como no seu exemplo original)
-            else if (token is JObject topLevelObject)
+
+            try
             {
-                // Itera sobre as propriedades do objeto de nível superior (ex: "37", "38")
-                foreach (var property in topLevelObject.Properties())
+                byte[] imageBytes = Convert.FromBase64String(base64Data);
+
+                var uploadsPath = Path.Combine(_env.ContentRootPath, "upload", "IMAGE");
+                if (!Directory.Exists(uploadsPath))
                 {
-                    if (property.Value is JObject itemObject)
-                    {
-                        // Busca pela "timeline" diretamente nesse objeto
-                        if (itemObject.TryGetValue("timeline", StringComparison.OrdinalIgnoreCase, out var timelineToken) && timelineToken is JArray timelineArray)
-                        {
-                            foreach (var timelineEntry in timelineArray)
-                            {
-                                if (timelineEntry is JObject attachmentCandidate &&
-                                    attachmentCandidate.TryGetValue("type", StringComparison.OrdinalIgnoreCase, out var typeVal) &&
-                                    typeVal.ToString().Equals("attachment", StringComparison.OrdinalIgnoreCase) &&
-                                    attachmentCandidate.TryGetValue("attachment", StringComparison.OrdinalIgnoreCase, out var attachmentDetailsToken) &&
-                                    attachmentDetailsToken is JObject attachmentDetailsObject &&
-                                    attachmentDetailsObject.TryGetValue("type", StringComparison.OrdinalIgnoreCase, out var attachmentTypeVal) &&
-                                    attachmentTypeVal.ToString().Equals("audio", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    yield return attachmentDetailsObject;
-                                }
-                            }
-                        }
-                    }
+                    Directory.CreateDirectory(uploadsPath);
                 }
+
+                string fullLocalPath = Path.Combine(uploadsPath, fileName);
+                File.WriteAllBytesAsync(fullLocalPath, imageBytes);
+
+                string storageUrl = StorageHelpers.upload(base64Data, fileName, _storageConfig.Value, _storageConfig.Value.s360images).Result;
+
+                return new { success = true, message = "Imagem salva com sucesso.", localPath = fullLocalPath, storageUrl = storageUrl };
             }
-            // Outros tipos de JToken não são esperados como contêineres de áudio nesse contexto.
+            catch (FormatException ex)
+            {
+                return new { success = false, message = "Erro: A string fornecida não é um Base64 válido para imagem. Por favor, verifique o formato da string.", details = ex.Message };
+            }
+            catch (Exception ex)
+            {
+                return new { success = false, message = $"Ocorreu um erro inesperado ao processar e salvar a imagem: {ex.Message}", details = ex.ToString() };
+            }
         }
-
 
 
         //######################################################################################
