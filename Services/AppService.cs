@@ -464,7 +464,7 @@ namespace WebApi.Services
                             if (attachmentType.Equals("audio", StringComparison.OrdinalIgnoreCase))
                             {
                                 // Formata o nome para áudio: AUDIO-sellercode-nomeoriginal.webm
-                                formattedFileName = $"AUDIO-{sellerCode}-{dtSurvey}_{baseOriginalFileName}.webm";
+                                formattedFileName = $"{baseOriginalFileName}.webm";
                                 try
                                 {
                                     dynamic saveResult = AppSaveAudioWebmFromBase64(base64String, formattedFileName);
@@ -480,7 +480,7 @@ namespace WebApi.Services
                             {
                                 // Formata o nome para imagem: IMAGE-sellercode-nomeoriginal.jpg
                                 // Note: Mesmo que o original seja .png, o requisito é salvar como .jpg
-                                formattedFileName = $"IMAGE-{sellerCode}-{dtSurvey}_{baseOriginalFileName}.jpg";
+                                formattedFileName = $"{baseOriginalFileName}.jpg";
                                 try
                                 {
                                     dynamic saveResult = AppSaveImageFromBase64(base64String, formattedFileName);
