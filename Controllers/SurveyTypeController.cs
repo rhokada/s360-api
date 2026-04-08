@@ -1,0 +1,56 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using WebApi.Models;
+using WebApi.Services.Interfaces;
+
+namespace WebApi.Controllers
+{
+    [Authorize]
+    [ApiController]
+    [Route("[controller]")]
+    public class SurveyTypeController : ControllerBase
+    {
+        private readonly ISurveyTypeService _surveyTypeService;
+
+        public SurveyTypeController(ISurveyTypeService surveyTypeService)
+        {
+            _surveyTypeService = surveyTypeService;
+        }
+
+        private static readonly JsonSerializerSettings _camelCase = new()
+        {
+            ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver()
+        };
+
+        private ContentResult OkDyn(dynamic obj)
+        {
+            string ret = JsonConvert.SerializeObject(obj, _camelCase);
+            return Content(ret, "application/json");
+        }
+
+        [HttpGet("Select")]
+        public IActionResult Select([FromQuery] SurveyTypeFilterModel filtro)
+        {
+            return OkDyn(_surveyTypeService.Select(filtro));
+        }
+
+        [HttpPost("Create")]
+        public IActionResult Create([FromBody] SurveyTypeCreateModel model)
+        {
+            return OkDyn(_surveyTypeService.Create(model));
+        }
+
+        [HttpPut("Update")]
+        public IActionResult Update([FromBody] SurveyTypeUpdateModel model)
+        {
+            return OkDyn(_surveyTypeService.Update(model));
+        }
+
+        [HttpDelete("Delete/{id}")]
+        public IActionResult Delete(int id)
+        {
+            return OkDyn(_surveyTypeService.Delete(id));
+        }
+    }
+}
