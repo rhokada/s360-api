@@ -4,7 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
@@ -123,13 +123,13 @@ namespace WebApi.Services
                     if (userInfo == null)
                         return null;
 
-                // --- Lógica de Envio de E-mail ---
+                // --- Lï¿½gica de Envio de E-mail ---
 
                     // 1. Verificar e desserializar a propriedade 'Msg'
                     if (string.IsNullOrEmpty(userInfo.Msg))
                         {
-                    //        Console.WriteLine($"WARNING: A propriedade 'Msg' do usuário '{userInfo.Email}' está vazia. Não é possível enviar o e-mail de redefinição.");
-                            // Você pode optar por lançar uma exceção, ou apenas retornar userInfo sem enviar e-mail.
+                    //        Console.WriteLine($"WARNING: A propriedade 'Msg' do usuï¿½rio '{userInfo.Email}' estï¿½ vazia. Nï¿½o ï¿½ possï¿½vel enviar o e-mail de redefiniï¿½ï¿½o.");
+                            // Vocï¿½ pode optar por lanï¿½ar uma exceï¿½ï¿½o, ou apenas retornar userInfo sem enviar e-mail.
                             return userInfo;
                         }
 
@@ -140,11 +140,11 @@ namespace WebApi.Services
                     string emailBody = item.Message;
                     emailBody = emailBody.Replace("<<TEMP_PASSWORD>>", userInfo.Password);
 
-                    // 4. Enviar o e-mail usando os dados extraídos
+                    // 4. Enviar o e-mail usando os dados extraï¿½dos
                 //    Mail.Send(Convert.ToString(item.To), Convert.ToString(item.NameTo), "", "", Convert.ToString(item.Subject), Convert.ToString(item.Message), confEmail);
                     Mail.Send(Convert.ToString(user), Convert.ToString(userInfo.Name),  "", "", Convert.ToString(item.Subject), Convert.ToString(emailBody), configEmail );
 
-                //    Console.WriteLine($"INFO: E-mail de senha temporária enviado para '{userInfo.Email}'.");
+                //    Console.WriteLine($"INFO: E-mail de senha temporï¿½ria enviado para '{userInfo.Email}'.");
 
                     return userInfo;
 

@@ -1,8 +1,6 @@
-﻿using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Auth;
+using Azure.Storage.Blobs;
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace WebApi.Helpers
@@ -20,19 +18,19 @@ namespace WebApi.Helpers
 
     public class StorageHelpers
     {
-        public static async Task<string> upload(string base64, string filename, StorageConfig storageConfig, string folder)
+        public static async Task<string> upload(string base64, string filename, StorageConfig storageConfig, string containerName)
         {
-            var storageCredentials = new StorageCredentials(storageConfig.AccountName, storageConfig.AccountKey);
-            var storageAccount = new CloudStorageAccount(storageCredentials, true);
-            var blobClient = storageAccount.CreateCloudBlobClient();
-            var container = blobClient.GetContainerReference(folder);
-            var blockBlob = container.GetBlockBlobReference(filename);
+            var connectionString = $"DefaultEndpointsProtocol=https;AccountName={storageConfig.AccountName};AccountKey={storageConfig.AccountKey};EndpointSuffix=core.windows.net";
 
-            var image = Convert.FromBase64String(base64);
-            await blockBlob.UploadFromByteArrayAsync(image, 0, image.Length);
+            var blobServiceClient = new BlobServiceClient(connectionString);
+            var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+            var blobClient = containerClient.GetBlobClient(filename);
 
-            return blockBlob.SnapshotQualifiedStorageUri.PrimaryUri.ToString();
+            var imageBytes = Convert.FromBase64String(base64);
+            using var stream = new MemoryStream(imageBytes);
+            await blobClient.UploadAsync(stream, overwrite: true);
+
+            return blobClient.Uri.ToString();
         }
     }
-
 }

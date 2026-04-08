@@ -7,7 +7,7 @@ using PromoClicks.Common.Helper;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using WebApi.Entities;
@@ -704,7 +704,7 @@ namespace WebApi.Services
                                 confEmail.UrlRecuperarSenha = Convert.ToString(res.UrlPswRecovery);
 
                                 string html = Convert.ToString(res.TemplatePswRecovery);
-                                Mail.Send(Convert.ToString(item.Email), Convert.ToString(item.CustomerName), "", "", "Recuperação de Senha", html.Replace("LINK", confEmail.UrlRecuperarSenha + "?guid=" + Convert.ToString(item.DeviceToken)), confEmail);
+                                Mail.Send(Convert.ToString(item.Email), Convert.ToString(item.CustomerName), "", "", "Recuperaï¿½ï¿½o de Senha", html.Replace("LINK", confEmail.UrlRecuperarSenha + "?guid=" + Convert.ToString(item.DeviceToken)), confEmail);
                                 item.Email = item.Email2;
                             }
                            

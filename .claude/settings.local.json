@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet restore:*)",
+      "Bash(cmd /c \"cd /d d:\\\\projetos\\\\s360-api && dotnet restore 2>&1\")",
+      "Bash(powershell.exe -Command \"cd 'd:\\\\projetos\\\\s360-api'; dotnet restore 2>&1\")",
+      "Read(//usr/local/**)",
+      "Read(//usr/**)",
+      "Read(//d//**)",
+      "Read(//proc/**)",
+      "Bash(ls /bin/)",
+      "Bash(dotnet build:*)",
+      "Bash(cmd /c \"cd /d d:\\\\projetos\\\\s360-api && dotnet build 2>&1\")"
+    ]
+  }
+}

@@ -8,7 +8,7 @@ using PromoClicks.Common.Helper;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using WebApi.Entities;
@@ -262,46 +262,46 @@ namespace WebApi.Services
         //        //}
         //        //}
 
-        //        // --- Parte 2: Processar os áudios WebM na propriedade Data ---
+        //        // --- Parte 2: Processar os ï¿½udios WebM na propriedade Data ---
         //            JToken parsedData = null;
         //            string rawDataString = dataimport.Data.ToString();
         //            try
         //            {
-        //                // Tenta analisar como JArray primeiro, pois o último exemplo mostrou um array.
+        //                // Tenta analisar como JArray primeiro, pois o ï¿½ltimo exemplo mostrou um array.
         //                parsedData = JArray.Parse(rawDataString);
         //            }
-        //            catch (JsonReaderException) // Catch específico para erro de leitura JSON
+        //            catch (JsonReaderException) // Catch especï¿½fico para erro de leitura JSON
         //            {
-        //                // Se não foi um array, tenta analisar como um JObject (para a estrutura original, se aplicável)
+        //                // Se nï¿½o foi um array, tenta analisar como um JObject (para a estrutura original, se aplicï¿½vel)
         //                try
         //                {
         //                    parsedData = JObject.Parse(rawDataString);
         //                }
         //                catch (JsonReaderException ex)
         //                {
-        //                    Console.WriteLine($"Erro ao analisar JSON da propriedade Data: Não é um JArray nem um JObject válido. {ex.Message}. Conteúdo da Data: {rawDataString}");
-        //                    //return ret; // Não conseguiu analisar, retorna o resultado da SP
+        //                    Console.WriteLine($"Erro ao analisar JSON da propriedade Data: Nï¿½o ï¿½ um JArray nem um JObject vï¿½lido. {ex.Message}. Conteï¿½do da Data: {rawDataString}");
+        //                    //return ret; // Nï¿½o conseguiu analisar, retorna o resultado da SP
         //                }
-        //                catch (Exception ex) // Outras exceções inesperadas ao tentar JObject.Parse
+        //                catch (Exception ex) // Outras exceï¿½ï¿½es inesperadas ao tentar JObject.Parse
         //                {
-        //                    Console.WriteLine($"Erro inesperado ao tentar analisar JSON como JObject: {ex.Message}. Conteúdo da Data: {rawDataString}");
+        //                    Console.WriteLine($"Erro inesperado ao tentar analisar JSON como JObject: {ex.Message}. Conteï¿½do da Data: {rawDataString}");
         //                    //return ret;
         //                }
         //            }
-        //            catch (Exception ex) // Outras exceções inesperadas ao tentar JArray.Parse
+        //            catch (Exception ex) // Outras exceï¿½ï¿½es inesperadas ao tentar JArray.Parse
         //            {
-        //                Console.WriteLine($"Erro inesperado ao tentar analisar JSON como JArray: {ex.Message}. Conteúdo da Data: {rawDataString}");
+        //                Console.WriteLine($"Erro inesperado ao tentar analisar JSON como JArray: {ex.Message}. Conteï¿½do da Data: {rawDataString}");
         //                //return ret;
         //            }
 
         //            // Se parsedData ainda for null, houve um erro no parsing.
         //            if (parsedData == null)
         //            {
-        //                Console.WriteLine("Não foi possível extrair um JSON válido da propriedade 'Data' para processamento de áudio.");
+        //                Console.WriteLine("Nï¿½o foi possï¿½vel extrair um JSON vï¿½lido da propriedade 'Data' para processamento de ï¿½udio.");
         //                //return ret;
         //            }
 
-        //            // Usa a função auxiliar para encontrar todos os objetos de anexo de áudio
+        //            // Usa a funï¿½ï¿½o auxiliar para encontrar todos os objetos de anexo de ï¿½udio
         //            foreach (var attachmentObject in FindAllAudioAttachments(parsedData))
         //            {
         //                if (attachmentObject.TryGetValue("filepath", StringComparison.OrdinalIgnoreCase, out var filepathToken) &&
@@ -310,15 +310,15 @@ namespace WebApi.Services
         //                    string audioBase64String = filepathToken.ToString();
         //                    string originalFileName = filenameToken.ToString();
 
-        //                    int userId = 0; // Valor padrão caso não encontre ou para testes.
+        //                    int userId = 0; // Valor padrï¿½o caso nï¿½o encontre ou para testes.
         //                    if (dataimport.GetType().GetProperty("UserId") != null)
         //                    {
         //                        userId = (int)dataimport.GetType().GetProperty("UserId").GetValue(dataimport, null);
         //                    }
         //                    else
         //                    {
-        //                        Console.WriteLine("A propriedade 'UserId' não foi encontrada no objeto 'DataImport'. O nome do arquivo usará '0' como ID de usuário.");
-        //                        // Você pode lançar uma exceção ou usar um ID genérico/default, ou buscar em outro lugar.
+        //                        Console.WriteLine("A propriedade 'UserId' nï¿½o foi encontrada no objeto 'DataImport'. O nome do arquivo usarï¿½ '0' como ID de usuï¿½rio.");
+        //                        // Vocï¿½ pode lanï¿½ar uma exceï¿½ï¿½o ou usar um ID genï¿½rico/default, ou buscar em outro lugar.
         //                    }
 
         //                    string baseOriginalFileName = Path.GetFileNameWithoutExtension(originalFileName);
@@ -327,11 +327,11 @@ namespace WebApi.Services
         //                    try
         //                    {
         //                        dynamic saveResult = AppSaveAudioWebmFromBase64(audioBase64String, newFormattedFileName);
-        //                        Console.WriteLine($"Processamento de áudio '{newFormattedFileName}': Sucesso = {saveResult.success}, Mensagem = {saveResult.message}");
+        //                        Console.WriteLine($"Processamento de ï¿½udio '{newFormattedFileName}': Sucesso = {saveResult.success}, Mensagem = {saveResult.message}");
         //                    }
         //                    catch (Exception audioEx)
         //                    {
-        //                        Console.WriteLine($"Erro ao salvar anexo de áudio WEBM '{newFormattedFileName}': {audioEx.Message}");
+        //                        Console.WriteLine($"Erro ao salvar anexo de ï¿½udio WEBM '{newFormattedFileName}': {audioEx.Message}");
         //                    }
         //                }
         //            }
@@ -350,7 +350,7 @@ namespace WebApi.Services
 
                     var ret = con.Query<dynamic>(query, dataimport, commandType: CommandType.StoredProcedure).ToList();
 
-                    // --- Parte 1: Análise e Desserialização do JSON da propriedade Data ---
+                    // --- Parte 1: Anï¿½lise e Desserializaï¿½ï¿½o do JSON da propriedade Data ---
                     JToken parsedData = null;
                     string rawDataString = dataimport.Data.ToString();
                     try
@@ -358,42 +358,42 @@ namespace WebApi.Services
                         // Tenta analisar como JArray primeiro, pois os exemplos mostraram um array.
                         parsedData = JArray.Parse(rawDataString);
                     }
-                    catch (JsonReaderException) // Catch específico para erro de leitura JSON
+                    catch (JsonReaderException) // Catch especï¿½fico para erro de leitura JSON
                     {
-                        // Se não foi um array, tenta analisar como um JObject (para a estrutura original, se aplicável)
+                        // Se nï¿½o foi um array, tenta analisar como um JObject (para a estrutura original, se aplicï¿½vel)
                         try
                         {
                             parsedData = JObject.Parse(rawDataString);
                         }
                         catch (JsonReaderException ex)
                         {
-                            Console.WriteLine($"Erro ao analisar JSON da propriedade Data: Não é um JArray nem um JObject válido. {ex.Message}. Conteúdo da Data: {rawDataString}");
-                            // return ret; // Não conseguiu analisar, retorna o resultado da SP
+                            Console.WriteLine($"Erro ao analisar JSON da propriedade Data: Nï¿½o ï¿½ um JArray nem um JObject vï¿½lido. {ex.Message}. Conteï¿½do da Data: {rawDataString}");
+                            // return ret; // Nï¿½o conseguiu analisar, retorna o resultado da SP
                         }
-                        catch (Exception ex) // Outras exceções inesperadas ao tentar JObject.Parse
+                        catch (Exception ex) // Outras exceï¿½ï¿½es inesperadas ao tentar JObject.Parse
                         {
-                            Console.WriteLine($"Erro inesperado ao tentar analisar JSON como JObject: {ex.Message}. Conteúdo da Data: {rawDataString}");
+                            Console.WriteLine($"Erro inesperado ao tentar analisar JSON como JObject: {ex.Message}. Conteï¿½do da Data: {rawDataString}");
                             // return ret;
                         }
                     }
-                    catch (Exception ex) // Outras exceções inesperadas ao tentar JArray.Parse
+                    catch (Exception ex) // Outras exceï¿½ï¿½es inesperadas ao tentar JArray.Parse
                     {
-                        Console.WriteLine($"Erro inesperado ao tentar analisar JSON como JArray: {ex.Message}. Conteúdo da Data: {rawDataString}");
+                        Console.WriteLine($"Erro inesperado ao tentar analisar JSON como JArray: {ex.Message}. Conteï¿½do da Data: {rawDataString}");
                         // return ret;
                     }
 
                     // Se parsedData ainda for null, houve um erro no parsing.
                     if (parsedData == null)
                     {
-                        Console.WriteLine("Não foi possível extrair um JSON válido da propriedade 'Data' para processamento de anexos.");
+                        Console.WriteLine("Nï¿½o foi possï¿½vel extrair um JSON vï¿½lido da propriedade 'Data' para processamento de anexos.");
                         return ret; // Retorna o resultado da SP
                     }
 
-                    // --- Extração do CustomerId e SellerCode ---
+                    // --- Extraï¿½ï¿½o do CustomerId e SellerCode ---
                     // Tenta obter o CustomerId e SellerCode do JSON.
-                    //int customerId = 0; // Mantido caso necessário para outras lógicas, mas não para o nome do arquivo
-                    string sellerCode = "UNKNOWN"; // Valor padrão para caso não encontre
-                    string dtSurvey = "NODATE"; // Valor padrão para caso não encontre
+                    //int customerId = 0; // Mantido caso necessï¿½rio para outras lï¿½gicas, mas nï¿½o para o nome do arquivo
+                    string sellerCode = "UNKNOWN"; // Valor padrï¿½o para caso nï¿½o encontre
+                    string dtSurvey = "NODATE"; // Valor padrï¿½o para caso nï¿½o encontre
 
                     if (parsedData is JArray jArray && jArray.Any())
                     {
@@ -432,18 +432,18 @@ namespace WebApi.Services
                         }
                     }
 
-                    if (string.Equals(sellerCode, "UNKNOWN", StringComparison.OrdinalIgnoreCase)) // Se sellerCode ainda não foi encontrado no JSON
+                    if (string.Equals(sellerCode, "UNKNOWN", StringComparison.OrdinalIgnoreCase)) // Se sellerCode ainda nï¿½o foi encontrado no JSON
                     {
-                        Console.WriteLine("A propriedade 'sellerCode' não foi encontrada no JSON da propriedade 'Data'. O nome do arquivo usará 'UNKNOWN' como código do vendedor.");
-                        // Aqui você poderia tentar obter de dataimport se existisse, ou de um contexto de usuário.
+                        Console.WriteLine("A propriedade 'sellerCode' nï¿½o foi encontrada no JSON da propriedade 'Data'. O nome do arquivo usarï¿½ 'UNKNOWN' como cï¿½digo do vendedor.");
+                        // Aqui vocï¿½ poderia tentar obter de dataimport se existisse, ou de um contexto de usuï¿½rio.
                     }
                     if (string.Equals(dtSurvey, "NODATE", StringComparison.OrdinalIgnoreCase))
                     {
-                        Console.WriteLine("A propriedade 'DtSurvey' não foi encontrada no JSON da propriedade 'Data'. O nome do arquivo usará 'NODATE' como data.");
+                        Console.WriteLine("A propriedade 'DtSurvey' nï¿½o foi encontrada no JSON da propriedade 'Data'. O nome do arquivo usarï¿½ 'NODATE' como data.");
                     }
 
-                    // --- Parte 2 e 3: Processar os áudios e imagens na propriedade Data ---
-                    // Usa a função auxiliar para encontrar todos os objetos de anexo
+                    // --- Parte 2 e 3: Processar os ï¿½udios e imagens na propriedade Data ---
+                    // Usa a funï¿½ï¿½o auxiliar para encontrar todos os objetos de anexo
                     foreach (var attachmentObject in FindAllAttachments(parsedData))
                     {
                         if (attachmentObject.TryGetValue("filepath", StringComparison.OrdinalIgnoreCase, out var filepathToken) &&
@@ -457,29 +457,29 @@ namespace WebApi.Services
                             // Gera um novo GUID para a unicidade
                             //Guid newGuid = Guid.NewGuid();
 
-                            // Extrai o nome do arquivo original sem extensão para evitar duplicidades na extensão
+                            // Extrai o nome do arquivo original sem extensï¿½o para evitar duplicidades na extensï¿½o
                             string baseOriginalFileName = Path.GetFileNameWithoutExtension(originalFileName);
                             string formattedFileName;
 
                             if (attachmentType.Equals("audio", StringComparison.OrdinalIgnoreCase))
                             {
-                                // Formata o nome para áudio: AUDIO-sellercode-nomeoriginal.webm
+                                // Formata o nome para ï¿½udio: AUDIO-sellercode-nomeoriginal.webm
                                 formattedFileName = $"{baseOriginalFileName}.webm";
                                 try
                                 {
                                     dynamic saveResult = AppSaveAudioWebmFromBase64(base64String, formattedFileName);
-                                    Console.WriteLine($"Processamento de áudio '{formattedFileName}': Sucesso = {saveResult.success}, Mensagem = {saveResult.message}");
+                                    Console.WriteLine($"Processamento de ï¿½udio '{formattedFileName}': Sucesso = {saveResult.success}, Mensagem = {saveResult.message}");
                                 }
                                 catch (Exception audioEx)
                                 {
-                                    Console.WriteLine($"Erro ao salvar anexo de áudio WEBM '{formattedFileName}': {audioEx.Message}");
+                                    Console.WriteLine($"Erro ao salvar anexo de ï¿½udio WEBM '{formattedFileName}': {audioEx.Message}");
                                 }
                             }
                             // --- Parte 3: Processamento de imagens ---
                             else if (attachmentType.Equals("image", StringComparison.OrdinalIgnoreCase))
                             {
                                 // Formata o nome para imagem: IMAGE-sellercode-nomeoriginal.jpg
-                                // Note: Mesmo que o original seja .png, o requisito é salvar como .jpg
+                                // Note: Mesmo que o original seja .png, o requisito ï¿½ salvar como .jpg
                                 formattedFileName = $"{baseOriginalFileName}.jpg";
                                 try
                                 {
@@ -525,11 +525,11 @@ namespace WebApi.Services
 
                     List<string> jsonFragments = con.Query<string>(query, dataimport, commandType: CommandType.StoredProcedure).ToList();
 
-                    // PASSO 2: Unir todos os fragmentos de string em uma única string JSON completa.
+                    // PASSO 2: Unir todos os fragmentos de string em uma ï¿½nica string JSON completa.
                     string fullJsonResult = string.Join("", jsonFragments);
 
-                    // PASSO 3: Desserializar a string JSON completa em um objeto dinâmico (ou um modelo C# forte).
-                    // Como o SP retorna um array JSON ([...]), 'dynamic' é adequado.
+                    // PASSO 3: Desserializar a string JSON completa em um objeto dinï¿½mico (ou um modelo C# forte).
+                    // Como o SP retorna um array JSON ([...]), 'dynamic' ï¿½ adequado.
                     dynamic ret = JsonConvert.DeserializeObject<dynamic>(fullJsonResult);
 
                     return ret; // Retorna o objeto JSON completo e desserializado.
@@ -570,7 +570,7 @@ namespace WebApi.Services
             }
         }
 
-        // MÓDULO AUXILIAR: Para encontrar todos os anexos (áudio, imagem, etc.), independente da estrutura JSON
+        // Mï¿½DULO AUXILIAR: Para encontrar todos os anexos (ï¿½udio, imagem, etc.), independente da estrutura JSON
         private IEnumerable<JObject> FindAllAttachments(JToken token)
         {
             if (token == null) yield break;
@@ -637,7 +637,7 @@ namespace WebApi.Services
         {
             if (string.IsNullOrWhiteSpace(audioWebmBase64String))
             {
-                return new { success = false, message = "A string Base64 do áudio WebM está vazia ou nula. Por favor, forneça um conteúdo de áudio válido." };
+                return new { success = false, message = "A string Base64 do ï¿½udio WebM estï¿½ vazia ou nula. Por favor, forneï¿½a um conteï¿½do de ï¿½udio vï¿½lido." };
             }
 
             string base64Data = audioWebmBase64String;
@@ -662,15 +662,15 @@ namespace WebApi.Services
                 string mimeType = "audio/webm";
                 string storageUrl = StorageHelpers.upload(base64Data, fileName, _storageConfig.Value, _storageConfig.Value.s360audio).Result;
 
-                return new { success = true, message = "Áudio WebM salvo com sucesso.", localPath = fullLocalPath, storageUrl = storageUrl };
+                return new { success = true, message = "ï¿½udio WebM salvo com sucesso.", localPath = fullLocalPath, storageUrl = storageUrl };
             }
             catch (FormatException ex)
             {
-                return new { success = false, message = "Erro: A string fornecida não é um Base64 válido. Por favor, verifique o formato da string.", details = ex.Message };
+                return new { success = false, message = "Erro: A string fornecida nï¿½o ï¿½ um Base64 vï¿½lido. Por favor, verifique o formato da string.", details = ex.Message };
             }
             catch (Exception ex)
             {
-                return new { success = false, message = $"Ocorreu um erro inesperado ao processar e salvar o áudio WebM: {ex.Message}", details = ex.ToString() };
+                return new { success = false, message = $"Ocorreu um erro inesperado ao processar e salvar o ï¿½udio WebM: {ex.Message}", details = ex.ToString() };
             }
         }
 
@@ -679,7 +679,7 @@ namespace WebApi.Services
         {
             if (string.IsNullOrWhiteSpace(imageBase64String))
             {
-                return new { success = false, message = "A string Base64 da imagem está vazia ou nula. Por favor, forneça um conteúdo de imagem válido." };
+                return new { success = false, message = "A string Base64 da imagem estï¿½ vazia ou nula. Por favor, forneï¿½a um conteï¿½do de imagem vï¿½lido." };
             }
 
             string base64Data = imageBase64String;
@@ -708,7 +708,7 @@ namespace WebApi.Services
             }
             catch (FormatException ex)
             {
-                return new { success = false, message = "Erro: A string fornecida não é um Base64 válido para imagem. Por favor, verifique o formato da string.", details = ex.Message };
+                return new { success = false, message = "Erro: A string fornecida nï¿½o ï¿½ um Base64 vï¿½lido para imagem. Por favor, verifique o formato da string.", details = ex.Message };
             }
             catch (Exception ex)
             {
@@ -1374,7 +1374,7 @@ namespace WebApi.Services
                                 confEmail.UrlRecuperarSenha = Convert.ToString(res.UrlPswRecovery);
 
                                 string html = Convert.ToString(res.TemplatePswRecovery);
-                                Mail.Send(Convert.ToString(item.Email), Convert.ToString(item.CustomerName), "", "", "Recuperação de Senha", html.Replace("LINK", confEmail.UrlRecuperarSenha + "?guid=" + Convert.ToString(item.DeviceToken)), confEmail);
+                                Mail.Send(Convert.ToString(item.Email), Convert.ToString(item.CustomerName), "", "", "Recuperaï¿½ï¿½o de Senha", html.Replace("LINK", confEmail.UrlRecuperarSenha + "?guid=" + Convert.ToString(item.DeviceToken)), confEmail);
                                 item.Email = item.Email2;
                             }
                            

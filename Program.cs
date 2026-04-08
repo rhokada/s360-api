@@ -1,21 +1,10 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
+var builder = WebApplication.CreateBuilder(args);
+builder.WebHost.UseUrls("http://localhost:4000");
 
-namespace WebApi
-{
-    public class Program
-    {
-        public static void Main(string[] args)
-        {
-            CreateHostBuilder(args).Build().Run();
-        }
+var startup = new WebApi.Startup(builder.Configuration);
+startup.ConfigureServices(builder.Services);
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.UseStartup<Startup>()
-                        .UseUrls("http://localhost:4000");
-                });
-    }
-}
+var app = builder.Build();
+startup.Configure(app, app.Environment);
+
+app.Run();
