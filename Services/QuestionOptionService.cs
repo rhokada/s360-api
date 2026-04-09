@@ -19,7 +19,7 @@ namespace WebApi.Services
             _connectionStrings = connectionStrings.Value;
         }
 
-        public dynamic Select(QuestionOptionFilterModel filtro)
+        public dynamic Select(QuestionOptionFilterModel filtro, string tokenUsuario)
         {
             using (var con = new SqlConnection(_connectionStrings.Default))
             {
@@ -35,7 +35,8 @@ namespace WebApi.Services
                         filtro.OptionCd,
                         filtro.Description,
                         filtro.OpenMsgBox,
-                        filtro.NeedNotes
+                        filtro.NeedNotes,
+                        token_usuario = tokenUsuario
                     }, commandType: CommandType.StoredProcedure).ToList();
                     return ret;
                 }
@@ -50,7 +51,7 @@ namespace WebApi.Services
             }
         }
 
-        public dynamic Create(QuestionOptionCreateModel model)
+        public dynamic Create(QuestionOptionCreateModel model, string tokenUsuario)
         {
             using (var con = new SqlConnection(_connectionStrings.Default))
             {
@@ -65,7 +66,8 @@ namespace WebApi.Services
                         model.OptionCd,
                         model.Description,
                         model.OpenMsgBox,
-                        model.NeedNotes
+                        model.NeedNotes,
+                        token_usuario = tokenUsuario
                     }, commandType: CommandType.StoredProcedure).ToList();
                     return ret;
                 }
@@ -80,7 +82,7 @@ namespace WebApi.Services
             }
         }
 
-        public dynamic Update(QuestionOptionUpdateModel model)
+        public dynamic Update(QuestionOptionUpdateModel model, string tokenUsuario)
         {
             using (var con = new SqlConnection(_connectionStrings.Default))
             {
@@ -96,7 +98,8 @@ namespace WebApi.Services
                         model.OptionCd,
                         model.Description,
                         model.OpenMsgBox,
-                        model.NeedNotes
+                        model.NeedNotes,
+                        token_usuario = tokenUsuario
                     }, commandType: CommandType.StoredProcedure).ToList();
                     return ret;
                 }
@@ -111,7 +114,7 @@ namespace WebApi.Services
             }
         }
 
-        public dynamic Delete(int questionOptionId)
+        public dynamic Delete(int questionOptionId, string tokenUsuario)
         {
             using (var con = new SqlConnection(_connectionStrings.Default))
             {
@@ -120,7 +123,8 @@ namespace WebApi.Services
                     con.Open();
                     var ret = con.Query("SP_dl_QuestionOption", new
                     {
-                        QuestionOptionId = questionOptionId
+                        QuestionOptionId = questionOptionId,
+                        token_usuario = tokenUsuario
                     }, commandType: CommandType.StoredProcedure).ToList();
                     return ret;
                 }

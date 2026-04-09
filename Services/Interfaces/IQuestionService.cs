@@ -4,9 +4,9 @@ namespace WebApi.Services.Interfaces
 {
     public interface IQuestionService
     {
-        dynamic Select(QuestionFilterModel filtro);
-        dynamic Create(QuestionCreateModel model);
-        dynamic Update(QuestionUpdateModel model);
-        dynamic Delete(int questionId);
+        dynamic Select(QuestionFilterModel filtro, string tokenUsuario);
+        dynamic Create(QuestionCreateModel model, string tokenUsuario);
+        dynamic Update(QuestionUpdateModel model, string tokenUsuario);
+        dynamic Delete(int questionId, string tokenUsuario);
     }
 }

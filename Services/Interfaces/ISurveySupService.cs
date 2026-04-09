@@ -4,9 +4,9 @@ namespace WebApi.Services.Interfaces
 {
     public interface ISurveySupService
     {
-        dynamic Select(SurveySupFilterModel filtro);
-        dynamic Create(SurveySupCreateModel model);
-        dynamic Update(SurveySupUpdateModel model);
-        dynamic Delete(int surveySupId);
+        dynamic Select(SurveySupFilterModel filtro, string tokenUsuario);
+        dynamic Create(SurveySupCreateModel model, string tokenUsuario);
+        dynamic Update(SurveySupUpdateModel model, string tokenUsuario);
+        dynamic Delete(int surveySupId, string tokenUsuario);
     }
 }

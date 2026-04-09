@@ -19,7 +19,7 @@ namespace WebApi.Services
             _connectionStrings = connectionStrings.Value;
         }
 
-        public dynamic Select(SurveySupFilterModel filtro)
+        public dynamic Select(SurveySupFilterModel filtro, string tokenUsuario)
         {
             using (var con = new SqlConnection(_connectionStrings.Default))
             {
@@ -31,7 +31,8 @@ namespace WebApi.Services
                         filtro.SurveySupId,
                         filtro.SupUserId,
                         filtro.SurveyId,
-                        filtro.Name
+                        filtro.Name,
+                        token_usuario = tokenUsuario
                     }, commandType: CommandType.StoredProcedure).ToList();
                     return ret;
                 }
@@ -46,7 +47,7 @@ namespace WebApi.Services
             }
         }
 
-        public dynamic Create(SurveySupCreateModel model)
+        public dynamic Create(SurveySupCreateModel model, string tokenUsuario)
         {
             using (var con = new SqlConnection(_connectionStrings.Default))
             {
@@ -57,7 +58,8 @@ namespace WebApi.Services
                     {
                         model.SupUserId,
                         model.SurveyId,
-                        model.Name
+                        model.Name,
+                        token_usuario = tokenUsuario
                     }, commandType: CommandType.StoredProcedure).ToList();
                     return ret;
                 }
@@ -72,7 +74,7 @@ namespace WebApi.Services
             }
         }
 
-        public dynamic Update(SurveySupUpdateModel model)
+        public dynamic Update(SurveySupUpdateModel model, string tokenUsuario)
         {
             using (var con = new SqlConnection(_connectionStrings.Default))
             {
@@ -84,7 +86,8 @@ namespace WebApi.Services
                         model.SurveySupId,
                         model.SupUserId,
                         model.SurveyId,
-                        model.Name
+                        model.Name,
+                        token_usuario = tokenUsuario
                     }, commandType: CommandType.StoredProcedure).ToList();
                     return ret;
                 }
@@ -99,7 +102,7 @@ namespace WebApi.Services
             }
         }
 
-        public dynamic Delete(int surveySupId)
+        public dynamic Delete(int surveySupId, string tokenUsuario)
         {
             using (var con = new SqlConnection(_connectionStrings.Default))
             {
@@ -108,7 +111,8 @@ namespace WebApi.Services
                     con.Open();
                     var ret = con.Query("SP_dl_SurveySup", new
                     {
-                        SurveySupId = surveySupId
+                        SurveySupId = surveySupId,
+                        token_usuario = tokenUsuario
                     }, commandType: CommandType.StoredProcedure).ToList();
                     return ret;
                 }

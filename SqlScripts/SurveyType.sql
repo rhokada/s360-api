@@ -7,7 +7,8 @@ GO
 CREATE PROCEDURE SP_sl_SurveyType
     @SurveyTypeId   INT             = NULL,
     @SurveyTypeCd   VARCHAR(50)     = NULL,
-    @Name           VARCHAR(100)    = NULL
+    @Name           VARCHAR(100)    = NULL,
+    @token_usuario  NVARCHAR(MAX)   = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -37,7 +38,8 @@ GO
 
 CREATE PROCEDURE SP_cr_SurveyType
     @SurveyTypeCd   VARCHAR(50)     ,
-    @Name           VARCHAR(100)    
+    @Name           VARCHAR(100)    ,
+    @token_usuario  NVARCHAR(MAX)   = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -67,7 +69,8 @@ GO
 CREATE PROCEDURE SP_up_SurveyType
     @SurveyTypeId   INT             ,
     @SurveyTypeCd   VARCHAR(50)     ,
-    @Name           VARCHAR(100)    
+    @Name           VARCHAR(100)    ,
+    @token_usuario  NVARCHAR(MAX)   = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -90,7 +93,8 @@ IF OBJECT_ID('SP_dl_SurveyType', 'P') IS NOT NULL DROP PROCEDURE SP_dl_SurveyTyp
 GO
 
 CREATE PROCEDURE SP_dl_SurveyType
-    @SurveyTypeId INT 
+    @SurveyTypeId   INT             ,
+    @token_usuario  NVARCHAR(MAX)   = NULL
 AS
 BEGIN
     SET NOCOUNT ON;

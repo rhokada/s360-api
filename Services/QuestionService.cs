@@ -19,7 +19,7 @@ namespace WebApi.Services
             _connectionStrings = connectionStrings.Value;
         }
 
-        public dynamic Select(QuestionFilterModel filtro)
+        public dynamic Select(QuestionFilterModel filtro, string tokenUsuario)
         {
             using (var con = new SqlConnection(_connectionStrings.Default))
             {
@@ -41,7 +41,8 @@ namespace WebApi.Services
                         filtro.IsFinishEarly,
                         filtro.IsStandardMetric,
                         filtro.IsSglYesNoType,
-                        filtro.IsFeedback
+                        filtro.IsFeedback,
+                        token_usuario = tokenUsuario
                     }, commandType: CommandType.StoredProcedure).ToList();
                     return ret;
                 }
@@ -56,7 +57,7 @@ namespace WebApi.Services
             }
         }
 
-        public dynamic Create(QuestionCreateModel model)
+        public dynamic Create(QuestionCreateModel model, string tokenUsuario)
         {
             using (var con = new SqlConnection(_connectionStrings.Default))
             {
@@ -79,7 +80,8 @@ namespace WebApi.Services
                         model.IsFinishEarly,
                         model.IsStandardMetric,
                         model.IsSglYesNoType,
-                        model.IsFeedback
+                        model.IsFeedback,
+                        token_usuario = tokenUsuario
                     }, commandType: CommandType.StoredProcedure).ToList();
                     return ret;
                 }
@@ -94,7 +96,7 @@ namespace WebApi.Services
             }
         }
 
-        public dynamic Update(QuestionUpdateModel model)
+        public dynamic Update(QuestionUpdateModel model, string tokenUsuario)
         {
             using (var con = new SqlConnection(_connectionStrings.Default))
             {
@@ -118,7 +120,8 @@ namespace WebApi.Services
                         model.IsFinishEarly,
                         model.IsStandardMetric,
                         model.IsSglYesNoType,
-                        model.IsFeedback
+                        model.IsFeedback,
+                        token_usuario = tokenUsuario
                     }, commandType: CommandType.StoredProcedure).ToList();
                     return ret;
                 }
@@ -133,7 +136,7 @@ namespace WebApi.Services
             }
         }
 
-        public dynamic Delete(int questionId)
+        public dynamic Delete(int questionId, string tokenUsuario)
         {
             using (var con = new SqlConnection(_connectionStrings.Default))
             {
@@ -142,7 +145,8 @@ namespace WebApi.Services
                     con.Open();
                     var ret = con.Query("SP_dl_Question", new
                     {
-                        QuestionId = questionId
+                        QuestionId = questionId,
+                        token_usuario = tokenUsuario
                     }, commandType: CommandType.StoredProcedure).ToList();
                     return ret;
                 }

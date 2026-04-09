@@ -7,7 +7,8 @@ GO
 CREATE PROCEDURE SP_sl_Survey
     @SurveyId       INT             = NULL,
     @SurveyTypeId   INT             = NULL,
-    @Name           VARCHAR(255)    = NULL
+    @Name           VARCHAR(255)    = NULL,
+    @token_usuario  NVARCHAR(MAX)   = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -42,7 +43,8 @@ CREATE PROCEDURE SP_cr_Survey
     @SurveyTypeId   INT             ,
     @Name           VARCHAR(255)    ,
     @DtIni          DATETIME        ,
-    @DtFin          DATETIME        = NULL
+    @DtFin          DATETIME        = NULL,
+    @token_usuario  NVARCHAR(MAX)   = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -74,7 +76,8 @@ CREATE PROCEDURE SP_up_Survey
     @SurveyTypeId   INT             ,
     @Name           VARCHAR(255)    ,
     @DtIni          DATETIME        ,
-    @DtFin          DATETIME        = NULL
+    @DtFin          DATETIME        = NULL,
+    @token_usuario  NVARCHAR(MAX)   = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -99,7 +102,8 @@ IF OBJECT_ID('SP_dl_Survey', 'P') IS NOT NULL DROP PROCEDURE SP_dl_Survey;
 GO
 
 CREATE PROCEDURE SP_dl_Survey
-    @SurveyId INT 
+    @SurveyId       INT             ,
+    @token_usuario  NVARCHAR(MAX)   = NULL
 AS
 BEGIN
     SET NOCOUNT ON;

@@ -32,25 +32,29 @@ namespace WebApi.Controllers
         [HttpGet("Select")]
         public IActionResult Select([FromQuery] SurveyTypeFilterModel filtro)
         {
-            return OkDyn(_surveyTypeService.Select(filtro));
+            string tokenUsuario = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+            return OkDyn(_surveyTypeService.Select(filtro, tokenUsuario));
         }
 
         [HttpPost("Create")]
         public IActionResult Create([FromBody] SurveyTypeCreateModel model)
         {
-            return OkDyn(_surveyTypeService.Create(model));
+            string tokenUsuario = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+            return OkDyn(_surveyTypeService.Create(model, tokenUsuario));
         }
 
         [HttpPut("Update")]
         public IActionResult Update([FromBody] SurveyTypeUpdateModel model)
         {
-            return OkDyn(_surveyTypeService.Update(model));
+            string tokenUsuario = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+            return OkDyn(_surveyTypeService.Update(model, tokenUsuario));
         }
 
         [HttpDelete("Delete/{id}")]
         public IActionResult Delete(int id)
         {
-            return OkDyn(_surveyTypeService.Delete(id));
+            string tokenUsuario = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+            return OkDyn(_surveyTypeService.Delete(id, tokenUsuario));
         }
     }
 }

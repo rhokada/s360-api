@@ -18,7 +18,8 @@ CREATE PROCEDURE SP_sl_Question
     @IsFinishEarly      BIT             = NULL,
     @IsStandardMetric   BIT             = NULL,
     @IsSglYesNoType     BIT             = NULL,
-    @IsFeedback         BIT             = NULL
+    @IsFeedback         BIT             = NULL,
+    @token_usuario      NVARCHAR(MAX)   = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -86,7 +87,8 @@ CREATE PROCEDURE SP_cr_Question
     @IsFinishEarly      BIT             = NULL,
     @IsStandardMetric   BIT             = NULL,
     @IsSglYesNoType     BIT             = NULL,
-    @IsFeedback         BIT             = NULL
+    @IsFeedback         BIT             = NULL,
+    @token_usuario      NVARCHAR(MAX)   = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -135,7 +137,8 @@ CREATE PROCEDURE SP_up_Question
     @IsFinishEarly      BIT             = NULL,
     @IsStandardMetric   BIT             = NULL,
     @IsSglYesNoType     BIT             = NULL,
-    @IsFeedback         BIT             = NULL
+    @IsFeedback         BIT             = NULL,
+    @token_usuario      NVARCHAR(MAX)   = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -171,7 +174,8 @@ IF OBJECT_ID('SP_dl_Question', 'P') IS NOT NULL DROP PROCEDURE SP_dl_Question;
 GO
 
 CREATE PROCEDURE SP_dl_Question
-    @QuestionId INT NOT NULL
+    @QuestionId     INT             NOT NULL,
+    @token_usuario  NVARCHAR(MAX)   = NULL
 AS
 BEGIN
     SET NOCOUNT ON;

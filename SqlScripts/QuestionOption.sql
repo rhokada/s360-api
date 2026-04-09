@@ -12,7 +12,8 @@ CREATE PROCEDURE SP_sl_QuestionOption
     @OptionCd               VARCHAR(50)  = NULL,
     @Description            VARCHAR(255) = NULL,
     @OpenMsgBox             BIT = NULL,
-    @NeedNotes              BIT = NULL
+    @NeedNotes              BIT             = NULL,
+    @token_usuario          NVARCHAR(MAX)   = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -56,7 +57,8 @@ CREATE PROCEDURE SP_cr_QuestionOption
     @OptionCd               VARCHAR(50)     ,
     @Description            VARCHAR(255)    = NULL,
     @OpenMsgBox             BIT             = NULL,
-    @NeedNotes              BIT             = NULL
+    @NeedNotes              BIT             = NULL,
+    @token_usuario          NVARCHAR(MAX)   = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -92,7 +94,8 @@ CREATE PROCEDURE SP_up_QuestionOption
     @OptionCd               VARCHAR(50)     ,
     @Description            VARCHAR(255)    = NULL,
     @OpenMsgBox             BIT             = NULL,
-    @NeedNotes              BIT             = NULL
+    @NeedNotes              BIT             = NULL,
+    @token_usuario          NVARCHAR(MAX)   = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -119,7 +122,8 @@ IF OBJECT_ID('SP_dl_QuestionOption', 'P') IS NOT NULL DROP PROCEDURE SP_dl_Quest
 GO
 
 CREATE PROCEDURE SP_dl_QuestionOption
-    @QuestionOptionId INT 
+    @QuestionOptionId   INT             ,
+    @token_usuario      NVARCHAR(MAX)   = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
