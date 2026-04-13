@@ -1,10 +1,10 @@
 -- =============================================
--- SP_sl_SurveyQuestion
+-- SP_Adm_sl_SurveyQuestion
 -- =============================================
-IF OBJECT_ID('SP_sl_SurveyQuestion', 'P') IS NOT NULL DROP PROCEDURE SP_sl_SurveyQuestion;
+IF OBJECT_ID('SP_Adm_sl_SurveyQuestion', 'P') IS NOT NULL DROP PROCEDURE SP_Adm_sl_SurveyQuestion;
 GO
 
-CREATE PROCEDURE SP_sl_SurveyQuestion
+CREATE PROCEDURE SP_Adm_sl_SurveyQuestion
     @SurveyQuestionId   INT = NULL,
     @SurveyId           INT = NULL,
     @QuestionId         INT             = NULL,
@@ -28,16 +28,16 @@ BEGIN
 END
 GO
 
-GRANT EXECUTE ON SP_sl_SurveyQuestion TO S360sys;
+GRANT EXECUTE ON SP_Adm_sl_SurveyQuestion TO S360sys;
 GO
 
 -- =============================================
--- SP_cr_SurveyQuestion
+-- SP_Adm_in_SurveyQuestion
 -- =============================================
-IF OBJECT_ID('SP_cr_SurveyQuestion', 'P') IS NOT NULL DROP PROCEDURE SP_cr_SurveyQuestion;
+IF OBJECT_ID('SP_Adm_in_SurveyQuestion', 'P') IS NOT NULL DROP PROCEDURE SP_Adm_in_SurveyQuestion;
 GO
 
-CREATE PROCEDURE SP_cr_SurveyQuestion
+CREATE PROCEDURE SP_Adm_in_SurveyQuestion
     @SurveyId   INT NOT NULL,
     @QuestionId     INT             NOT NULL,
     @token_usuario  NVARCHAR(MAX)   = NULL
@@ -58,16 +58,16 @@ BEGIN
 END
 GO
 
-GRANT EXECUTE ON SP_cr_SurveyQuestion TO S360sys;
+GRANT EXECUTE ON SP_Adm_in_SurveyQuestion TO S360sys;
 GO
 
 -- =============================================
--- SP_up_SurveyQuestion
+-- SP_Adm_up_SurveyQuestion
 -- =============================================
-IF OBJECT_ID('SP_up_SurveyQuestion', 'P') IS NOT NULL DROP PROCEDURE SP_up_SurveyQuestion;
+IF OBJECT_ID('SP_Adm_up_SurveyQuestion', 'P') IS NOT NULL DROP PROCEDURE SP_Adm_up_SurveyQuestion;
 GO
 
-CREATE PROCEDURE SP_up_SurveyQuestion
+CREATE PROCEDURE SP_Adm_up_SurveyQuestion
     @SurveyQuestionId   INT NOT NULL,
     @SurveyId           INT NOT NULL,
     @QuestionId         INT             NOT NULL,
@@ -84,7 +84,7 @@ BEGIN
 END
 GO
 
-GRANT EXECUTE ON SP_up_SurveyQuestion TO S360sys;
+GRANT EXECUTE ON SP_Adm_up_SurveyQuestion TO S360sys;
 GO
 
 -- =============================================

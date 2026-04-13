@@ -26,7 +26,7 @@ namespace WebApi.Services
                 try
                 {
                     con.Open();
-                    var ret = con.Query("SP_sl_Survey", new
+                    var ret = con.Query("SP_Adm_sl_Survey", new
                     {
                         filtro.SurveyId,
                         filtro.SurveyTypeId,
@@ -53,7 +53,7 @@ namespace WebApi.Services
                 try
                 {
                     con.Open();
-                    var ret = con.Query("SP_cr_Survey", new
+                    var ret = con.Query("SP_Adm_in_Survey", new
                     {
                         model.SurveyTypeId,
                         model.Name,
@@ -81,7 +81,7 @@ namespace WebApi.Services
                 try
                 {
                     con.Open();
-                    var ret = con.Query("SP_up_Survey", new
+                    var ret = con.Query("SP_Adm_up_Survey", new
                     {
                         model.SurveyId,
                         model.SurveyTypeId,
@@ -110,7 +110,7 @@ namespace WebApi.Services
                 try
                 {
                     con.Open();
-                    var ret = con.Query("SP_dl_Survey", new
+                    var ret = con.Query("SP_Adm_dl_Survey", new
                     {
                         SurveyId = surveyId,
                         token_usuario = tokenUsuario

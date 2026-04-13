@@ -18,6 +18,7 @@ namespace WebApi.Services
     public interface IUserService
     {
         User Authenticate(string user, string password, string appCd);
+        UserAdm AuthenticateAdm(string user, string password, string appId);
         User NewTempPassword(string user, string appCd);
         User ChangePassword(int userId, string password, string newpassword, string appCd);
         dynamic GetPermissions(int userId);
@@ -89,6 +90,9 @@ namespace WebApi.Services
                     };
                     retUser.Token = tokenHandler.WriteToken(token);
 
+                    query = "SP_UserAuthenticated";
+
+
                     return retUser.WithoutPassword();
                 }
                 catch (Exception ex)
@@ -100,8 +104,103 @@ namespace WebApi.Services
                     con.Close();
                 }
             }
+        }
+
+        public UserAdm AuthenticateAdm(string user, string password, string appId)
+        {
+            using (var con = new SqlConnection(_connectionStrings.Default.ToString()))
+            {
+                try
+                {
+                    con.Open();
+                    var query = "SP_Adm_UserAuthenticated";
+
+                    var userInfo = con.Query<User>(query, new
+                    {
+                        user = user,
+                        appId = appId,
+                        password = password
+                    }, commandType: CommandType.StoredProcedure).SingleOrDefault();
+
+                    // return null if user not found
+                    if (userInfo == null)
+                        return null;
+
+                    // authentication successful so generate jwt token
+                    var tokenHandler = new JwtSecurityTokenHandler();
+                    var key = Encoding.ASCII.GetBytes(_appSettings.Secret);
+                    var tokenDescriptor = new SecurityTokenDescriptor
+                    {
+                        Subject = new ClaimsIdentity(new Claim[]
+                        {
+                            new Claim("Name", userInfo.Name),
+                            new Claim("Email", userInfo.Email ??""),
+                            new Claim("SubjectId", userInfo.UserId.ToString()),
+                        }),
+                        Expires = DateTime.UtcNow.AddMinutes(_appSettings.TimeSession), //tempo de validade do token jwt
+                        SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+                    };
+                    var token = tokenHandler.CreateToken(tokenDescriptor);
+
+                    //Voltar as permissões
+                    //front mostrar as telas que voltarem da chamada da permissão
+                    var retUser = new UserAdm()
+                    {
+                        UserId = userInfo.UserId,
+                        Name = userInfo.Name,
+                        Email = user,
+                        Password = password,
+                        Token = "",
+                        Roles = new List<UserRole>()
+                    };
+                    retUser.Token = tokenHandler.WriteToken(token);
+
+                    query = "SP_Adm_UserAuthenticatedSaveToken";
+                    con.Query<User>(query, new
+                    {
+                        userId = userInfo.UserId,
+                        token = retUser.Token
+                    }, commandType: CommandType.StoredProcedure).SingleOrDefault();
+
+                    query = "SP_Adm_UserRole";
+                    var userRoles = con.Query<UserRole>(query, new
+                    {
+                        userId = userInfo.UserId
+                    }, commandType: CommandType.StoredProcedure).ToList();
+
+                    if(userRoles.Any())
+                    {
+                        foreach(var role in userRoles)
+                        {
+                            query = "SP_Adm_RolePermissions";
+                            var rolePermissions = con.Query<RolePermissions>(query, new
+                            {
+                                @RoleId = role.AdmRoleId
+                            }, commandType: CommandType.StoredProcedure).ToList();
+
+                            if (rolePermissions.Any())
+                            {
+                                role.RolePermissions = rolePermissions;
+                            }
+                        }
+
+                    }
+
+                    retUser.Roles = userRoles;
 
 
+
+                    return retUser.WithoutPassword();
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+                finally
+                {
+                    con.Close();
+                }
+            }
         }
 
         public User NewTempPassword(string user, string appId)

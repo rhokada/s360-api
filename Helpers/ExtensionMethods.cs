@@ -16,5 +16,11 @@ namespace WebApi.Helpers
             user.Password = null;
             return user;
         }
+
+        public static UserAdm WithoutPassword(this UserAdm user)
+        {
+            user.Password = null;
+            return user;
+        }
     }
 }

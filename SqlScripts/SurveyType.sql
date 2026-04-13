@@ -1,10 +1,10 @@
 -- =============================================
--- SP_sl_SurveyType
+-- SP_Adm_sl_SurveyType
 -- =============================================
-IF OBJECT_ID('SP_sl_SurveyType', 'P') IS NOT NULL DROP PROCEDURE SP_sl_SurveyType;
+IF OBJECT_ID('SP_Adm_sl_SurveyType', 'P') IS NOT NULL DROP PROCEDURE SP_Adm_sl_SurveyType;
 GO
 
-CREATE PROCEDURE SP_sl_SurveyType
+CREATE PROCEDURE SP_Adm_sl_SurveyType
     @SurveyTypeId   INT             = NULL,
     @SurveyTypeCd   VARCHAR(50)     = NULL,
     @Name           VARCHAR(100)    = NULL,
@@ -27,16 +27,16 @@ BEGIN
 END
 GO
 
-GRANT EXECUTE ON SP_sl_SurveyType TO S360sys;
+GRANT EXECUTE ON SP_Adm_sl_SurveyType TO S360sys;
 GO
 
 -- =============================================
--- SP_cr_SurveyType
+-- SP_Adm_in_SurveyType
 -- =============================================
-IF OBJECT_ID('SP_cr_SurveyType', 'P') IS NOT NULL DROP PROCEDURE SP_cr_SurveyType;
+IF OBJECT_ID('SP_Adm_in_SurveyType', 'P') IS NOT NULL DROP PROCEDURE SP_Adm_in_SurveyType;
 GO
 
-CREATE PROCEDURE SP_cr_SurveyType
+CREATE PROCEDURE SP_Adm_in_SurveyType
     @SurveyTypeCd   VARCHAR(50)     ,
     @Name           VARCHAR(100)    ,
     @token_usuario  NVARCHAR(MAX)   = NULL
@@ -57,16 +57,16 @@ BEGIN
 END
 GO
 
-GRANT EXECUTE ON SP_cr_SurveyType TO S360sys;
+GRANT EXECUTE ON SP_Adm_in_SurveyType TO S360sys;
 GO
 
 -- =============================================
--- SP_up_SurveyType
+-- SP_Adm_up_SurveyType
 -- =============================================
-IF OBJECT_ID('SP_up_SurveyType', 'P') IS NOT NULL DROP PROCEDURE SP_up_SurveyType;
+IF OBJECT_ID('SP_Adm_up_SurveyType', 'P') IS NOT NULL DROP PROCEDURE SP_Adm_up_SurveyType;
 GO
 
-CREATE PROCEDURE SP_up_SurveyType
+CREATE PROCEDURE SP_Adm_up_SurveyType
     @SurveyTypeId   INT             ,
     @SurveyTypeCd   VARCHAR(50)     ,
     @Name           VARCHAR(100)    ,
@@ -83,7 +83,7 @@ BEGIN
 END
 GO
 
-GRANT EXECUTE ON SP_up_SurveyType TO S360sys;
+GRANT EXECUTE ON SP_Adm_up_SurveyType TO S360sys;
 GO
 
 -- =============================================

@@ -1,10 +1,10 @@
 -- =============================================
--- SP_sl_QuestionOption
+-- SP_Adm_sl_QuestionOption
 -- =============================================
-IF OBJECT_ID('SP_sl_QuestionOption', 'P') IS NOT NULL DROP PROCEDURE SP_sl_QuestionOption;
+IF OBJECT_ID('SP_Adm_sl_QuestionOption', 'P') IS NOT NULL DROP PROCEDURE SP_Adm_sl_QuestionOption;
 GO
 
-CREATE PROCEDURE SP_sl_QuestionOption
+CREATE PROCEDURE SP_Adm_sl_QuestionOption
     @QuestionOptionId       INT = NULL,
     @QuestionId             INT = NULL,
     @ComplementQuestionId   INT = NULL,
@@ -45,12 +45,12 @@ END
 GO
 
 -- =============================================
--- SP_cr_QuestionOption
+-- SP_Adm_in_QuestionOption
 -- =============================================
-IF OBJECT_ID('SP_cr_QuestionOption', 'P') IS NOT NULL DROP PROCEDURE SP_cr_QuestionOption;
+IF OBJECT_ID('SP_Adm_in_QuestionOption', 'P') IS NOT NULL DROP PROCEDURE SP_Adm_in_QuestionOption;
 GO
 
-CREATE PROCEDURE SP_cr_QuestionOption
+CREATE PROCEDURE SP_Adm_in_QuestionOption
     @QuestionId             INT             ,
     @ComplementQuestionId   INT             = NULL,
     @Rank                   INT             ,
@@ -81,12 +81,12 @@ GO
 GO
 
 -- =============================================
--- SP_up_QuestionOption
+-- SP_Adm_up_QuestionOption
 -- =============================================
-IF OBJECT_ID('SP_up_QuestionOption', 'P') IS NOT NULL DROP PROCEDURE SP_up_QuestionOption;
+IF OBJECT_ID('SP_Adm_up_QuestionOption', 'P') IS NOT NULL DROP PROCEDURE SP_Adm_up_QuestionOption;
 GO
 
-CREATE PROCEDURE SP_up_QuestionOption
+CREATE PROCEDURE SP_Adm_up_QuestionOption
     @QuestionOptionId       INT             ,
     @QuestionId             INT             ,
     @ComplementQuestionId   INT             = NULL,

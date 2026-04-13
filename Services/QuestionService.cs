@@ -26,7 +26,7 @@ namespace WebApi.Services
                 try
                 {
                     con.Open();
-                    var ret = con.Query("SP_sl_Question", new
+                    var ret = con.Query("SP_Adm_sl_Question", new
                     {
                         filtro.QuestionId,
                         filtro.IsComplement,
@@ -64,7 +64,7 @@ namespace WebApi.Services
                 try
                 {
                     con.Open();
-                    var ret = con.Query("SP_cr_Question", new
+                    var ret = con.Query("SP_Adm_in_Question", new
                     {
                         model.IsComplement,
                         model.Rank,
@@ -103,7 +103,7 @@ namespace WebApi.Services
                 try
                 {
                     con.Open();
-                    var ret = con.Query("SP_up_Question", new
+                    var ret = con.Query("SP_Adm_up_Question", new
                     {
                         model.QuestionId,
                         model.IsComplement,
@@ -143,7 +143,7 @@ namespace WebApi.Services
                 try
                 {
                     con.Open();
-                    var ret = con.Query("SP_dl_Question", new
+                    var ret = con.Query("SP_Adm_dl_Question", new
                     {
                         QuestionId = questionId,
                         token_usuario = tokenUsuario

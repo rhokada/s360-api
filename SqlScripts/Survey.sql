@@ -1,10 +1,10 @@
 -- =============================================
--- SP_sl_Survey
+-- SP_Adm_sl_Survey
 -- =============================================
-IF OBJECT_ID('SP_sl_Survey', 'P') IS NOT NULL DROP PROCEDURE SP_sl_Survey;
+IF OBJECT_ID('SP_Adm_sl_Survey', 'P') IS NOT NULL DROP PROCEDURE SP_Adm_sl_Survey;
 GO
 
-CREATE PROCEDURE SP_sl_Survey
+CREATE PROCEDURE SP_Adm_sl_Survey
     @SurveyId       INT             = NULL,
     @SurveyTypeId   INT             = NULL,
     @Name           VARCHAR(255)    = NULL,
@@ -30,16 +30,16 @@ BEGIN
 END
 GO
 
-GRANT EXECUTE ON SP_sl_Survey TO S360sys;
+GRANT EXECUTE ON SP_Adm_sl_Survey TO S360sys;
 GO
 
 -- =============================================
--- SP_cr_Survey
+-- SP_Adm_in_Survey
 -- =============================================
-IF OBJECT_ID('SP_cr_Survey', 'P') IS NOT NULL DROP PROCEDURE SP_cr_Survey;
+IF OBJECT_ID('SP_Adm_in_Survey', 'P') IS NOT NULL DROP PROCEDURE SP_Adm_in_Survey;
 GO
 
-CREATE PROCEDURE SP_cr_Survey
+CREATE PROCEDURE SP_Adm_in_Survey
     @SurveyTypeId   INT             ,
     @Name           VARCHAR(255)    ,
     @DtIni          DATETIME        ,
@@ -62,16 +62,16 @@ BEGIN
 END
 GO
 
-GRANT EXECUTE ON SP_cr_Survey TO S360sys;
+GRANT EXECUTE ON SP_Adm_in_Survey TO S360sys;
 GO
 
 -- =============================================
--- SP_up_Survey
+-- SP_Adm_up_Survey
 -- =============================================
-IF OBJECT_ID('SP_up_Survey', 'P') IS NOT NULL DROP PROCEDURE SP_up_Survey;
+IF OBJECT_ID('SP_Adm_up_Survey', 'P') IS NOT NULL DROP PROCEDURE SP_Adm_up_Survey;
 GO
 
-CREATE PROCEDURE SP_up_Survey
+CREATE PROCEDURE SP_Adm_up_Survey
     @SurveyId       INT             ,
     @SurveyTypeId   INT             ,
     @Name           VARCHAR(255)    ,
@@ -92,7 +92,7 @@ BEGIN
 END
 GO
 
-GRANT EXECUTE ON SP_up_Survey TO S360sys;
+GRANT EXECUTE ON SP_Adm_up_Survey TO S360sys;
 GO
 
 -- =============================================

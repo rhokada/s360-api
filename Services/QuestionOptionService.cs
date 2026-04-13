@@ -26,7 +26,7 @@ namespace WebApi.Services
                 try
                 {
                     con.Open();
-                    var ret = con.Query("SP_sl_QuestionOption", new
+                    var ret = con.Query("SP_Adm_sl_QuestionOption", new
                     {
                         filtro.QuestionOptionId,
                         filtro.QuestionId,
@@ -58,7 +58,7 @@ namespace WebApi.Services
                 try
                 {
                     con.Open();
-                    var ret = con.Query("SP_cr_QuestionOption", new
+                    var ret = con.Query("SP_Adm_in_QuestionOption", new
                     {
                         model.QuestionId,
                         model.ComplementQuestionId,
@@ -89,7 +89,7 @@ namespace WebApi.Services
                 try
                 {
                     con.Open();
-                    var ret = con.Query("SP_up_QuestionOption", new
+                    var ret = con.Query("SP_Adm_up_QuestionOption", new
                     {
                         model.QuestionOptionId,
                         model.QuestionId,

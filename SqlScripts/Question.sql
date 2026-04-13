@@ -1,10 +1,10 @@
 -- =============================================
--- SP_sl_Question
+-- SP_Adm_sl_Question
 -- =============================================
-IF OBJECT_ID('SP_sl_Question', 'P') IS NOT NULL DROP PROCEDURE SP_sl_Question;
+IF OBJECT_ID('SP_Adm_sl_Question', 'P') IS NOT NULL DROP PROCEDURE SP_Adm_sl_Question;
 GO
 
-CREATE PROCEDURE SP_sl_Question
+CREATE PROCEDURE SP_Adm_sl_Question
     @QuestionId         INT             = NULL,
     @IsComplement       BIT             = NULL,
     @Rank               INT             = NULL,
@@ -63,16 +63,16 @@ BEGIN
 END
 GO
 
-GRANT EXECUTE ON SP_sl_Question TO S360sys;
+GRANT EXECUTE ON SP_Adm_sl_Question TO S360sys;
 GO
 
 -- =============================================
--- SP_cr_Question
+-- SP_Adm_in_Question
 -- =============================================
-IF OBJECT_ID('SP_cr_Question', 'P') IS NOT NULL DROP PROCEDURE SP_cr_Question;
+IF OBJECT_ID('SP_Adm_in_Question', 'P') IS NOT NULL DROP PROCEDURE SP_Adm_in_Question;
 GO
 
-CREATE PROCEDURE SP_cr_Question
+CREATE PROCEDURE SP_Adm_in_Question
     @IsComplement       BIT             NOT NULL,
     @Rank               INT             NOT NULL,
     @Question           VARCHAR(1000)   NOT NULL,
@@ -112,16 +112,16 @@ BEGIN
 END
 GO
 
-GRANT EXECUTE ON SP_cr_Question TO S360sys;
+GRANT EXECUTE ON SP_Adm_in_Question TO S360sys;
 GO
 
 -- =============================================
--- SP_up_Question
+-- SP_Adm_up_Question
 -- =============================================
-IF OBJECT_ID('SP_up_Question', 'P') IS NOT NULL DROP PROCEDURE SP_up_Question;
+IF OBJECT_ID('SP_Adm_up_Question', 'P') IS NOT NULL DROP PROCEDURE SP_Adm_up_Question;
 GO
 
-CREATE PROCEDURE SP_up_Question
+CREATE PROCEDURE SP_Adm_up_Question
     @QuestionId         INT             NOT NULL,
     @IsComplement       BIT             NOT NULL,
     @Rank               INT             NOT NULL,
@@ -164,7 +164,7 @@ BEGIN
 END
 GO
 
-GRANT EXECUTE ON SP_up_Question TO S360sys;
+GRANT EXECUTE ON SP_Adm_up_Question TO S360sys;
 GO
 
 -- =============================================
