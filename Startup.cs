@@ -109,6 +109,13 @@ namespace WebApi
             services.AddScoped<ISurveyQuestionService, SurveyQuestionService>();
             services.AddScoped<ISurveySupService, SurveySupService>();
             services.AddScoped<ISurveyTypeService, SurveyTypeService>();
+            services.AddScoped<IAdmUserService, AdmUserService>();
+            services.AddScoped<IAdmHierarchyService, AdmHierarchyService>();
+            services.AddScoped<IAdmHierarchyTeamService, AdmHierarchyTeamService>();
+            services.AddScoped<IAdmAddressService, AdmAddressService>();
+            services.AddScoped<IAdmCompanyService, AdmCompanyService>();
+            services.AddScoped<IAdmCompanyDeptService, AdmCompanyDeptService>();
+            services.AddScoped<IAdmDeptUserService, AdmDeptUserService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
