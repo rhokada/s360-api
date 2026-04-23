@@ -26,8 +26,9 @@ namespace WebApi.Services
                 try
                 {
                     con.Open();
-                    var ret = con.Query("SP_Adm_sl_Question", new
+                    var ret = con.Query("SP_Adm_Question", new
                     {
+                        TypeRequest = "SELECT",
                         filtro.QuestionId,
                         filtro.IsComplement,
                         filtro.Rank,
@@ -64,8 +65,9 @@ namespace WebApi.Services
                 try
                 {
                     con.Open();
-                    var ret = con.Query("SP_Adm_in_Question", new
+                    var ret = con.Query("SP_Adm_Question", new
                     {
+                        TypeRequest = "INSERT",
                         model.IsComplement,
                         model.Rank,
                         model.Question,
@@ -103,8 +105,9 @@ namespace WebApi.Services
                 try
                 {
                     con.Open();
-                    var ret = con.Query("SP_Adm_up_Question", new
+                    var ret = con.Query("SP_Adm_Question", new
                     {
+                        TypeRequest = "UPDATE",
                         model.QuestionId,
                         model.IsComplement,
                         model.Rank,
@@ -143,8 +146,9 @@ namespace WebApi.Services
                 try
                 {
                     con.Open();
-                    var ret = con.Query("SP_Adm_dl_Question", new
+                    var ret = con.Query("SP_Adm_Question", new
                     {
+                        TypeRequest = "DELETE",
                         QuestionId = questionId,
                         token_usuario = tokenUsuario
                     }, commandType: CommandType.StoredProcedure).ToList();

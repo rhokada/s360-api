@@ -26,8 +26,9 @@ namespace WebApi.Services
                 try
                 {
                     con.Open();
-                    var ret = con.Query("SP_Adm_sl_HierarchyTeam", new
+                    var ret = con.Query("SP_Adm_HierarchyTeam", new
                     {
+                        TypeRequest = "SELECT",
                         filtro.HierarchyTeamId,
                         filtro.HierarchyId,
                         filtro.UserId,
@@ -55,8 +56,9 @@ namespace WebApi.Services
                 try
                 {
                     con.Open();
-                    var ret = con.Query("SP_Adm_in_HierarchyTeam", new
+                    var ret = con.Query("SP_Adm_HierarchyTeam", new
                     {
+                        TypeRequest = "INSERT",
                         model.HierarchyId,
                         model.UserId,
                         model.BossId,
@@ -83,8 +85,9 @@ namespace WebApi.Services
                 try
                 {
                     con.Open();
-                    var ret = con.Query("SP_Adm_up_HierarchyTeam", new
+                    var ret = con.Query("SP_Adm_HierarchyTeam", new
                     {
+                        TypeRequest = "UPDATE",
                         model.HierarchyTeamId,
                         model.HierarchyId,
                         model.UserId,
@@ -112,8 +115,9 @@ namespace WebApi.Services
                 try
                 {
                     con.Open();
-                    var ret = con.Query("SP_Adm_dl_HierarchyTeam", new
+                    var ret = con.Query("SP_Adm_HierarchyTeam", new
                     {
+                        TypeRequest = "DELETE",
                         HierarchyTeamId = id,
                         token_usuario = tokenUsuario
                     }, commandType: CommandType.StoredProcedure).ToList();

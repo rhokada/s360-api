@@ -26,8 +26,9 @@ namespace WebApi.Services
                 try
                 {
                     con.Open();
-                    var ret = con.Query("SP_Adm_sl_Company", new
+                    var ret = con.Query("SP_Adm_Company", new
                     {
+                        TypeRequest = "SELECT",
                         filtro.CompanyId,
                         filtro.Name,
                         filtro.TaxID,
@@ -55,8 +56,9 @@ namespace WebApi.Services
                 try
                 {
                     con.Open();
-                    var ret = con.Query("SP_Adm_in_Company", new
+                    var ret = con.Query("SP_Adm_Company", new
                     {
+                        TypeRequest = "INSERT",
                         model.AddressId,
                         model.GroupCompanyId,
                         model.Name,
@@ -85,8 +87,9 @@ namespace WebApi.Services
                 try
                 {
                     con.Open();
-                    var ret = con.Query("SP_Adm_up_Company", new
+                    var ret = con.Query("SP_Adm_Company", new
                     {
+                        TypeRequest = "UPDATE",
                         model.CompanyId,
                         model.AddressId,
                         model.GroupCompanyId,
@@ -116,8 +119,9 @@ namespace WebApi.Services
                 try
                 {
                     con.Open();
-                    var ret = con.Query("SP_Adm_dl_Company", new
+                    var ret = con.Query("SP_Adm_Company", new
                     {
+                        TypeRequest = "DELETE",
                         CompanyId = id,
                         token_usuario = tokenUsuario
                     }, commandType: CommandType.StoredProcedure).ToList();

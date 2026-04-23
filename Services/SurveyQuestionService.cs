@@ -26,8 +26,9 @@ namespace WebApi.Services
                 try
                 {
                     con.Open();
-                    var ret = con.Query("SP_Adm_sl_SurveyQuestion", new
+                    var ret = con.Query("SP_Adm_SurveyQuestion", new
                     {
+                        TypeRequest = "SELECT",
                         filtro.SurveyQuestionId,
                         filtro.SurveyId,
                         filtro.QuestionId,
@@ -53,8 +54,9 @@ namespace WebApi.Services
                 try
                 {
                     con.Open();
-                    var ret = con.Query("SP_Adm_in_SurveyQuestion", new
+                    var ret = con.Query("SP_Adm_SurveyQuestion", new
                     {
+                        TypeRequest = "INSERT",
                         model.SurveyId,
                         model.QuestionId,
                         token_usuario = tokenUsuario
@@ -79,8 +81,9 @@ namespace WebApi.Services
                 try
                 {
                     con.Open();
-                    var ret = con.Query("SP_Adm_up_SurveyQuestion", new
+                    var ret = con.Query("SP_Adm_SurveyQuestion", new
                     {
+                        TypeRequest = "UPDATE",
                         model.SurveyQuestionId,
                         model.SurveyId,
                         model.QuestionId,
@@ -106,8 +109,9 @@ namespace WebApi.Services
                 try
                 {
                     con.Open();
-                    var ret = con.Query("SP_dl_SurveyQuestion", new
+                    var ret = con.Query("SP_Adm_SurveyQuestion", new
                     {
+                        TypeRequest = "DELETE",
                         SurveyQuestionId = surveyQuestionId,
                         token_usuario = tokenUsuario
                     }, commandType: CommandType.StoredProcedure).ToList();

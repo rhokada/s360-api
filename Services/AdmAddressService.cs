@@ -26,8 +26,9 @@ namespace WebApi.Services
                 try
                 {
                     con.Open();
-                    var ret = con.Query("SP_Adm_sl_Address", new
+                    var ret = con.Query("SP_Adm_Address", new
                     {
+                        TypeRequest = "SELECT",
                         filtro.AddressId,
                         filtro.Street,
                         filtro.Neighborhood,
@@ -57,8 +58,9 @@ namespace WebApi.Services
                 try
                 {
                     con.Open();
-                    var ret = con.Query("SP_Adm_in_Address", new
+                    var ret = con.Query("SP_Adm_Address", new
                     {
+                        TypeRequest = "INSERT",
                         model.Street,
                         model.Street2,
                         model.Neighborhood,
@@ -88,8 +90,9 @@ namespace WebApi.Services
                 try
                 {
                     con.Open();
-                    var ret = con.Query("SP_Adm_up_Address", new
+                    var ret = con.Query("SP_Adm_Address", new
                     {
+                        TypeRequest = "UPDATE",
                         model.AddressId,
                         model.Street,
                         model.Street2,
@@ -120,8 +123,9 @@ namespace WebApi.Services
                 try
                 {
                     con.Open();
-                    var ret = con.Query("SP_Adm_dl_Address", new
+                    var ret = con.Query("SP_Adm_Address", new
                     {
+                        TypeRequest = "DELETE",
                         AddressId = id,
                         token_usuario = tokenUsuario
                     }, commandType: CommandType.StoredProcedure).ToList();
