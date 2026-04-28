@@ -1,0 +1,188 @@
+<div class="p-6">
+  <h1 class="text-2xl font-bold text-gray-800 mb-6">Surveys</h1>
+
+  <div *ngIf="errorMessage" class="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+    {{ errorMessage }}
+  </div>
+  <div *ngIf="successMessage" class="mb-4 p-4 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm">
+    {{ successMessage }}
+  </div>
+
+  <!-- Filtro -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4 flex items-end gap-4">
+    <div class="flex flex-col gap-1">
+      <label class="text-sm font-medium text-gray-600">Filtrar por Tipo</label>
+      <select [(ngModel)]="filterSurveyTypeId" (change)="load()"
+        class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 w-52">
+        <option [ngValue]="null">Todos</option>
+        <option *ngFor="let t of surveyTypes" [ngValue]="t.surveyTypeId">{{ t.name }}</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Formulário de criação -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+    <h2 class="text-lg font-semibold text-gray-700 mb-4">Novo Survey</h2>
+    <form [formGroup]="createForm" (ngSubmit)="onCreate()" class="flex flex-wrap gap-4 items-end">
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium text-gray-600">Tipo</label>
+        <select formControlName="surveyTypeId"
+          class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 w-44">
+          <option value="">Selecione...</option>
+          <option *ngFor="let t of surveyTypes" [value]="t.surveyTypeId">{{ t.name }}</option>
+        </select>
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium text-gray-600">Nome</label>
+        <input formControlName="name" type="text" placeholder="Nome"
+          class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 w-56" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium text-gray-600">Data Início</label>
+        <input formControlName="dtIni" type="date"
+          class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 w-40" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium text-gray-600">Data Fim</label>
+        <input formControlName="dtFin" type="date"
+          class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 w-40" />
+      </div>
+      <button type="submit" [disabled]="createForm.invalid"
+        class="bg-primary-500 hover:bg-primary-600 disabled:opacity-50 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+        Criar
+      </button>
+    </form>
+  </div>
+
+  <!-- Tabela -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+    <div *ngIf="loading" class="text-center py-8 text-gray-500 text-sm">Carregando...</div>
+    <div *ngIf="!loading" class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nome</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data Início</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data Fim</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ações</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <tr *ngFor="let item of items" class="hover:bg-gray-50">
+            <td class="px-4 py-3 text-sm text-gray-700">{{ item.surveyId }}</td>
+            <td class="px-4 py-3 text-sm text-gray-700">
+              <ng-container *ngIf="!isEditing(item.surveyId)">{{ getTypeName(item.surveyTypeId) }}</ng-container>
+              <select *ngIf="isEditing(item.surveyId)"
+                [(ngModel)]="getEdit(item.surveyId).surveyTypeId"
+                [ngModelOptions]="{standalone: true}"
+                class="border border-gray-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 w-36">
+                <option *ngFor="let t of surveyTypes" [ngValue]="t.surveyTypeId">{{ t.name }}</option>
+              </select>
+            </td>
+            <td class="px-4 py-3 text-sm text-gray-700">
+              <span *ngIf="!isEditing(item.surveyId)">{{ item.name }}</span>
+              <input *ngIf="isEditing(item.surveyId)"
+                [(ngModel)]="getEdit(item.surveyId).name"
+                [ngModelOptions]="{standalone: true}"
+                class="border border-gray-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 w-44" />
+            </td>
+            <td class="px-4 py-3 text-sm text-gray-700">
+              <span *ngIf="!isEditing(item.surveyId)">{{ item.dtIni | date:'dd/MM/yyyy' }}</span>
+              <input *ngIf="isEditing(item.surveyId)"
+                [(ngModel)]="getEdit(item.surveyId).dtIni"
+                [ngModelOptions]="{standalone: true}"
+                type="date"
+                class="border border-gray-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 w-36" />
+            </td>
+            <td class="px-4 py-3 text-sm text-gray-700">
+              <span *ngIf="!isEditing(item.surveyId)">{{ item.dtFin | date:'dd/MM/yyyy' }}</span>
+              <input *ngIf="isEditing(item.surveyId)"
+                [(ngModel)]="getEdit(item.surveyId).dtFin"
+                [ngModelOptions]="{standalone: true}"
+                type="date"
+                class="border border-gray-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 w-36" />
+            </td>
+            <td class="px-4 py-3">
+              <div class="flex items-center gap-2 flex-wrap">
+                <ng-container *ngIf="!isEditing(item.surveyId)">
+                  <button (click)="startEdit(item)"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-blue-200 text-blue-700 bg-blue-50 hover:bg-blue-100 transition-colors">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                    </svg>
+                    Editar
+                  </button>
+                  <button (click)="onDelete(item.surveyId)"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-red-200 text-red-700 bg-red-50 hover:bg-red-100 transition-colors">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                    Excluir
+                  </button>
+                  <button (click)="openQuestions(item.surveyId)"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-indigo-200 text-indigo-700 bg-indigo-50 hover:bg-indigo-100 transition-colors">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    Perguntas
+                  </button>
+                  <button (click)="openSup(item.surveyId)"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-purple-200 text-purple-700 bg-purple-50 hover:bg-purple-100 transition-colors">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                    </svg>
+                    Supervisores
+                  </button>
+                </ng-container>
+                <ng-container *ngIf="isEditing(item.surveyId)">
+                  <button (click)="onUpdate(item.surveyId)"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-green-200 text-green-700 bg-green-50 hover:bg-green-100 transition-colors">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    Salvar
+                  </button>
+                  <button (click)="cancelEdit(item.surveyId)"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 text-gray-600 bg-gray-50 hover:bg-gray-100 transition-colors">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                    Cancelar
+                  </button>
+                </ng-container>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="items.length === 0">
+            <td colspan="6" class="px-4 py-8 text-center text-gray-400 text-sm">Nenhum registro encontrado.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Overlay -->
+<div *ngIf="showQuestionsPanel || showSupPanel"
+  class="fixed inset-0 bg-black bg-opacity-50 z-40"
+  (click)="closePanel()"></div>
+
+<!-- Painel Perguntas -->
+<aside *ngIf="showQuestionsPanel && selectedSurveyId"
+  class="drawer fixed inset-y-0 right-0 w-3/4 max-w-3xl bg-white shadow-xl z-50 overflow-y-auto">
+  <app-survey-question
+    [surveyId]="selectedSurveyId"
+    (fechar)="closePanel()">
+  </app-survey-question>
+</aside>
+
+<!-- Painel Supervisores -->
+<aside *ngIf="showSupPanel && selectedSurveyId"
+  class="drawer fixed inset-y-0 right-0 w-3/4 max-w-3xl bg-white shadow-xl z-50 overflow-y-auto">
+  <app-survey-sup
+    [surveyId]="selectedSurveyId"
+    (fechar)="closePanel()">
+  </app-survey-sup>
+</aside>

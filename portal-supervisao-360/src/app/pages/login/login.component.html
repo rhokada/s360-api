@@ -1,0 +1,247 @@
+<div class="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 flex items-center justify-center p-4">
+
+  <div class="w-full max-w-5xl bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden border border-white/20">
+    <div class="grid md:grid-cols-2">
+
+      <!-- Lado esquerdo -->
+      <div class="hidden md:flex flex-col justify-center p-12 bg-white/5 text-white">
+        <div class="flex items-center gap-3 mb-8">
+          <div class="w-12 h-12 bg-white rounded-xl flex flex-col items-center justify-center shadow-lg">
+            <span class="text-blue-900 font-black text-sm leading-none">S360</span>
+          </div>
+          <div>
+            <h1 class="text-xl font-bold leading-tight">Supervisão 360</h1>
+            <p class="text-white/60 text-xs">Sistema de Gestão de Equipes</p>
+          </div>
+        </div>
+
+        <h2 class="text-4xl font-bold leading-tight">
+          Bem-vindo de volta
+        </h2>
+        <p class="mt-4 text-white/80 text-lg">
+          Acesse sua conta para continuar com segurança e praticidade.
+        </p>
+
+        <div class="mt-10 space-y-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-cyan-400/20 flex items-center justify-center flex-shrink-0">
+              <span class="text-cyan-300 text-xl">✓</span>
+            </div>
+            <span class="text-white/80">Avaliações e supervisão em tempo real</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-cyan-400/20 flex items-center justify-center flex-shrink-0">
+              <span class="text-cyan-300 text-xl">✓</span>
+            </div>
+            <span class="text-white/80">Gestão de pendências e follow-ups</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-cyan-400/20 flex items-center justify-center flex-shrink-0">
+              <span class="text-cyan-300 text-xl">✓</span>
+            </div>
+            <span class="text-white/80">Relatórios e resultados consolidados</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lado direito -->
+      <div class="bg-white p-8 md:p-12">
+        <div class="max-w-md mx-auto">
+          <div class="mb-8 text-center md:text-left">
+            <h2 class="text-3xl font-bold text-slate-800">Entrar</h2>
+            <p class="text-slate-500 mt-2">Informe seus dados para acessar</p>
+          </div>
+
+          <!-- Mensagem de erro -->
+          <div
+            *ngIf="errorMessage"
+            class="mb-5 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3"
+            role="alert"
+          >
+            <svg class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <p class="text-red-700 text-sm">{{ errorMessage }}</p>
+          </div>
+
+          <!-- Formulário -->
+          <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate class="space-y-5">
+
+            <!-- Campo Usuário/Email -->
+            <div>
+              <label for="userName" class="block text-sm font-semibold text-slate-700 mb-2">
+                Usuário ou Email
+              </label>
+              <input
+                id="userName"
+                type="text"
+                formControlName="userName"
+                placeholder="Digite seu usuário ou email"
+                autocomplete="username"
+                class="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-slate-800 placeholder-slate-400"
+                [class.border-red-500]="hasError('userName', 'required') || hasError('userName', 'minlength')"
+              >
+              <p *ngIf="hasError('userName', 'required')" class="mt-1 text-xs text-red-600">
+                Usuário é obrigatório
+              </p>
+              <p *ngIf="hasError('userName', 'minlength')" class="mt-1 text-xs text-red-600">
+                Mínimo de 3 caracteres
+              </p>
+            </div>
+
+            <!-- Campo Senha -->
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <label for="password" class="block text-sm font-semibold text-slate-700">
+                  Senha
+                </label>
+                <button
+                  type="button"
+                  class="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
+                  (click)="openRecoverModal()"
+                >
+                  Esqueci minha senha
+                </button>
+              </div>
+              <div class="relative">
+                <input
+                  id="password"
+                  [type]="showPassword ? 'text' : 'password'"
+                  formControlName="password"
+                  placeholder="••••••••"
+                  autocomplete="current-password"
+                  class="w-full rounded-xl border border-slate-300 px-4 py-3 pr-11 outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-slate-800 placeholder-slate-400"
+                  [class.border-red-500]="hasError('password', 'required') || hasError('password', 'minlength')"
+                >
+                <button
+                  type="button"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                  (click)="togglePasswordVisibility()"
+                  [attr.aria-label]="showPassword ? 'Ocultar senha' : 'Mostrar senha'"
+                >
+                  <svg *ngIf="!showPassword" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                  </svg>
+                  <svg *ngIf="showPassword" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
+                  </svg>
+                </button>
+              </div>
+              <p *ngIf="hasError('password', 'required')" class="mt-1 text-xs text-red-600">
+                Senha é obrigatória
+              </p>
+              <p *ngIf="hasError('password', 'minlength')" class="mt-1 text-xs text-red-600">
+                Mínimo de 4 caracteres
+              </p>
+            </div>
+
+            <!-- Lembrar usuário -->
+            <div class="flex items-center justify-between text-sm">
+              <label class="flex items-center gap-2 cursor-pointer text-slate-600">
+                <input
+                  type="checkbox"
+                  formControlName="rememberEmail"
+                  class="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                >
+                Lembrar usuário
+              </label>
+            </div>
+
+            <!-- Botão de Login -->
+            <button
+              type="submit"
+              class="w-full rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 py-3 font-semibold text-white shadow-lg hover:opacity-95 transition flex items-center justify-center gap-2 text-base"
+              [disabled]="isLoading"
+            >
+              <span *ngIf="isLoading" class="spinner w-5 h-5"></span>
+              <span>{{ isLoading ? 'Entrando...' : 'Acessar conta' }}</span>
+            </button>
+
+          </form>
+
+          <p class="mt-8 text-center text-xs text-slate-400">
+            © 2024 Supervisão 360 · BD Helix
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal Recuperar Senha -->
+<div
+  *ngIf="showRecoverModal"
+  class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="recover-title"
+>
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h3 id="recover-title" class="text-lg font-semibold text-gray-800">Recuperar Senha</h3>
+      <button
+        type="button"
+        class="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+        (click)="closeRecoverModal()"
+        aria-label="Fechar"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <p class="text-sm text-gray-600 mb-4">
+      Informe seu email cadastrado e enviaremos uma senha temporária.
+    </p>
+
+    <div *ngIf="recoverError" class="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+      <p class="text-red-700 text-sm">{{ recoverError }}</p>
+    </div>
+
+    <div *ngIf="recoverSuccess" class="mb-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+      <p class="text-green-700 text-sm">{{ recoverSuccess }}</p>
+    </div>
+
+    <form [formGroup]="recoverForm" (ngSubmit)="onRecover()" novalidate>
+      <div class="mb-4">
+        <label for="recoverEmail" class="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+        <input
+          id="recoverEmail"
+          type="email"
+          formControlName="email"
+          class="input-field"
+          placeholder="seu@email.com"
+          autocomplete="email"
+        >
+        <p *ngIf="recoverForm.get('email')?.hasError('required') && recoverForm.get('email')?.touched" class="mt-1 text-xs text-red-600">
+          Email é obrigatório
+        </p>
+        <p *ngIf="recoverForm.get('email')?.hasError('email') && recoverForm.get('email')?.touched" class="mt-1 text-xs text-red-600">
+          Email inválido
+        </p>
+      </div>
+
+      <div class="flex gap-3">
+        <button
+          type="button"
+          class="btn-secondary flex-1"
+          (click)="closeRecoverModal()"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          class="btn-primary flex-1 flex items-center justify-center gap-2"
+          [disabled]="isRecovering"
+        >
+          <span *ngIf="isRecovering" class="spinner w-4 h-4"></span>
+          {{ isRecovering ? 'Enviando...' : 'Enviar' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

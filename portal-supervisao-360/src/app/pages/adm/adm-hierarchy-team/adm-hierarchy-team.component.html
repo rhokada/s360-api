@@ -1,0 +1,138 @@
+<div class="space-y-5">
+  <!-- Cabeçalho e Controles -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+    <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+      <div class="flex-1">
+        <h1 class="text-xl font-semibold text-gray-900 mb-1">Equipes de Hierarquia</h1>
+        <div class="flex flex-col sm:flex-row gap-3 mt-3">
+          <!-- Seleção de hierarquia -->
+          <select
+            class="w-full sm:w-72 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white"
+            (change)="onSelectHierarchy($event)"
+          >
+            <option value="">Selecione uma hierarquia...</option>
+            <option *ngFor="let h of hierarchies" [value]="h.hierarchyId">{{ h.name }}</option>
+          </select>
+
+          <!-- Toggle ativos -->
+          <button
+            type="button"
+            class="inline-flex items-center gap-2 px-3 py-2 text-sm rounded-lg border transition-colors"
+            [ngClass]="showActiveOnly
+              ? 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100'
+              : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'"
+            (click)="toggleActiveFilter()"
+          >
+            <span class="w-2 h-2 rounded-full" [ngClass]="showActiveOnly ? 'bg-green-500' : 'bg-gray-400'"></span>
+            {{ showActiveOnly ? 'Apenas Ativos' : 'Todos' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Skeleton carregamento -->
+  <ng-container *ngIf="isLoadingTeam">
+    <div *ngFor="let _ of [1,2,3]" class="h-28 bg-gray-100 rounded-xl animate-pulse"></div>
+  </ng-container>
+
+  <!-- Estado vazio -->
+  <div
+    *ngIf="!isLoadingTeam && !selectedHierarchyId"
+    class="bg-white rounded-xl border border-gray-100 py-16 flex flex-col items-center justify-center text-center"
+  >
+    <svg class="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+    </svg>
+    <p class="text-gray-400 text-sm">Selecione uma hierarquia para visualizar a árvore</p>
+  </div>
+
+  <div
+    *ngIf="!isLoadingTeam && selectedHierarchyId && tree.length === 0"
+    class="bg-white rounded-xl border border-gray-100 py-16 flex flex-col items-center justify-center text-center"
+  >
+    <p class="text-gray-400 text-sm">Nenhum membro encontrado para esta hierarquia.</p>
+  </div>
+
+  <!-- Árvore -->
+  <div *ngIf="!isLoadingTeam && tree.length > 0">
+    <app-adm-tree-node
+      *ngFor="let node of tree"
+      [node]="node"
+      [hierarchyId]="selectedHierarchyId!"
+      (addMember)="onAddMember($event)"
+      (editMember)="onEditMember($event)"
+      (deleteMember)="onDeleteMember($event)"
+    ></app-adm-tree-node>
+  </div>
+</div>
+
+<!-- SidePanel -->
+<app-side-panel [title]="panelTitle" [visible]="panelVisible" (closed)="closePanel()">
+  <form [formGroup]="form" (ngSubmit)="save()" class="flex flex-col gap-4">
+    <!-- Autocomplete de usuário -->
+    <div class="relative">
+      <label class="block text-xs font-medium text-gray-600 mb-1">Usuário *</label>
+      <input
+        type="text"
+        [value]="selectedUserName"
+        (input)="onUserInput($event)"
+        (blur)="closeDropdown()"
+        class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
+        placeholder="Digite o nome para buscar..."
+      />
+      <div
+        *ngIf="showUserDropdown"
+        class="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto"
+      >
+        <button
+          *ngFor="let user of userSearchResults"
+          type="button"
+          class="w-full text-left px-3 py-2 text-sm hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
+          (mousedown)="selectUser(user)"
+        >
+          <div class="font-medium">{{ user.name }}</div>
+          <div class="text-xs text-gray-500">{{ user.email }}</div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Boss ID -->
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1">ID do Líder (bossId) *</label>
+      <input
+        formControlName="bossId"
+        type="number"
+        class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
+        placeholder="ID do líder direto"
+      />
+    </div>
+
+    <!-- Ativo -->
+    <div class="flex items-center gap-3">
+      <label class="relative inline-flex items-center cursor-pointer">
+        <input formControlName="active" type="checkbox" class="sr-only peer" />
+        <div class="w-10 h-5 bg-gray-200 rounded-full peer peer-checked:bg-indigo-600 peer-focus:ring-2 peer-focus:ring-indigo-300 transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-transform peer-checked:after:translate-x-5"></div>
+      </label>
+      <span class="text-sm text-gray-600">Membro ativo</span>
+    </div>
+
+    <div class="pt-2">
+      <button
+        type="submit"
+        class="w-full py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        [disabled]="form.invalid || isSaving"
+      >
+        {{ isSaving ? 'Salvando...' : (isEditing ? 'Atualizar' : 'Adicionar') }}
+      </button>
+    </div>
+  </form>
+</app-side-panel>
+
+<!-- Confirm Dialog -->
+<app-confirm-dialog
+  *ngIf="showConfirm"
+  message="Tem certeza que deseja remover este membro da hierarquia?"
+  (confirmed)="onDeleteConfirmed()"
+  (cancelled)="onDeleteCancelled()"
+></app-confirm-dialog>

@@ -1,0 +1,111 @@
+<header class="fixed top-0 right-0 left-0 lg:left-64 h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 md:px-6 z-10 shadow-sm">
+  <!-- Botão hamburguer (mobile) -->
+  <button
+    type="button"
+    class="lg:hidden p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+    (click)="onToggleSidebar()"
+    aria-label="Abrir menu"
+  >
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+    </svg>
+  </button>
+
+  <!-- Logo / Título (mobile) -->
+  <div class="lg:hidden flex items-center gap-2">
+    <div class="w-8 h-8 bg-navy-800 rounded-lg flex items-center justify-center">
+      <span class="text-white font-bold text-xs">S360</span>
+    </div>
+    <span class="font-semibold text-gray-800 text-sm">Supervisão 360</span>
+  </div>
+
+  <!-- Espaço central vazio no desktop -->
+  <div class="hidden lg:block flex-1"></div>
+
+  <!-- Área do usuário -->
+  <div class="relative">
+    <button
+      type="button"
+      class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors"
+      (click)="toggleUserMenu()"
+      aria-label="Menu do usuário"
+      aria-haspopup="true"
+      [attr.aria-expanded]="showUserMenu"
+    >
+      <!-- Avatar com iniciais -->
+      <div class="w-9 h-9 rounded-full bg-primary-500 flex items-center justify-center text-white font-semibold text-sm">
+        {{ getUserInitials() }}
+      </div>
+      <div class="hidden md:block text-left">
+        <p class="text-sm font-medium text-gray-800 leading-tight">{{ currentUser?.name || 'Usuário' }}</p>
+        <p class="text-xs text-gray-500 leading-tight">{{ selectedRoleName || 'Supervisor' }}</p>
+      </div>
+      <svg class="w-4 h-4 text-gray-400 hidden md:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+      </svg>
+    </button>
+
+    <!-- Dropdown do usuário -->
+    <div
+      *ngIf="showUserMenu"
+      class="absolute right-0 mt-1 w-52 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-50"
+      role="menu"
+    >
+      <div class="px-4 py-3 border-b border-gray-100">
+        <p class="text-sm font-medium text-gray-900">{{ currentUser?.name }}</p>
+        <p class="text-xs text-gray-500 truncate">{{ currentUser?.email }}</p>
+      </div>
+
+      <button
+        *ngIf="hasMultipleRoles"
+        type="button"
+        class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+        role="menuitem"
+        (click)="switchRole()"
+      >
+        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+        </svg>
+        Trocar perfil
+      </button>
+
+      <button
+        type="button"
+        class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+        role="menuitem"
+        (click)="navigate('/trocar-senha')"
+      >
+        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+        </svg>
+        Trocar Senha
+      </button>
+
+      <button
+        type="button"
+        class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+        role="menuitem"
+        (click)="navigate('/suporte')"
+      >
+        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/>
+        </svg>
+        Suporte
+      </button>
+
+      <div class="border-t border-gray-100 mt-1">
+        <button
+          type="button"
+          class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+          role="menuitem"
+          (click)="logout()"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+          </svg>
+          Sair
+        </button>
+      </div>
+    </div>
+  </div>
+</header>

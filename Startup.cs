@@ -118,6 +118,7 @@ namespace WebApi
             services.AddScoped<IAdmDeptUserService, AdmDeptUserService>();
             services.AddScoped<IAdmCustomerService, AdmCustomerService>();
             services.AddScoped<IAdmCustomerSellerService, AdmCustomerSellerService>();
+            services.AddScoped<IDataImportProLogService, DataImportProLogService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

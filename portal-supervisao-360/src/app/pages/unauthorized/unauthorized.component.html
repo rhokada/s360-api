@@ -1,0 +1,30 @@
+<div class="flex flex-col items-center justify-center h-full py-20 px-4 text-center">
+  <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mb-6">
+    <svg class="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+    </svg>
+  </div>
+
+  <h1 class="text-2xl font-bold text-gray-800 mb-2">Acesso não permitido</h1>
+  <p class="text-gray-500 text-sm max-w-sm mb-8">
+    Você não tem permissão para acessar esta página. Entre em contato com o administrador do sistema caso precise de acesso.
+  </p>
+
+  <div class="flex gap-3">
+    <button
+      type="button"
+      (click)="goBack()"
+      class="px-4 py-2 rounded-lg border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+    >
+      Voltar
+    </button>
+    <button
+      type="button"
+      (click)="goHome()"
+      class="px-4 py-2 rounded-lg bg-primary-500 text-white text-sm font-medium hover:bg-primary-600 transition-colors"
+    >
+      Ir para início
+    </button>
+  </div>
+</div>

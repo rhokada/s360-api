@@ -1,0 +1,286 @@
+<div class="max-w-3xl mx-auto">
+  <!-- Cabeçalho com info da avaliação -->
+  <div class="card mb-4">
+    <div class="flex items-start justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2 mb-1">
+          <span class="badge badge-info text-xs">{{ surveyType?.replace('_', ' ') }}</span>
+          <span *ngIf="partialState?.sellerName" class="text-sm text-gray-600">
+            · {{ partialState?.sellerName }}
+          </span>
+          <span *ngIf="partialState?.customerName" class="text-sm text-gray-500">
+            · {{ partialState?.customerName }}
+          </span>
+        </div>
+        <h1 class="text-xl font-bold text-gray-800">
+          Grupo {{ currentGroupIndex + 1 }} de {{ totalGroups }}:
+          <span class="text-primary-600">{{ currentGroup?.groupName }}</span>
+        </h1>
+      </div>
+      <button
+        type="button"
+        class="text-sm text-gray-400 hover:text-red-500 transition-colors flex-shrink-0"
+        (click)="cancelSurvey()"
+      >
+        Cancelar
+      </button>
+    </div>
+
+    <!-- Barra de progresso -->
+    <div class="mt-4">
+      <div class="flex items-center justify-between text-xs text-gray-500 mb-1.5">
+        <span>Progresso</span>
+        <span>{{ progress }}%</span>
+      </div>
+      <div class="w-full bg-gray-200 rounded-full h-2">
+        <div
+          class="bg-primary-500 h-2 rounded-full transition-all duration-500"
+          [style.width.%]="progress"
+          role="progressbar"
+          [attr.aria-valuenow]="progress"
+          aria-valuemin="0"
+          aria-valuemax="100"
+        ></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Feedback de sucesso -->
+  <div *ngIf="submitSuccess" class="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3">
+    <svg class="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    </svg>
+    <p class="text-green-700 font-medium">{{ submitSuccess }}</p>
+  </div>
+
+  <!-- Erro de envio -->
+  <div *ngIf="submitError" class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
+    <svg class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    </svg>
+    <p class="text-red-700 text-sm">{{ submitError }}</p>
+  </div>
+
+  <!-- Perguntas do grupo atual -->
+  <div *ngIf="currentGroup" class="space-y-4">
+    <div
+      *ngFor="let question of currentGroup.questions; let qIndex = index"
+      class="card"
+    >
+      <!-- Cabeçalho da pergunta -->
+      <div class="flex items-start gap-3 mb-4">
+        <span class="w-7 h-7 rounded-full bg-primary-100 text-primary-700 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
+          {{ qIndex + 1 }}
+        </span>
+        <p class="text-gray-800 font-medium leading-relaxed">{{ question.text }}</p>
+      </div>
+
+      <!-- SGL: Single choice -->
+      <div *ngIf="question.type === 'SGL'" class="space-y-2">
+        <label
+          *ngFor="let alt of question.alternatives"
+          class="radio-option"
+          [class.selected]="isSelectedSingle(question.id, alt.id)"
+        >
+          <div class="relative flex-shrink-0">
+            <input
+              type="radio"
+              [name]="'q_' + question.id"
+              [value]="alt.id"
+              [checked]="isSelectedSingle(question.id, alt.id)"
+              (change)="selectSingle(question.id, alt)"
+              class="sr-only"
+              [attr.aria-label]="alt.text"
+            >
+            <div
+              class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors"
+              [class.border-primary-500]="isSelectedSingle(question.id, alt.id)"
+              [class.border-gray-300]="!isSelectedSingle(question.id, alt.id)"
+            >
+              <div
+                *ngIf="isSelectedSingle(question.id, alt.id)"
+                class="w-2.5 h-2.5 rounded-full bg-primary-500"
+              ></div>
+            </div>
+          </div>
+          <span class="text-sm text-gray-700 flex-1">{{ alt.text }}</span>
+          <span *ngIf="alt.value !== undefined" class="text-xs text-gray-400 ml-auto">
+            {{ alt.value }} pts
+          </span>
+        </label>
+      </div>
+
+      <!-- MLT: Multiple choice -->
+      <div *ngIf="question.type === 'MLT'" class="space-y-2">
+        <label
+          *ngFor="let alt of question.alternatives"
+          class="checkbox-option"
+          [class.selected]="isSelectedMultiple(question.id, alt.id)"
+        >
+          <div class="relative flex-shrink-0">
+            <input
+              type="checkbox"
+              [checked]="isSelectedMultiple(question.id, alt.id)"
+              (change)="toggleMultiple(question.id, alt)"
+              class="sr-only"
+              [attr.aria-label]="alt.text"
+            >
+            <div
+              class="w-5 h-5 rounded border-2 flex items-center justify-center transition-colors"
+              [class.border-primary-500]="isSelectedMultiple(question.id, alt.id)"
+              [class.bg-primary-500]="isSelectedMultiple(question.id, alt.id)"
+              [class.border-gray-300]="!isSelectedMultiple(question.id, alt.id)"
+            >
+              <svg
+                *ngIf="isSelectedMultiple(question.id, alt.id)"
+                class="w-3 h-3 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+              </svg>
+            </div>
+          </div>
+          <span class="text-sm text-gray-700 flex-1">{{ alt.text }}</span>
+        </label>
+      </div>
+
+      <!-- VLR: Valor numérico -->
+      <div *ngIf="question.type === 'VLR'" class="mt-2">
+        <input
+          type="number"
+          class="input-field max-w-xs"
+          [value]="getAnswer(question.id).value || ''"
+          (input)="setValueAnswer(question.id, $any($event.target).value)"
+          placeholder="Digite o valor"
+          min="0"
+          [attr.aria-label]="question.text"
+        >
+      </div>
+
+      <!-- TXT: Texto livre -->
+      <div *ngIf="question.type === 'TXT'" class="mt-2">
+        <textarea
+          class="input-field resize-none"
+          rows="4"
+          [value]="getAnswer(question.id).text || ''"
+          (input)="setTextAnswer(question.id, $any($event.target).value)"
+          placeholder="Digite sua observação..."
+          [attr.aria-label]="question.text"
+        ></textarea>
+      </div>
+
+      <!-- Campo de notas (disponível para todos os tipos) -->
+      <div class="mt-3 pt-3 border-t border-gray-100">
+        <details class="group">
+          <summary class="text-xs text-gray-400 cursor-pointer hover:text-gray-600 transition-colors list-none flex items-center gap-1">
+            <svg class="w-3 h-3 group-open:rotate-90 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+            Adicionar observação
+          </summary>
+          <textarea
+            class="mt-2 input-field text-xs resize-none"
+            rows="2"
+            [value]="getAnswer(question.id).notes || ''"
+            (input)="setNotes(question.id, $any($event.target).value)"
+            placeholder="Observação opcional..."
+          ></textarea>
+        </details>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estado vazio -->
+  <div *ngIf="questionGroups.length === 0" class="card text-center py-10">
+    <p class="text-gray-500">Nenhuma pergunta encontrada para este tipo de avaliação.</p>
+    <p class="text-gray-400 text-sm mt-1">Sincronize os dados na página inicial.</p>
+    <button
+      type="button"
+      class="btn-secondary mt-4"
+      (click)="router.navigate(['/avaliacoes'])"
+    >
+      Voltar
+    </button>
+  </div>
+
+  <!-- Navegação entre grupos -->
+  <div *ngIf="questionGroups.length > 0" class="flex items-center justify-between mt-6 pt-4">
+    <button
+      type="button"
+      class="btn-secondary flex items-center gap-2"
+      [disabled]="isFirstGroup"
+      (click)="prevGroup()"
+    >
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      </svg>
+      Anterior
+    </button>
+
+    <span class="text-sm text-gray-500">
+      {{ currentGroupIndex + 1 }} / {{ totalGroups }}
+    </span>
+
+    <button
+      type="button"
+      class="btn-primary flex items-center gap-2"
+      (click)="nextGroup()"
+    >
+      {{ isLastGroup ? 'Finalizar' : 'Próximo' }}
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<!-- Modal de confirmação de envio -->
+<div
+  *ngIf="showConfirmSubmit"
+  class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="confirm-title"
+>
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
+    <div class="text-center mb-4">
+      <div class="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+        <svg class="w-7 h-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+        </svg>
+      </div>
+      <h3 id="confirm-title" class="text-lg font-semibold text-gray-800">Finalizar Avaliação?</h3>
+      <p class="text-sm text-gray-600 mt-2">
+        Tem certeza que deseja enviar a avaliação? Esta ação não pode ser desfeita.
+      </p>
+    </div>
+
+    <div *ngIf="partialState" class="bg-gray-50 rounded-lg p-3 mb-4 text-sm">
+      <p class="text-gray-600"><span class="font-medium">Vendedor:</span> {{ partialState.sellerName }}</p>
+      <p *ngIf="partialState.customerName" class="text-gray-600 mt-1"><span class="font-medium">Cliente:</span> {{ partialState.customerName }}</p>
+      <p class="text-gray-600 mt-1"><span class="font-medium">Tipo:</span> {{ surveyType?.replace('_', ' ') }}</p>
+    </div>
+
+    <div class="flex gap-3">
+      <button
+        type="button"
+        class="btn-secondary flex-1"
+        (click)="cancelSubmit()"
+        [disabled]="isSubmitting"
+      >
+        Revisar
+      </button>
+      <button
+        type="button"
+        class="btn-primary flex-1 flex items-center justify-center gap-2"
+        (click)="submitAnswers()"
+        [disabled]="isSubmitting"
+      >
+        <span *ngIf="isSubmitting" class="spinner w-4 h-4"></span>
+        {{ isSubmitting ? 'Enviando...' : 'Confirmar' }}
+      </button>
+    </div>
+  </div>
+</div>

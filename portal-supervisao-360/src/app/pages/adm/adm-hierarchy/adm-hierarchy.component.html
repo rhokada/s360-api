@@ -1,0 +1,138 @@
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+  <!-- Cabeçalho -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+    <div>
+      <h1 class="text-xl font-semibold text-gray-900">Hierarquias</h1>
+      <p class="text-sm text-gray-500 mt-0.5">Gerencie as hierarquias do sistema</p>
+    </div>
+    <button
+      type="button"
+      class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
+      (click)="showCreateRow()"
+      *ngIf="!isCreating"
+    >
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+      </svg>
+      Nova Hierarquia
+    </button>
+  </div>
+
+  <!-- Skeleton -->
+  <ng-container *ngIf="isLoading">
+    <div *ngFor="let _ of [1,2,3,4,5]" class="h-10 bg-gray-100 rounded animate-pulse mb-2"></div>
+  </ng-container>
+
+  <!-- Tabela -->
+  <div *ngIf="!isLoading" class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-gray-100">
+          <th class="text-left py-3 px-3 font-medium text-gray-500">Nome</th>
+          <th class="text-left py-3 px-3 font-medium text-gray-500">Data de Criação</th>
+          <th class="py-3 px-3"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Linha de nova hierarquia -->
+        <tr *ngIf="isCreating" class="border-b border-indigo-100 bg-indigo-50">
+          <td class="py-2 px-3" colspan="2">
+            <input
+              [(ngModel)]="newHierarchyName"
+              type="text"
+              class="w-full px-3 py-1.5 text-sm border border-indigo-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
+              placeholder="Nome da hierarquia"
+              (keyup.enter)="create()"
+              (keyup.escape)="cancelCreate()"
+              autofocus
+            />
+          </td>
+          <td class="py-2 px-3">
+            <div class="flex items-center justify-end gap-2">
+              <button
+                type="button"
+                class="px-3 py-1.5 text-xs font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
+                [disabled]="!newHierarchyName.trim() || isSaving"
+                (click)="create()"
+              >
+                {{ isSaving ? 'Criando...' : 'Criar' }}
+              </button>
+              <button
+                type="button"
+                class="px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                (click)="cancelCreate()"
+              >
+                Cancelar
+              </button>
+            </div>
+          </td>
+        </tr>
+
+        <!-- Linhas existentes -->
+        <tr *ngFor="let h of hierarchies" class="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+          <td class="py-3 px-3">
+            <!-- Modo edição inline -->
+            <ng-container *ngIf="editingId === h.hierarchyId; else displayMode">
+              <input
+                [(ngModel)]="editingName"
+                type="text"
+                class="w-full px-3 py-1.5 text-sm border border-indigo-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                (keyup.enter)="saveEdit(h)"
+                (keyup.escape)="cancelEdit()"
+              />
+            </ng-container>
+            <ng-template #displayMode>
+              <span
+                class="cursor-pointer text-gray-800 font-medium hover:text-indigo-700 transition-colors"
+                (click)="startEdit(h)"
+              >
+                {{ h.name }}
+              </span>
+            </ng-template>
+          </td>
+          <td class="py-3 px-3 text-gray-500">
+            {{ h.dhCreate | date:'dd/MM/yyyy HH:mm' }}
+          </td>
+          <td class="py-3 px-3">
+            <ng-container *ngIf="editingId === h.hierarchyId; else actionButtons">
+              <div class="flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  class="px-3 py-1.5 text-xs font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
+                  [disabled]="!editingName.trim() || isSaving"
+                  (click)="saveEdit(h)"
+                >
+                  {{ isSaving ? 'Salvando...' : 'Salvar' }}
+                </button>
+                <button
+                  type="button"
+                  class="px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                  (click)="cancelEdit()"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </ng-container>
+            <ng-template #actionButtons>
+              <div class="flex items-center justify-end">
+                <button
+                  type="button"
+                  class="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                  (click)="confirmDelete(h.hierarchyId)"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                  </svg>
+                </button>
+              </div>
+            </ng-template>
+          </td>
+        </tr>
+
+        <tr *ngIf="hierarchies.length === 0 && !isCreating">
+          <td colspan="3" class="py-10 text-center text-gray-400 text-sm">Nenhuma hierarquia encontrada.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

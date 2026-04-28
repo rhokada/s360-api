@@ -1,0 +1,75 @@
+<!-- Sidebar -->
+<aside
+  class="fixed top-0 left-0 h-full w-64 bg-navy-800 text-white flex flex-col z-30 sidebar-transition"
+  [ngClass]="{
+    '-translate-x-full': !isOpen,
+    'translate-x-0': isOpen
+  }"
+  role="navigation"
+  aria-label="Navegação principal"
+>
+  <!-- Header do Sidebar -->
+  <div class="flex items-center justify-between p-4 border-b border-white border-opacity-10">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 bg-primary-500 rounded-lg flex items-center justify-center shadow-lg">
+        <span class="text-white font-bold text-sm">S360</span>
+      </div>
+      <div>
+        <h1 class="text-white font-bold text-sm leading-tight">Supervisão 360</h1>
+        <p class="text-blue-200 text-xs leading-tight opacity-80">Sistema de Gestão</p>
+      </div>
+    </div>
+
+    <!-- Botão fechar (mobile) -->
+    <button
+      type="button"
+      class="lg:hidden p-1.5 rounded-lg text-blue-200 hover:text-white hover:bg-white hover:bg-opacity-10 transition-colors"
+      (click)="onClose()"
+      aria-label="Fechar menu"
+    >
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Navegação -->
+  <nav class="flex-1 py-4 overflow-y-auto">
+    <ul class="space-y-1 px-3">
+      <li *ngFor="let item of navItems">
+        <a
+          [routerLink]="item.route"
+          routerLinkActive="bg-primary-500 text-white"
+          [routerLinkActiveOptions]="{ exact: item.exact || false }"
+          class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white transition-all duration-200 group"
+          (click)="onClose()"
+          [attr.aria-label]="item.label"
+        >
+          <svg
+            class="w-5 h-5 flex-shrink-0 group-hover:scale-110 transition-transform"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="getIcon(item.icon)"/>
+          </svg>
+          <span class="text-sm font-medium">{{ item.label }}</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Footer do Sidebar -->
+  <div class="p-4 border-t border-white border-opacity-10">
+    <button
+      type="button"
+      class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-blue-200 hover:bg-red-500 hover:bg-opacity-20 hover:text-red-200 transition-all duration-200 group"
+      (click)="logout()"
+    >
+      <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+      </svg>
+      <span class="text-sm font-medium">Sair</span>
+    </button>
+  </div>
+</aside>

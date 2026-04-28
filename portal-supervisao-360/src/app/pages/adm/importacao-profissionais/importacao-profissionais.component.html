@@ -1,0 +1,251 @@
+<div class="p-6 max-w-5xl mx-auto">
+
+  <!-- Cabeçalho -->
+  <div class="mb-6">
+    <h1 class="text-xl font-bold text-gray-800">Importação de Profissionais e Clientes</h1>
+    <p class="text-sm text-gray-500 mt-1">Importe dados em lote via planilha Excel nos formatos definidos abaixo.</p>
+  </div>
+
+  <!-- Instruções + Modelo -->
+  <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-6 mb-6">
+    <div class="flex items-start justify-between gap-4 flex-wrap">
+      <div class="flex-1 min-w-0">
+        <h2 class="text-sm font-semibold text-gray-700 mb-3">Como usar</h2>
+        <ol class="space-y-2 text-sm text-gray-600 list-none">
+          <li class="flex items-start gap-2">
+            <span class="flex-shrink-0 w-5 h-5 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center text-xs font-bold">1</span>
+            Baixe o modelo de planilha clicando no botão ao lado
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="flex-shrink-0 w-5 h-5 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center text-xs font-bold">2</span>
+            Preencha a aba <strong>Profissionais</strong> com os dados dos profissionais (colunas: ID, CodProfissional, Email, Nome, Celular, Whats, CodEquipe, Vendedor, CodSuperior)
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="flex-shrink-0 w-5 h-5 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center text-xs font-bold">3</span>
+            Preencha a aba <strong>Clientes</strong> com os dados dos clientes (colunas: ID, CodCliente, NomeFantasia, CNPJ, CodVendedor)
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="flex-shrink-0 w-5 h-5 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center text-xs font-bold">4</span>
+            Faça o upload do arquivo preenchido na área abaixo e clique em <strong>Enviar</strong>
+          </li>
+        </ol>
+
+        <div class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <p class="text-xs text-yellow-700">
+            <strong>Atenção:</strong> Não altere os nomes das colunas ou das abas. Linhas com <strong>Nome</strong> (Profissional) ou <strong>NomeFantasia</strong> (Cliente) em branco serão ignoradas.
+          </p>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        (click)="downloadModelo()"
+        class="flex items-center gap-2 px-4 py-2.5 bg-white border-2 border-primary-400 text-primary-600 rounded-lg text-sm font-medium hover:bg-primary-50 transition-colors flex-shrink-0"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        Baixar modelo
+      </button>
+    </div>
+  </div>
+
+  <!-- STEP: idle / drag-drop -->
+  <ng-container *ngIf="step === 'idle'">
+    <div
+      class="border-2 border-dashed rounded-xl p-10 text-center transition-colors cursor-pointer"
+      [ngClass]="isDragOver ? 'border-primary-400 bg-primary-50' : 'border-gray-200 bg-white hover:border-primary-300 hover:bg-gray-50'"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave()"
+      (drop)="onDrop($event)"
+      (click)="openFileDialog()"
+    >
+      <svg class="w-10 h-10 mx-auto text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+      </svg>
+      <p class="text-sm font-medium text-gray-600">Arraste o arquivo aqui ou <span class="text-primary-500 underline">clique para selecionar</span></p>
+      <p class="text-xs text-gray-400 mt-1">Apenas arquivos .xlsx ou .xls</p>
+    </div>
+    <input #fileInput type="file" accept=".xlsx,.xls" class="hidden" (change)="onFileSelected($event)">
+  </ng-container>
+
+  <!-- STEP: preview -->
+  <ng-container *ngIf="step === 'preview' && preview">
+    <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+      <!-- Info arquivo + abas -->
+      <div class="p-4 border-b border-gray-100 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 bg-green-100 rounded-lg flex items-center justify-center">
+            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-sm font-medium text-gray-800">{{ selectedFile?.name }}</p>
+            <p class="text-xs text-gray-500">
+              {{ preview.profissionais.length }} profissional(is) · {{ preview.clientes.length }} cliente(s)
+            </p>
+          </div>
+        </div>
+        <button type="button" (click)="reset()" class="text-xs text-gray-400 hover:text-red-500 transition-colors">
+          Remover arquivo
+        </button>
+      </div>
+
+      <!-- Abas -->
+      <div class="flex border-b border-gray-100">
+        <button
+          type="button"
+          class="px-5 py-2.5 text-sm font-medium border-b-2 transition-colors"
+          [ngClass]="activeTab === 'profissionais' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
+          (click)="activeTab = 'profissionais'"
+        >
+          Profissionais <span class="ml-1 text-xs bg-gray-100 px-1.5 py-0.5 rounded-full">{{ preview.profissionais.length }}</span>
+        </button>
+        <button
+          type="button"
+          class="px-5 py-2.5 text-sm font-medium border-b-2 transition-colors"
+          [ngClass]="activeTab === 'clientes' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
+          (click)="activeTab = 'clientes'"
+        >
+          Clientes <span class="ml-1 text-xs bg-gray-100 px-1.5 py-0.5 rounded-full">{{ preview.clientes.length }}</span>
+        </button>
+      </div>
+
+      <!-- Preview tabela Profissionais -->
+      <div *ngIf="activeTab === 'profissionais'" class="overflow-x-auto">
+        <table class="w-full text-xs">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-3 py-2 text-left font-medium text-gray-500">CodProfissional</th>
+              <th class="px-3 py-2 text-left font-medium text-gray-500">Nome</th>
+              <th class="px-3 py-2 text-left font-medium text-gray-500">Email</th>
+              <th class="px-3 py-2 text-left font-medium text-gray-500">Celular</th>
+              <th class="px-3 py-2 text-left font-medium text-gray-500">CodEquipe</th>
+              <th class="px-3 py-2 text-left font-medium text-gray-500">Vendedor</th>
+              <th class="px-3 py-2 text-left font-medium text-gray-500">CodSuperior</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-50">
+            <tr *ngFor="let row of profPreview" class="hover:bg-gray-50">
+              <td class="px-3 py-2 text-gray-700">{{ row.CodProfissional ?? '—' }}</td>
+              <td class="px-3 py-2 text-gray-800 font-medium">{{ row.Nome ?? '—' }}</td>
+              <td class="px-3 py-2 text-gray-600">{{ row.Email ?? '—' }}</td>
+              <td class="px-3 py-2 text-gray-600">{{ row.Celular ?? '—' }}</td>
+              <td class="px-3 py-2 text-gray-600">{{ row.CodEquipe ?? '—' }}</td>
+              <td class="px-3 py-2">
+                <span class="px-1.5 py-0.5 rounded text-xs"
+                  [ngClass]="row.Vendedor ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'">
+                  {{ row.Vendedor ? 'Sim' : 'Não' }}
+                </span>
+              </td>
+              <td class="px-3 py-2 text-gray-600">{{ row.CodSuperior ?? '—' }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <p *ngIf="preview.profissionais.length > maxPreviewRows" class="px-4 py-2 text-xs text-gray-400 border-t border-gray-50">
+          Exibindo {{ maxPreviewRows }} de {{ preview.profissionais.length }} registros.
+        </p>
+      </div>
+
+      <!-- Preview tabela Clientes -->
+      <div *ngIf="activeTab === 'clientes'" class="overflow-x-auto">
+        <table class="w-full text-xs">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-3 py-2 text-left font-medium text-gray-500">CodCliente</th>
+              <th class="px-3 py-2 text-left font-medium text-gray-500">NomeFantasia</th>
+              <th class="px-3 py-2 text-left font-medium text-gray-500">CNPJ</th>
+              <th class="px-3 py-2 text-left font-medium text-gray-500">CodVendedor</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-50">
+            <tr *ngFor="let row of cliPreview" class="hover:bg-gray-50">
+              <td class="px-3 py-2 text-gray-700">{{ row.CodCliente ?? '—' }}</td>
+              <td class="px-3 py-2 text-gray-800 font-medium">{{ row.NomeFantasia ?? '—' }}</td>
+              <td class="px-3 py-2 text-gray-600">{{ row.CNPJ ?? '—' }}</td>
+              <td class="px-3 py-2 text-gray-600">{{ row.CodVendedor ?? '—' }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <p *ngIf="preview.clientes.length > maxPreviewRows" class="px-4 py-2 text-xs text-gray-400 border-t border-gray-50">
+          Exibindo {{ maxPreviewRows }} de {{ preview.clientes.length }} registros.
+        </p>
+      </div>
+
+      <!-- Ações -->
+      <div class="p-4 border-t border-gray-100 flex items-center justify-end gap-3">
+        <button type="button" (click)="reset()" class="px-4 py-2 text-sm text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+          Cancelar
+        </button>
+        <button
+          type="button"
+          (click)="enviar()"
+          class="px-5 py-2 text-sm font-medium text-white bg-primary-500 rounded-lg hover:bg-primary-600 transition-colors"
+        >
+          Enviar importação
+        </button>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- STEP: uploading -->
+  <ng-container *ngIf="step === 'uploading'">
+    <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-12 text-center">
+      <div class="w-12 h-12 border-4 border-primary-200 border-t-primary-500 rounded-full animate-spin mx-auto mb-4"></div>
+      <p class="text-sm font-medium text-gray-700">Enviando e processando o arquivo...</p>
+      <p class="text-xs text-gray-400 mt-1">Aguarde, isso pode levar alguns segundos.</p>
+    </div>
+  </ng-container>
+
+  <!-- STEP: done -->
+  <ng-container *ngIf="step === 'done' && uploadResult">
+    <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-8 text-center">
+      <div class="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <svg class="w-7 h-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+        </svg>
+      </div>
+      <h3 class="text-base font-semibold text-gray-800 mb-1">Importação concluída</h3>
+      <p class="text-sm text-gray-500">{{ uploadResult.success }} registro(s) processado(s) com sucesso.</p>
+
+      <div *ngIf="uploadResult.errors?.length" class="mt-4 text-left">
+        <p class="text-xs font-medium text-red-600 mb-2">{{ uploadResult.errors.length }} erro(s) encontrado(s):</p>
+        <ul class="space-y-1 max-h-40 overflow-y-auto">
+          <li *ngFor="let err of uploadResult.errors" class="text-xs text-red-500 bg-red-50 px-3 py-1.5 rounded">
+            {{ err }}
+          </li>
+        </ul>
+      </div>
+
+      <button
+        type="button"
+        (click)="reset()"
+        class="mt-6 px-5 py-2 text-sm font-medium text-white bg-primary-500 rounded-lg hover:bg-primary-600 transition-colors"
+      >
+        Nova importação
+      </button>
+    </div>
+  </ng-container>
+
+  <!-- STEP: error -->
+  <ng-container *ngIf="step === 'error'">
+    <div class="bg-white rounded-xl border border-red-100 shadow-sm p-8 text-center">
+      <div class="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <svg class="w-7 h-7 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </div>
+      <h3 class="text-base font-semibold text-gray-800 mb-1">Falha na importação</h3>
+      <p class="text-sm text-red-500">{{ errorMessage }}</p>
+      <button
+        type="button"
+        (click)="step = 'preview'"
+        class="mt-6 px-5 py-2 text-sm font-medium text-white bg-primary-500 rounded-lg hover:bg-primary-600 transition-colors"
+      >
+        Tentar novamente
+      </button>
+    </div>
+  </ng-container>
+
+</div>

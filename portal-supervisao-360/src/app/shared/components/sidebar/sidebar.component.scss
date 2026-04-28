@@ -1,0 +1,10 @@
+:host {
+  display: block;
+}
+
+// No desktop, a sidebar sempre visível independente do estado isOpen
+@media (min-width: 1024px) {
+  aside {
+    transform: translateX(0) !important;
+  }
+}

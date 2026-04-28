@@ -1,0 +1,147 @@
+<div class="max-w-lg mx-auto">
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold text-gray-800">Trocar Senha</h1>
+    <p class="text-gray-500 mt-1">Altere sua senha de acesso ao sistema.</p>
+  </div>
+
+  <div class="card">
+    <!-- Sucesso -->
+    <div *ngIf="successMessage" class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3" role="alert">
+      <svg class="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <p class="text-green-700 font-medium">{{ successMessage }}</p>
+    </div>
+
+    <!-- Erro -->
+    <div *ngIf="errorMessage" class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3" role="alert">
+      <svg class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <p class="text-red-700 text-sm">{{ errorMessage }}</p>
+    </div>
+
+    <form [formGroup]="passwordForm" (ngSubmit)="onSubmit()" novalidate class="space-y-5">
+      <!-- Senha atual -->
+      <div>
+        <label for="oldPassword" class="block text-sm font-medium text-gray-700 mb-1.5">
+          Senha Atual <span class="text-red-500">*</span>
+        </label>
+        <div class="relative">
+          <input
+            id="oldPassword"
+            [type]="showOldPassword ? 'text' : 'password'"
+            formControlName="oldPassword"
+            class="input-field pr-11"
+            placeholder="Digite sua senha atual"
+            autocomplete="current-password"
+            [class.border-red-500]="hasError('oldPassword', 'required') || hasError('oldPassword', 'minlength')"
+          >
+          <button
+            type="button"
+            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+            (click)="showOldPassword = !showOldPassword"
+            [attr.aria-label]="showOldPassword ? 'Ocultar senha' : 'Mostrar senha'"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path *ngIf="!showOldPassword" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0zM2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+              <path *ngIf="showOldPassword" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
+            </svg>
+          </button>
+        </div>
+        <p *ngIf="hasError('oldPassword', 'required')" class="mt-1 text-xs text-red-600">
+          Senha atual é obrigatória
+        </p>
+      </div>
+
+      <!-- Nova senha -->
+      <div>
+        <label for="newPassword" class="block text-sm font-medium text-gray-700 mb-1.5">
+          Nova Senha <span class="text-red-500">*</span>
+        </label>
+        <div class="relative">
+          <input
+            id="newPassword"
+            [type]="showNewPassword ? 'text' : 'password'"
+            formControlName="newPassword"
+            class="input-field pr-11"
+            placeholder="Mínimo 6 caracteres"
+            autocomplete="new-password"
+            [class.border-red-500]="hasError('newPassword', 'required') || hasError('newPassword', 'minlength')"
+          >
+          <button
+            type="button"
+            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+            (click)="showNewPassword = !showNewPassword"
+            [attr.aria-label]="showNewPassword ? 'Ocultar senha' : 'Mostrar senha'"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path *ngIf="!showNewPassword" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0zM2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+              <path *ngIf="showNewPassword" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
+            </svg>
+          </button>
+        </div>
+        <p *ngIf="hasError('newPassword', 'required')" class="mt-1 text-xs text-red-600">
+          Nova senha é obrigatória
+        </p>
+        <p *ngIf="hasError('newPassword', 'minlength')" class="mt-1 text-xs text-red-600">
+          A senha deve ter no mínimo 6 caracteres
+        </p>
+      </div>
+
+      <!-- Confirmar senha -->
+      <div>
+        <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-1.5">
+          Confirmar Nova Senha <span class="text-red-500">*</span>
+        </label>
+        <div class="relative">
+          <input
+            id="confirmPassword"
+            [type]="showConfirmPassword ? 'text' : 'password'"
+            formControlName="confirmPassword"
+            class="input-field pr-11"
+            placeholder="Repita a nova senha"
+            autocomplete="new-password"
+            [class.border-red-500]="hasError('confirmPassword', 'required') || hasFormError('passwordMismatch')"
+          >
+          <button
+            type="button"
+            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+            (click)="showConfirmPassword = !showConfirmPassword"
+            [attr.aria-label]="showConfirmPassword ? 'Ocultar senha' : 'Mostrar senha'"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path *ngIf="!showConfirmPassword" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0zM2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+              <path *ngIf="showConfirmPassword" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
+            </svg>
+          </button>
+        </div>
+        <p *ngIf="hasError('confirmPassword', 'required')" class="mt-1 text-xs text-red-600">
+          Confirmação é obrigatória
+        </p>
+        <p *ngIf="hasFormError('passwordMismatch')" class="mt-1 text-xs text-red-600">
+          As senhas não coincidem
+        </p>
+      </div>
+
+      <!-- Info de segurança -->
+      <div class="p-3 bg-blue-50 border border-blue-100 rounded-lg">
+        <p class="text-xs text-blue-700 font-medium mb-1">Dicas de segurança:</p>
+        <ul class="text-xs text-blue-600 space-y-0.5 list-disc list-inside">
+          <li>Use pelo menos 6 caracteres</li>
+          <li>Combine letras maiúsculas, minúsculas e números</li>
+          <li>Evite senhas óbvias como datas de aniversário</li>
+        </ul>
+      </div>
+
+      <button
+        type="submit"
+        class="btn-primary w-full py-3 flex items-center justify-center gap-2"
+        [disabled]="isLoading"
+      >
+        <span *ngIf="isLoading" class="spinner w-5 h-5"></span>
+        {{ isLoading ? 'Alterando...' : 'Alterar Senha' }}
+      </button>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,191 @@
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+
+  <!-- Breadcrumb -->
+  <nav class="flex items-center gap-1.5 text-sm text-gray-500 mb-5">
+    <a routerLink="/adm/customers" class="hover:text-indigo-600 transition-colors">Clientes</a>
+    <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+    </svg>
+    <span class="text-gray-700 font-medium">
+      {{ customer ? customer.name : '...' }}
+      <span *ngIf="customer?.customerCode" class="text-gray-400 font-normal">({{ customer!.customerCode }})</span>
+    </span>
+    <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+    </svg>
+    <span class="text-gray-900 font-medium">Vendedores</span>
+  </nav>
+
+  <!-- Cabeçalho -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+    <div>
+      <h1 class="text-xl font-semibold text-gray-900">Vendedores do Cliente</h1>
+      <p class="text-sm text-gray-500 mt-0.5">Gerencie os vendedores vinculados a este cliente</p>
+    </div>
+    <button
+      type="button"
+      class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
+      (click)="openCreate()"
+    >
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+      </svg>
+      Novo Vendedor
+    </button>
+  </div>
+
+  <!-- Filtros -->
+  <form [formGroup]="filterForm" (ngSubmit)="applyFilters()" class="flex flex-wrap gap-3 mb-5">
+    <select
+      formControlName="active"
+      class="w-44 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white"
+    >
+      <option value="">Status: Todos</option>
+      <option value="true">Status: Ativo</option>
+      <option value="false">Status: Inativo</option>
+    </select>
+    <button
+      type="submit"
+      class="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
+    >
+      Buscar
+    </button>
+  </form>
+
+  <!-- Skeleton -->
+  <ng-container *ngIf="isLoading">
+    <div *ngFor="let _ of [1,2,3,4,5]" class="h-10 bg-gray-100 rounded animate-pulse mb-2"></div>
+  </ng-container>
+
+  <!-- Tabela -->
+  <div *ngIf="!isLoading" class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-gray-100">
+          <th class="text-left py-3 px-3 font-medium text-gray-500">Vendedor</th>
+          <th class="text-left py-3 px-3 font-medium text-gray-500">E-mail</th>
+          <th class="text-left py-3 px-3 font-medium text-gray-500">Status</th>
+          <th class="text-left py-3 px-3 font-medium text-gray-500">Criado em</th>
+          <th class="py-3 px-3"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let seller of sellers"
+          class="border-b border-gray-50 hover:bg-gray-50 transition-colors"
+        >
+          <td class="py-3 px-3 font-medium text-gray-800">{{ seller.sellerName }}</td>
+          <td class="py-3 px-3 text-gray-600">{{ seller.sellerEmail }}</td>
+          <td class="py-3 px-3">
+            <span
+              *ngIf="seller.active"
+              class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700"
+            >Ativo</span>
+            <span
+              *ngIf="!seller.active"
+              class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600"
+            >Inativo</span>
+          </td>
+          <td class="py-3 px-3 text-gray-500">{{ seller.dhCreate | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td class="py-3 px-3">
+            <div class="flex items-center justify-end gap-2">
+              <button
+                type="button"
+                class="px-3 py-1 text-xs font-medium text-indigo-700 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors"
+                (click)="openEdit(seller)"
+              >
+                Editar
+              </button>
+              <button
+                type="button"
+                class="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                (click)="confirmDelete(seller.customerSellerId, $event)"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+              </button>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="sellers.length === 0">
+          <td colspan="5" class="py-10 text-center text-gray-400 text-sm">Nenhum vendedor encontrado.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- SidePanel -->
+<app-side-panel [title]="panelTitle" [visible]="panelVisible" (closed)="closePanel()">
+  <form [formGroup]="form" (ngSubmit)="save()" class="flex flex-col gap-4">
+
+    <!-- Autocomplete de vendedor -->
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1">Vendedor *</label>
+      <div class="relative">
+        <input
+          type="text"
+          [value]="sellerSearch"
+          (input)="onSellerSearchInput($any($event.target).value)"
+          class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
+          placeholder="Digite o nome do vendedor..."
+          autocomplete="off"
+        />
+        <!-- Dropdown de sugestões -->
+        <div
+          *ngIf="showUserDropdown"
+          class="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-52 overflow-y-auto"
+        >
+          <button
+            *ngFor="let user of userSuggestions"
+            type="button"
+            class="w-full text-left px-3 py-2.5 text-sm hover:bg-indigo-50 transition-colors border-b border-gray-50 last:border-0"
+            (click)="selectUser(user)"
+          >
+            <div class="font-medium text-gray-800">{{ user.name }}</div>
+            <div class="text-xs text-gray-500">{{ user.email }}</div>
+          </button>
+        </div>
+      </div>
+      <!-- Campo oculto para validação -->
+      <input formControlName="sellerUserId" type="hidden" />
+      <p *ngIf="form.get('sellerUserId')?.invalid && form.get('sellerUserId')?.touched" class="text-xs text-red-500 mt-1">
+        Selecione um vendedor da lista.
+      </p>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <input
+        formControlName="active"
+        id="sellerActive"
+        type="checkbox"
+        class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+      />
+      <label for="sellerActive" class="text-sm text-gray-700">Ativo</label>
+    </div>
+
+    <div class="pt-2">
+      <button
+        type="submit"
+        class="w-full py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2"
+        [disabled]="form.invalid || isSaving"
+      >
+        <svg *ngIf="isSaving" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+        </svg>
+        {{ isSaving ? 'Salvando...' : (isEditing ? 'Atualizar' : 'Adicionar') }}
+      </button>
+    </div>
+
+  </form>
+</app-side-panel>
+
+<!-- Confirm Dialog -->
+<app-confirm-dialog
+  *ngIf="showConfirm"
+  message="Tem certeza que deseja remover este vendedor do cliente? Esta ação não pode ser desfeita."
+  (confirmed)="onDeleteConfirmed()"
+  (cancelled)="onDeleteCancelled()"
+></app-confirm-dialog>

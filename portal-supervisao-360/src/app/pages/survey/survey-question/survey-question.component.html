@@ -1,0 +1,72 @@
+<div class="p-6">
+  <div class="flex items-center justify-between mb-6">
+    <h2 class="text-xl font-bold text-gray-800">Perguntas do Survey</h2>
+    <button (click)="fechar.emit()"
+      class="text-gray-500 hover:text-gray-700 hover:bg-gray-100 p-2 rounded-lg transition-colors">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+  </div>
+
+  <div *ngIf="errorMessage" class="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+    {{ errorMessage }}
+  </div>
+  <div *ngIf="successMessage" class="mb-4 p-4 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm">
+    {{ successMessage }}
+  </div>
+
+  <!-- Busca de perguntas -->
+  <div class="bg-gray-50 rounded-lg p-4 mb-6">
+    <label class="block text-sm font-medium text-gray-600 mb-2">Buscar pergunta para vincular</label>
+    <input
+      type="text"
+      [(ngModel)]="searchTerm"
+      (input)="onSearch(searchTerm)"
+      placeholder="Digite ao menos 3 caracteres..."
+      class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 w-full mb-2" />
+    <div *ngIf="searchResults.length > 0" class="border border-gray-200 rounded-lg bg-white divide-y divide-gray-100 max-h-48 overflow-y-auto">
+      <div *ngFor="let q of searchResults"
+        class="flex items-center justify-between px-4 py-2 hover:bg-gray-50">
+        <span class="text-sm text-gray-700">[{{ q.questionId }}] {{ q.question }}</span>
+        <button (click)="vincular(q)"
+          class="bg-primary-500 hover:bg-primary-600 text-white px-3 py-1 rounded text-xs font-medium transition-colors ml-2">
+          Vincular
+        </button>
+      </div>
+    </div>
+    <p *ngIf="searchTerm.length >= 3 && searchResults.length === 0" class="text-sm text-gray-400 mt-1">
+      Nenhuma pergunta encontrada.
+    </p>
+  </div>
+
+  <!-- Lista de vínculos -->
+  <div *ngIf="loading" class="text-center py-4 text-gray-500 text-sm">Carregando...</div>
+  <table *ngIf="!loading" class="min-w-full divide-y divide-gray-200">
+    <thead class="bg-gray-50">
+      <tr>
+        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID Pergunta</th>
+        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ações</th>
+      </tr>
+    </thead>
+    <tbody class="bg-white divide-y divide-gray-200">
+      <tr *ngFor="let v of vinculados" class="hover:bg-gray-50">
+        <td class="px-4 py-3 text-sm text-gray-700">{{ v.surveyQuestionId }}</td>
+        <td class="px-4 py-3 text-sm text-gray-700">{{ v.questionId }} - {{ v.question }}</td>
+        <td class="px-4 py-3">
+          <button (click)="desvincular(v.surveyQuestionId)"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-red-200 text-red-700 bg-red-50 hover:bg-red-100 transition-colors">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
+            </svg>
+            Remover
+          </button>
+        </td>
+      </tr>
+      <tr *ngIf="vinculados.length === 0">
+        <td colspan="3" class="px-4 py-8 text-center text-gray-400 text-sm">Nenhuma pergunta vinculada.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
