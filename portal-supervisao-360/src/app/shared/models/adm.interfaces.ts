@@ -142,3 +142,44 @@ export interface CustomerSeller {
   dhUpdate: string | null;
   log: string | null;
 }
+
+export interface AdmPage {
+  admPageId: number;
+  slug: string;
+  menu: string;
+  icon: string | null;
+  dhCreate: string | null;
+  dhUpdate: string | null;
+}
+
+export interface AdmRoleItem {
+  admRoleId: number;
+  admRoleCd: string;
+  admRoleName: string;
+  dhCreate: string | null;
+  dhUpdate: string | null;
+}
+
+export interface AdmRolePermission {
+  admRolePermissionId: number;
+  admRoleId: number;
+  admPageId: number;
+  slug: string;
+  menu: string;
+  icon: string | null;
+  read: boolean;
+  create: boolean;
+  delete: boolean;
+  alter: boolean;
+}
+
+export interface AdmRoleUser {
+  admRoleUserId: number;
+  admRoleId: number;
+  admRoleName: string;
+  admRoleCd: string;
+  userId: number;
+  userName: string;
+  userEmail: string;
+  dhCreate: string | null;
+}

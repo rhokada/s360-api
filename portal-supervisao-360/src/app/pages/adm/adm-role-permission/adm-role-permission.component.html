@@ -1,0 +1,93 @@
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+  <!-- Cabeçalho -->
+  <div class="flex items-center gap-3 mb-6">
+    <button
+      type="button"
+      class="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+      (click)="goBack()"
+    >
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      </svg>
+    </button>
+    <div>
+      <h1 class="text-xl font-semibold text-gray-900">
+        Permissões — {{ role?.admRoleName ?? '...' }}
+      </h1>
+      <p class="text-sm text-gray-500 mt-0.5">Defina o acesso a cada página para este perfil</p>
+    </div>
+  </div>
+
+  <!-- Skeleton -->
+  <ng-container *ngIf="isLoading">
+    <div *ngFor="let _ of [1,2,3,4,5]" class="h-12 bg-gray-100 rounded animate-pulse mb-2"></div>
+  </ng-container>
+
+  <!-- Grid de permissões -->
+  <div *ngIf="!isLoading" class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-gray-100">
+          <th class="text-left py-3 px-3 font-medium text-gray-500">Página</th>
+          <th class="text-center py-3 px-3 font-medium text-gray-500 w-20">Leitura</th>
+          <th class="text-center py-3 px-3 font-medium text-gray-500 w-20">Criar</th>
+          <th class="text-center py-3 px-3 font-medium text-gray-500 w-20">Excluir</th>
+          <th class="text-center py-3 px-3 font-medium text-gray-500 w-20">Editar</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let perm of permissions"
+          class="border-b border-gray-50 hover:bg-gray-50 transition-colors"
+          [class.opacity-50]="savingPageId === perm.admPageId"
+        >
+          <td class="py-3 px-3">
+            <span class="font-medium text-gray-800">{{ perm.menu }}</span>
+            <span class="ml-2 text-xs text-gray-400 font-mono">{{ perm.slug }}</span>
+          </td>
+          <td class="py-3 px-3 text-center">
+            <input
+              type="checkbox"
+              [checked]="perm.read"
+              [disabled]="savingPageId === perm.admPageId"
+              (change)="toggle(perm, 'read')"
+              class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer"
+            />
+          </td>
+          <td class="py-3 px-3 text-center">
+            <input
+              type="checkbox"
+              [checked]="perm.create"
+              [disabled]="savingPageId === perm.admPageId"
+              (change)="toggle(perm, 'create')"
+              class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer"
+            />
+          </td>
+          <td class="py-3 px-3 text-center">
+            <input
+              type="checkbox"
+              [checked]="perm.delete"
+              [disabled]="savingPageId === perm.admPageId"
+              (change)="toggle(perm, 'delete')"
+              class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer"
+            />
+          </td>
+          <td class="py-3 px-3 text-center">
+            <input
+              type="checkbox"
+              [checked]="perm.alter"
+              [disabled]="savingPageId === perm.admPageId"
+              (change)="toggle(perm, 'alter')"
+              class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer"
+            />
+          </td>
+        </tr>
+        <tr *ngIf="permissions.length === 0">
+          <td colspan="5" class="py-10 text-center text-gray-400 text-sm">
+            Nenhuma página cadastrada. Cadastre páginas em <strong>Adm &gt; Páginas</strong> primeiro.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

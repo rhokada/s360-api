@@ -135,6 +135,21 @@ export const routes: Routes = [
         path: 'customers/:customerId/sellers',
         loadComponent: () => import('./pages/adm/adm-customer-seller/adm-customer-seller.component').then(m => m.AdmCustomerSellerComponent),
         data: { slug: 'adm-customer' }
+      },
+      {
+        path: 'user-permissions',
+        loadComponent: () => import('./pages/adm/adm-user-permissions/adm-user-permissions.component').then(m => m.AdmUserPermissionsComponent),
+        data: { slug: 'adm-user' }
+      },
+      {
+        path: 'role',
+        loadComponent: () => import('./pages/adm/adm-role/adm-role.component').then(m => m.AdmRoleComponent),
+        data: { slug: 'adm-role' }
+      },
+      {
+        path: 'role/:roleId/permissions',
+        loadComponent: () => import('./pages/adm/adm-role-permission/adm-role-permission.component').then(m => m.AdmRolePermissionComponent),
+        data: { slug: 'adm-role' }
       }
     ]
   },

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Hangfire;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -6,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using WebApi.Helpers;
+using WebApi.Jobs;
 using WebApi.Services;
 using WebApi.Services.Interfaces;
 using System;
@@ -119,6 +121,31 @@ namespace WebApi
             services.AddScoped<IAdmCustomerService, AdmCustomerService>();
             services.AddScoped<IAdmCustomerSellerService, AdmCustomerSellerService>();
             services.AddScoped<IDataImportProLogService, DataImportProLogService>();
+            services.AddScoped<IAdmPageService, AdmPageService>();
+            services.AddScoped<IAdmRoleService, AdmRoleService>();
+            services.AddScoped<IAdmRolePermissionService, AdmRolePermissionService>();
+            services.AddScoped<IAdmRoleUserService, AdmRoleUserService>();
+
+            // Adicionando VisionApiConfig
+            var visionApiConfig = Configuration.GetSection("VisionApiConfig");
+            services.Configure<VisionApiConfig>(visionApiConfig);
+
+            // Hangfire com SQL Server (schema criado manualmente pelo DBA via SqlScripts/Hangfire_Schema.sql)
+            services.AddHangfire(config => config
+                .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings()
+                .UseSqlServerStorage(
+                    Configuration.GetConnectionString("Default") ?? Configuration["ConnectionStrings:Default"],
+                    new Hangfire.SqlServer.SqlServerStorageOptions
+                    {
+                        PrepareSchemaIfNecessary = true
+                    }));
+
+            services.AddHangfireServer();
+            services.AddScoped<VisionImportJob>();
+            services.AddScoped<GenerateSellerQuestionnaireEmailsJob>();
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -131,6 +158,25 @@ namespace WebApi
                 Console.WriteLine($"[DEBUG LOG] Requisição Recebida: {context.Request.Method} {context.Request.Path}");
                 await next();
             });
+
+            app.UseHangfireDashboard("/hangfire", new DashboardOptions
+            {
+                Authorization = [new HangfireBasicAuthFilter("adminhang", "123hang")],
+                DashboardTitle = "S360 - Jobs"
+            });
+
+            RecurringJob.AddOrUpdate<VisionImportJob>(
+                "vision-import",
+                job => job.ExecutarImportacaoVisionAsync(),
+                Cron.Daily(3, 0) // roda todo dia às 03:00 — pode disparar manualmente a qualquer hora
+            );
+
+            RecurringJob.AddOrUpdate<GenerateSellerQuestionnaireEmailsJob>(
+                "generate-seller-questionnaire-emails",
+                job => job.ExecutarGenerateSellerQuestionnaireEmailsAsync(),
+                Cron.Daily(8, 0) // roda todo dia às 03:00 — pode disparar manualmente a qualquer hora
+            );
+            
 
             app.UseRouting();
 

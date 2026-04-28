@@ -1,0 +1,116 @@
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+  <!-- Cabeçalho -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+    <div>
+      <h1 class="text-xl font-semibold text-gray-900">Perfis de Acesso</h1>
+      <p class="text-sm text-gray-500 mt-0.5">Gerencie os perfis e suas permissões</p>
+    </div>
+    <button
+      type="button"
+      class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
+      (click)="openCreate()"
+    >
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+      </svg>
+      Novo Perfil
+    </button>
+  </div>
+
+  <!-- Filtro -->
+  <form [formGroup]="filterForm" class="mb-5">
+    <input
+      formControlName="name"
+      type="text"
+      placeholder="Filtrar por nome do perfil..."
+      class="w-full sm:w-80 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
+    />
+  </form>
+
+  <!-- Skeleton -->
+  <ng-container *ngIf="isLoading">
+    <div *ngFor="let _ of [1,2,3]" class="h-10 bg-gray-100 rounded animate-pulse mb-2"></div>
+  </ng-container>
+
+  <!-- Tabela -->
+  <div *ngIf="!isLoading" class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-gray-100">
+          <th class="text-left py-3 px-3 font-medium text-gray-500">Código</th>
+          <th class="text-left py-3 px-3 font-medium text-gray-500">Nome</th>
+          <th class="py-3 px-3"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let role of roles"
+          class="border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-colors"
+          (click)="openEdit(role)"
+        >
+          <td class="py-3 px-3 text-gray-500 font-mono text-xs">{{ role.admRoleCd }}</td>
+          <td class="py-3 px-3 font-medium text-gray-800">{{ role.admRoleName }}</td>
+          <td class="py-3 px-3 text-right flex items-center justify-end gap-1">
+            <button
+              type="button"
+              title="Configurar permissões"
+              class="p-1.5 text-indigo-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+              (click)="goToPermissions(role, $event)"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+              </svg>
+            </button>
+            <button
+              type="button"
+              title="Excluir perfil"
+              class="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+              (click)="confirmDelete(role.admRoleId, $event)"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+              </svg>
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="roles.length === 0">
+          <td colspan="3" class="py-10 text-center text-gray-400 text-sm">Nenhum perfil encontrado.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- SidePanel -->
+<app-side-panel [title]="panelTitle" [visible]="panelVisible" (closed)="closePanel()">
+  <form [formGroup]="form" (ngSubmit)="save()" class="flex flex-col gap-4">
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1">Código *</label>
+      <input formControlName="admRoleCd" type="text"
+        class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
+        placeholder="ex: ADMIN"/>
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1">Nome *</label>
+      <input formControlName="admRoleName" type="text"
+        class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
+        placeholder="ex: Administrador"/>
+    </div>
+    <div class="pt-2">
+      <button type="submit"
+        class="w-full py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        [disabled]="form.invalid || isSaving">
+        {{ isSaving ? 'Salvando...' : (isEditing ? 'Atualizar' : 'Criar') }}
+      </button>
+    </div>
+  </form>
+</app-side-panel>
+
+<!-- Confirm Dialog -->
+<app-confirm-dialog
+  *ngIf="showConfirm"
+  message="Tem certeza que deseja excluir este perfil?"
+  (confirmed)="onDeleteConfirmed()"
+  (cancelled)="onDeleteCancelled()"
+></app-confirm-dialog>
