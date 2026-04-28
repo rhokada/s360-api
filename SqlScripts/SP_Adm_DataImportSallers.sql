@@ -5,7 +5,7 @@
 IF OBJECT_ID('SP_Adm_DataImportSallersLog', 'P') IS NOT NULL DROP PROCEDURE SP_Adm_DataImportSallersLog;
 GO
 CREATE PROCEDURE SP_Adm_DataImportSallersLog
-    @TypeRequest             VARCHAR(10)     NOT NULL,  -- 'SELECT'|'UPDATE'|'DELETE'
+    @TypeRequest             VARCHAR(10)    ,  -- 'SELECT'|'UPDATE'|'DELETE'
     @DataImportSallersLogId  INT             = NULL,
     @FileName                VARCHAR(200)    = NULL,
     @Status                  VARCHAR(20)     = NULL,
