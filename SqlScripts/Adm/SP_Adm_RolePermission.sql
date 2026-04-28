@@ -60,10 +60,12 @@ BEGIN
         END
         ELSE
         BEGIN
-            INSERT INTO Adm_RolePermission (AdmRoleId, AdmPageId, [Read], [Create], [Delete], [Alter], DhUpdate)
-            VALUES (@AdmRoleId, @AdmPageId,
-                    ISNULL(@Read, 0), ISNULL(@Create, 0), ISNULL(@Delete, 0), ISNULL(@Alter, 0),
-                    GETDATE());
+            INSERT INTO Adm_RolePermission (AdmRoleId, AdmPageId, [Name], [Read], [Create], [Delete], [Alter], DhUpdate)
+            SELECT @AdmRoleId, @AdmPageId, p.Menu,
+                   ISNULL(@Read, 0), ISNULL(@Create, 0), ISNULL(@Delete, 0), ISNULL(@Alter, 0),
+                   GETDATE()
+            FROM Adm_Page p
+            WHERE p.AdmPageId = @AdmPageId;
 
             SELECT SCOPE_IDENTITY() AS AdmRolePermissionId;
         END
