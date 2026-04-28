@@ -127,6 +127,11 @@ export const routes: Routes = [
         data: { slug: 'adm-importacao' }
       },
       {
+        path: 'importacao-sallers',
+        loadComponent: () => import('./pages/adm/importacao-sallers/importacao-sallers.component').then(m => m.ImportacaoSallersComponent),
+        data: { slug: 'adm-importacao-sallers' }
+      },
+      {
         path: 'customers',
         loadComponent: () => import('./pages/adm/adm-customer/adm-customer.component').then(m => m.AdmCustomerComponent),
         data: { slug: 'adm-customer' }
@@ -140,6 +145,11 @@ export const routes: Routes = [
         path: 'user-permissions',
         loadComponent: () => import('./pages/adm/adm-user-permissions/adm-user-permissions.component').then(m => m.AdmUserPermissionsComponent),
         data: { slug: 'adm-user' }
+      },
+      {
+        path: 'page',
+        loadComponent: () => import('./pages/adm/adm-page/adm-page.component').then(m => m.AdmPageComponent),
+        data: { slug: 'adm-page' }
       },
       {
         path: 'role',
