@@ -69,26 +69,30 @@ GO
 -- Insere uma linha do Tabelao
 CREATE OR ALTER PROCEDURE sp_DataImportSallersRow_Insert
   @DataImportSallersLogId  INT,
-  @ID               VARCHAR(50)  = NULL,
-  @CodCliente       VARCHAR(50)  = NULL,
-  @NomeFantasia     VARCHAR(200) = NULL,
-  @CNPJ             VARCHAR(20)  = NULL,
-  @CodProfissional  VARCHAR(50)  = NULL,
-  @Email            VARCHAR(200) = NULL,
-  @Nome             VARCHAR(200) = NULL,
-  @Celular          VARCHAR(20)  = NULL,
-  @Whats            VARCHAR(20)  = NULL,
-  @CodEquipe        VARCHAR(50)  = NULL,
-  @Vendedor         BIT          = NULL,
-  @CodSuperior      VARCHAR(50)  = NULL
+  @ID                  VARCHAR(50)  = NULL,
+  @CodCliente          VARCHAR(50)  = NULL,
+  @NomeFantasia        VARCHAR(200) = NULL,
+  @CNPJ                VARCHAR(20)  = NULL,
+  @CodProfissional     VARCHAR(50)  = NULL,
+  @Email               VARCHAR(200) = NULL,
+  @Nome                VARCHAR(200) = NULL,
+  @Celular             VARCHAR(20)  = NULL,
+  @CodEquipe           VARCHAR(50)  = NULL,
+  @Vendedor            BIT          = NULL,
+  @CodSuperior         VARCHAR(50)  = NULL,
+  @NomeSupervisor      VARCHAR(200) = NULL,
+  @TelefoneSupervisor  VARCHAR(20)  = NULL,
+  @EmailSupervisor     VARCHAR(200) = NULL
 AS BEGIN
   SET NOCOUNT ON;
   INSERT INTO DataImportSallersRow
     (DataImportSallersLogId, ID, CodCliente, NomeFantasia, CNPJ, CodProfissional,
-     Email, Nome, Celular, Whats, CodEquipe, Vendedor, CodSuperior, Status, DhCreate)
+     Email, Nome, Celular, CodEquipe, Vendedor, CodSuperior,
+     NomeSupervisor, TelefoneSupervisor, EmailSupervisor, Status, DhCreate)
   VALUES
     (@DataImportSallersLogId, @ID, @CodCliente, @NomeFantasia, @CNPJ, @CodProfissional,
-     @Email, @Nome, @Celular, @Whats, @CodEquipe, @Vendedor, @CodSuperior, 'PENDING', GETDATE());
+     @Email, @Nome, @Celular, @CodEquipe, @Vendedor, @CodSuperior,
+     @NomeSupervisor, @TelefoneSupervisor, @EmailSupervisor, 'PENDING', GETDATE());
 END
 GO
 GRANT EXECUTE ON sp_DataImportSallersRow_Insert TO S360sys;

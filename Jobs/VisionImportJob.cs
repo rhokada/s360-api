@@ -25,10 +25,8 @@ namespace WebApi.Jobs
 
         public async Task ExecutarImportacaoVisionAsync()
         {
-            int dataImportProLogId = 0;
+            int logId = 0;
             int totalRows = 0, processedRows = 0, errorRows = 0;
-            var vendedoresInseridos = new HashSet<string>();
-            var supervisoresInseridos = new HashSet<string>();
 
             using var con = new SqlConnection(_connectionStrings.Default);
             con.Open();
@@ -36,26 +34,25 @@ namespace WebApi.Jobs
             try
             {
                 // 1. Criar log de importação
-                var logResult = con.QueryFirstOrDefault("sp_DataImportProLog_Create", new
+                var logResult = con.QueryFirstOrDefault("sp_DataImportSallersLog_Create", new
                 {
                     FileName = $"vision-api-{DateTime.Now:yyyyMMdd-HHmmss}",
-                    FileType = "API",
-                    UserId = (int?)null
+                    UserId   = (int?)null
                 }, commandType: CommandType.StoredProcedure);
-                dataImportProLogId = (int)(logResult?.DataImportProLogId ?? 0);
+                logId = (int)(logResult?.DataImportSallersLogId ?? 0);
 
                 // 2. Consumir API com paginação
                 using var httpClient = new HttpClient();
                 httpClient.DefaultRequestHeaders.Add("APIKEY", _apiConfig.ApiKey);
 
                 int currentPage = 1;
-                int totalPages = 1;
+                int totalPages  = 1;
 
                 do
                 {
-                    var url = $"{_apiConfig.BaseUrl}?object={_apiConfig.Object}&currentPage={currentPage}&perPage={_apiConfig.PerPage}";
+                    var url      = $"{_apiConfig.BaseUrl}?object={_apiConfig.Object}&currentPage={currentPage}&perPage={_apiConfig.PerPage}";
                     var response = await httpClient.GetStringAsync(url);
-                    var result = JsonConvert.DeserializeObject<VisionApiResponse>(response);
+                    var result   = JsonConvert.DeserializeObject<VisionApiResponse>(response);
 
                     if (result?.Data == null || !result.Data.Any()) break;
 
@@ -66,57 +63,25 @@ namespace WebApi.Jobs
                     {
                         try
                         {
-                            // Inserir vendedor único
-                            var codVendedor = row.CodigoVendedor?.ToString();
-                            if (!string.IsNullOrEmpty(codVendedor) && !vendedoresInseridos.Contains(codVendedor))
+                            // Cada linha da API vira uma linha em DataImportSallersRow
+                            // combinando os dados do vendedor, supervisor e cliente
+                            con.Execute("sp_DataImportSallersRow_Insert", new
                             {
-                                con.Execute("sp_DataImportProProfissional_Insert", new
-                                {
-                                    DataImportProLogId = dataImportProLogId,
-                                    ID              = codVendedor,
-                                    CodProfissional = codVendedor,
-                                    Email           = row.EmailVendedor,
-                                    Nome            = row.NomeVendedor,
-                                    Celular         = row.TelefoneVendedor,
-                                    Whats           = row.TelefoneVendedor,
-                                    CodEquipe       = (string)null,
-                                    Vendedor        = true,
-                                    CodSuperior     = row.CodigoSupervisor?.ToString()
-                                }, commandType: CommandType.StoredProcedure);
-                                vendedoresInseridos.Add(codVendedor);
-                                processedRows++;
-                            }
-
-                            // Inserir supervisor único
-                            var codSupervisor = row.CodigoSupervisor?.ToString();
-                            if (!string.IsNullOrEmpty(codSupervisor) && !supervisoresInseridos.Contains(codSupervisor))
-                            {
-                                con.Execute("sp_DataImportProProfissional_Insert", new
-                                {
-                                    DataImportProLogId = dataImportProLogId,
-                                    ID              = codSupervisor,
-                                    CodProfissional = codSupervisor,
-                                    Email           = row.EmailSupervisor,
-                                    Nome            = row.NomeSupervisor,
-                                    Celular         = row.TelefoneSupervisor,
-                                    Whats           = row.TelefoneSupervisor,
-                                    CodEquipe       = (string)null,
-                                    Vendedor        = false,
-                                    CodSuperior     = (string)null
-                                }, commandType: CommandType.StoredProcedure);
-                                supervisoresInseridos.Add(codSupervisor);
-                                processedRows++;
-                            }
-
-                            // Inserir cliente
-                            con.Execute("sp_DataImportProCliente_Insert", new
-                            {
-                                DataImportProLogId = dataImportProLogId,
-                                ID           = row.CodigoCliente?.ToString(),
-                                CodCliente   = row.CodigoCliente?.ToString(),
-                                NomeFantasia = (string)null,
-                                CNPJ         = (string)null,
-                                CodVendedor  = codVendedor
+                                DataImportSallersLogId = logId,
+                                ID                  = row.CodigoVendedor?.ToString(),
+                                CodCliente          = row.CodigoCliente?.ToString(),
+                                NomeFantasia        = (string)null,
+                                CNPJ                = (string)null,
+                                CodProfissional     = row.CodigoVendedor?.ToString(),
+                                Email               = row.EmailVendedor,
+                                Nome                = row.NomeVendedor,
+                                Celular             = row.TelefoneVendedor,
+                                CodEquipe           = (string)null,
+                                Vendedor            = true,
+                                CodSuperior         = row.CodigoSupervisor?.ToString(),
+                                row.NomeSupervisor,
+                                row.TelefoneSupervisor,
+                                row.EmailSupervisor
                             }, commandType: CommandType.StoredProcedure);
                             processedRows++;
                         }
@@ -131,23 +96,23 @@ namespace WebApi.Jobs
                 } while (currentPage <= totalPages);
 
                 // 3. Finalizar log
-                con.Execute("sp_DataImportProLog_Finalize", new
+                con.Execute("sp_DataImportSallersLog_Finalize", new
                 {
-                    DataImportProLogId = dataImportProLogId,
-                    TotalRows     = totalRows,
-                    ProcessedRows = processedRows,
-                    ErrorRows     = errorRows
+                    DataImportSallersLogId = logId,
+                    TotalRows              = totalRows,
+                    ProcessedRows          = processedRows,
+                    ErrorRows              = errorRows
                 }, commandType: CommandType.StoredProcedure);
             }
             catch (Exception ex)
             {
-                if (dataImportProLogId > 0)
-                    con.Execute("SP_Adm_DataImportProLog", new
+                if (logId > 0)
+                    con.Execute("SP_Adm_DataImportSallersLog", new
                     {
-                        TypeRequest        = "UPDATE",
-                        DataImportProLogId = dataImportProLogId,
-                        Status             = "ERROR",
-                        ErrorMessage       = ex.Message
+                        TypeRequest              = "UPDATE",
+                        DataImportSallersLogId   = logId,
+                        Status                   = "ERROR",
+                        ErrorMessage             = ex.Message
                     }, commandType: CommandType.StoredProcedure);
                 throw;
             }

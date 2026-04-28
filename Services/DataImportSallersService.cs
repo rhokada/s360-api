@@ -97,7 +97,8 @@ namespace WebApi.Services
 
                     // Colunas: A=ID, B=CodCliente, C=NomeFantasia, D=CNPJ,
                     //          E=CodProfissional, F=Email, G=Nome, H=Celular,
-                    //          I=Whats, J=CodEquipe, K=Vendedor, L=CodSuperior
+                    //          I=CodEquipe, J=Vendedor, K=CodSuperior,
+                    //          L=SupNome, M=SupEmail, N=SupCelular
                     for (int i = 2; i <= rows; i++)
                     {
                         var nome = ws.Cells[i, 7].Text?.Trim(); // coluna G = Nome
@@ -107,24 +108,26 @@ namespace WebApi.Services
                             continue;
                         }
 
-                        var vendedorText = ws.Cells[i, 11].Text?.Trim().ToLower();
+                        var vendedorText = ws.Cells[i, 10].Text?.Trim().ToLower(); // coluna J = Vendedor
                         bool? vendedor = string.IsNullOrWhiteSpace(vendedorText) ? null : vendedorText == "sim";
 
                         con.Execute("sp_DataImportSallersRow_Insert", new
                         {
                             DataImportSallersLogId = logId,
-                            ID               = ws.Cells[i, 1].Text,
-                            CodCliente       = ws.Cells[i, 2].Text,
-                            NomeFantasia     = ws.Cells[i, 3].Text,
-                            CNPJ             = ws.Cells[i, 4].Text,
-                            CodProfissional  = ws.Cells[i, 5].Text,
-                            Email            = ws.Cells[i, 6].Text,
-                            Nome             = nome,
-                            Celular          = ws.Cells[i, 8].Text,
-                            Whats            = ws.Cells[i, 9].Text,
-                            CodEquipe        = ws.Cells[i, 10].Text,
-                            Vendedor         = vendedor,
-                            CodSuperior      = ws.Cells[i, 12].Text
+                            ID                  = ws.Cells[i, 1].Text,
+                            CodCliente          = ws.Cells[i, 2].Text,
+                            NomeFantasia        = ws.Cells[i, 3].Text,
+                            CNPJ                = ws.Cells[i, 4].Text,
+                            CodProfissional     = ws.Cells[i, 5].Text,
+                            Email               = ws.Cells[i, 6].Text,
+                            Nome                = nome,
+                            Celular             = ws.Cells[i, 8].Text,
+                            CodEquipe           = ws.Cells[i, 9].Text,
+                            Vendedor            = vendedor,
+                            CodSuperior         = ws.Cells[i, 11].Text,
+                            NomeSupervisor      = ws.Cells[i, 12].Text,
+                            EmailSupervisor     = ws.Cells[i, 13].Text,
+                            TelefoneSupervisor  = ws.Cells[i, 14].Text
                         }, commandType: CommandType.StoredProcedure);
                         sucessos++;
                     }

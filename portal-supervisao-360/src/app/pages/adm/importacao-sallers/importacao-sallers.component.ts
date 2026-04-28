@@ -14,10 +14,12 @@ interface SallersRow {
   Email: string | null;
   Nome: string | null;
   Celular: string | null;
-  Whats: string | null;
   CodEquipe: string | null;
   Vendedor: string | null;
   CodSuperior: string | null;
+  SupNome: string | null;
+  SupEmail: string | null;
+  SupCelular: string | null;
 }
 
 type UploadStep = 'idle' | 'preview' | 'uploading' | 'done' | 'error';

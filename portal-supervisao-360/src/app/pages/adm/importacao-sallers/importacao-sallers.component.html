@@ -19,7 +19,7 @@
           <li class="flex items-start gap-2">
             <span class="flex-shrink-0 w-5 h-5 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center text-xs font-bold">2</span>
             Preencha a aba <strong>Tabelao</strong> com as colunas:
-            ID, CodCliente, NomeFantasia, CNPJ, CodProfissional, Email, Nome, Celular, Whats, CodEquipe, Vendedor, CodSuperior
+            ID, CodCliente, NomeFantasia, CNPJ, CodProfissional, Email, Nome, Celular, CodEquipe, Vendedor, CodSuperior, SupNome, SupEmail, SupCelular
           </li>
           <li class="flex items-start gap-2">
             <span class="flex-shrink-0 w-5 h-5 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center text-xs font-bold">3</span>
@@ -103,6 +103,9 @@
               <th class="px-3 py-2 text-left font-medium text-gray-500">CodEquipe</th>
               <th class="px-3 py-2 text-left font-medium text-gray-500">Vendedor</th>
               <th class="px-3 py-2 text-left font-medium text-gray-500">CodSuperior</th>
+              <th class="px-3 py-2 text-left font-medium text-gray-500">SupNome</th>
+              <th class="px-3 py-2 text-left font-medium text-gray-500">SupEmail</th>
+              <th class="px-3 py-2 text-left font-medium text-gray-500">SupCelular</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-50">
@@ -122,6 +125,9 @@
                 </span>
               </td>
               <td class="px-3 py-2 text-gray-600">{{ row.CodSuperior ?? '—' }}</td>
+              <td class="px-3 py-2 text-gray-700">{{ row.SupNome ?? '—' }}</td>
+              <td class="px-3 py-2 text-gray-600">{{ row.SupEmail ?? '—' }}</td>
+              <td class="px-3 py-2 text-gray-600">{{ row.SupCelular ?? '—' }}</td>
             </tr>
           </tbody>
         </table>
