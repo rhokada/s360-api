@@ -29,7 +29,7 @@ namespace WebApi.Services
                     con.Open();
                     var raw = con.Query("SP_dash_SubmittedAnswerDetailsByUser", new
                     {
-                        UserId        = 89,
+                        UserId        = userId,
                         token_usuario = tokenUsuario
                     }, commandType: CommandType.StoredProcedure);
 

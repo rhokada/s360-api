@@ -1,5 +1,5 @@
 import {
-  Component, OnInit, OnDestroy, AfterViewInit,
+  Component, OnInit, OnDestroy,
   ViewChild, ElementRef, NgZone
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -21,13 +21,11 @@ Chart.register(...registerables);
   templateUrl: './indicadores.component.html',
   styleUrls: ['./indicadores.component.scss']
 })
-export class IndicadoresComponent implements OnInit, AfterViewInit, OnDestroy {
+export class IndicadoresComponent implements OnInit, OnDestroy {
   @ViewChild('barChart') barChartRef!: ElementRef<HTMLCanvasElement>;
 
   private destroy$ = new Subject<void>();
   private chart: Chart | null = null;
-  private viewReady = false;
-  private pendingChartDraw = false;
 
   allRows: DashRow[] = [];
   filteredRows: DashRow[] = [];
@@ -42,7 +40,6 @@ export class IndicadoresComponent implements OnInit, AfterViewInit, OnDestroy {
     metricas: []
   };
 
-  // Grupos derivados
   tipoGroups: TipoGroup[]   = [];
   superGroups: SuperGroup[] = [];
   dataGroups: DataGroup[]   = [];
@@ -50,7 +47,6 @@ export class IndicadoresComponent implements OnInit, AfterViewInit, OnDestroy {
   grupoGroups: PctGroup[]   = [];
   metricaGroups: PctGroup[] = [];
 
-  // Totalizadores
   totalDatas = 0;
   totalVendedores = 0;
   totalQuestionarios = 0;
@@ -71,22 +67,12 @@ export class IndicadoresComponent implements OnInit, AfterViewInit, OnDestroy {
           this.allRows = rows;
           this.isLoading = false;
           this.applyFilters();
-          if (this.viewReady) {
-            this.drawChart();
-          } else {
-            this.pendingChartDraw = true;
-          }
+          // Canvas só entra na DOM após Angular re-renderizar o *ngIf;
+          // setTimeout 0 aguarda o próximo ciclo de render para desenhar o gráfico.
+          setTimeout(() => this.drawChart());
         },
         error: () => { this.isLoading = false; }
       });
-  }
-
-  ngAfterViewInit(): void {
-    this.viewReady = true;
-    if (this.pendingChartDraw) {
-      this.pendingChartDraw = false;
-      this.drawChart();
-    }
   }
 
   ngOnDestroy(): void {
@@ -100,10 +86,13 @@ export class IndicadoresComponent implements OnInit, AfterViewInit, OnDestroy {
   toggle(field: keyof FilterState, value: any, event?: MouseEvent): void {
     const arr = this.filter[field] as any[];
     const idx = arr.indexOf(value);
+
     if (event?.ctrlKey || event?.metaKey) {
+      // Ctrl+click: adiciona ou remove do multi-seleção
       if (idx >= 0) arr.splice(idx, 1);
       else arr.push(value);
     } else {
+      // Click simples: troca; se já era o único selecionado, limpa
       if (idx >= 0 && arr.length === 1) {
         (this.filter[field] as any[]) = [];
       } else {
@@ -118,95 +107,91 @@ export class IndicadoresComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   applyFilters(): void {
-    this.filteredRows = this.allRows.filter(r => {
-      if (this.filter.tiposQuestionario.length && !this.filter.tiposQuestionario.includes(r.tipoQuestionario ?? '')) return false;
-      if (this.filter.supervisores.length    && !this.filter.supervisores.includes(r.supervisor))          return false;
-      if (this.filter.datas.length           && !this.filter.datas.includes(r.data ?? ''))                 return false;
-      if (this.filter.vendedores.length      && !this.filter.vendedores.includes(r.idVendedor))            return false;
-      if (this.filter.grupos.length          && !this.filter.grupos.includes(r.grupo ?? ''))               return false;
-      if (this.filter.metricas.length        && !this.filter.metricas.includes(r.metrica ?? ''))           return false;
+    // filteredRows usa todos os filtros (gráfico, totalizadores)
+    this.filteredRows = this.filterRows(this.allRows, this.filter);
+
+    // Cada card usa allRows filtrado por TODOS os campos EXCETO o seu próprio,
+    // para que o card não se auto-filtre (comportamento Power BI).
+    const tipoRows    = this.filterRows(this.allRows, { ...this.filter, tiposQuestionario: [] });
+    const superRows   = this.filterRows(this.allRows, { ...this.filter, supervisores: [] });
+    const dataRows    = this.filterRows(this.allRows, { ...this.filter, datas: [] });
+    const vendRows    = this.filterRows(this.allRows, { ...this.filter, vendedores: [] });
+    const grupoRows   = this.filterRows(this.allRows, { ...this.filter, grupos: [] });
+    const metricaRows = this.filterRows(this.allRows, { ...this.filter, metricas: [] });
+
+    this.computeGroups(tipoRows, superRows, dataRows, vendRows, grupoRows, metricaRows);
+    this.computeTotals();
+    this.drawChart();
+  }
+
+  private filterRows(rows: DashRow[], f: FilterState): DashRow[] {
+    return rows.filter(r => {
+      if (f.tiposQuestionario.length && !f.tiposQuestionario.includes(r.tipoQuestionario ?? '')) return false;
+      if (f.supervisores.length      && !f.supervisores.includes(r.supervisor))                  return false;
+      if (f.datas.length             && !f.datas.includes(this.formatDate(r.data)))              return false;
+      if (f.vendedores.length        && !f.vendedores.includes(r.idVendedor))                    return false;
+      if (f.grupos.length            && !f.grupos.includes(r.grupo ?? ''))                       return false;
+      if (f.metricas.length          && !f.metricas.includes(r.metrica ?? ''))                   return false;
       return true;
     });
-
-    this.computeGroups();
-    this.computeTotals();
-    if (this.viewReady) this.drawChart();
   }
 
   // ─── Computações ──────────────────────────────────────────────────────────
 
-  private computeGroups(): void {
-    const rows = this.filteredRows;
+  private computeGroups(
+    tipoRows: DashRow[], superRows: DashRow[], dataRows: DashRow[],
+    vendRows: DashRow[], grupoRows: DashRow[], metricaRows: DashRow[]
+  ): void {
+    const toMap = (rows: DashRow[], key: (r: DashRow) => string) => {
+      const m = new Map<string, number>();
+      rows.forEach(r => { const k = key(r); m.set(k, (m.get(k) ?? 0) + 1); });
+      return m;
+    };
 
-    // Tipo Questionário
-    const tipoMap = new Map<string, number>();
-    rows.forEach(r => {
-      const k = r.tipoQuestionario ?? '(sem tipo)';
-      tipoMap.set(k, (tipoMap.get(k) ?? 0) + 1);
-    });
-    this.tipoGroups = Array.from(tipoMap.entries()).map(([value, count]) => ({ value, count }));
+    this.tipoGroups = Array.from(toMap(tipoRows, r => r.tipoQuestionario ?? '(sem tipo)').entries())
+      .map(([value, count]) => ({ value, count }));
 
-    // Supervisor
-    const superMap = new Map<string, number>();
-    rows.forEach(r => {
-      const k = r.supervisor ?? '(sem supervisor)';
-      superMap.set(k, (superMap.get(k) ?? 0) + 1);
-    });
-    this.superGroups = Array.from(superMap.entries()).map(([value, count]) => ({ value, count }));
+    this.superGroups = Array.from(toMap(superRows, r => r.supervisor ?? '(sem supervisor)').entries())
+      .map(([value, count]) => ({ value, count }));
 
-    // Data
-    const dataMap = new Map<string, number>();
-    rows.forEach(r => {
-      const k = r.data ? this.formatDate(r.data) : 'Sem data';
-      dataMap.set(k, (dataMap.get(k) ?? 0) + 1);
-    });
-    this.dataGroups = Array.from(dataMap.entries())
+    // Datas: armazenar data formatada (filter.datas também usa formatada)
+    this.dataGroups = Array.from(toMap(dataRows, r => this.formatDate(r.data)).entries())
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([value, count]) => ({ value, count }));
 
-    // Vendedor
     const vendMap = new Map<number, VendGroup>();
-    rows.forEach(r => {
-      if (!vendMap.has(r.idVendedor)) {
+    vendRows.forEach(r => {
+      if (!vendMap.has(r.idVendedor))
         vendMap.set(r.idVendedor, { id: r.idVendedor, codVendedor: r.codVendedor ?? '', vendedor: r.vendedor });
-      }
     });
     this.vendGroups = Array.from(vendMap.values()).sort((a, b) => a.vendedor.localeCompare(b.vendedor));
 
-    // Grupo (%SIM / %NÃO / %NR)
-    this.grupoGroups = this.buildPctGroups(rows, r => r.grupo ?? '(sem grupo)');
-
-    // Métrica
-    this.metricaGroups = this.buildPctGroups(rows, r => r.metrica ?? '(sem métrica)');
+    this.grupoGroups   = this.buildPctGroups(grupoRows,   r => r.grupo   ?? '(sem grupo)');
+    this.metricaGroups = this.buildPctGroups(metricaRows, r => r.metrica ?? '(sem métrica)');
   }
 
   private buildPctGroups(rows: DashRow[], keyFn: (r: DashRow) => string): PctGroup[] {
     const map = new Map<string, { sim: number; nao: number; nr: number; total: number }>();
     rows.forEach(r => {
-      const k = keyFn(r);
+      const k    = keyFn(r);
       const prev = map.get(k) ?? { sim: 0, nao: 0, nr: 0, total: 0 };
-      map.set(k, {
-        sim:   prev.sim   + r.sim,
-        nao:   prev.nao   + r.nao,
-        nr:    prev.nr    + r.naoRespondido,
-        total: prev.total + 1
-      });
+      map.set(k, { sim: prev.sim + r.sim, nao: prev.nao + r.nao, nr: prev.nr + r.naoRespondido, total: prev.total + 1 });
     });
     return Array.from(map.entries()).map(([label, v]) => ({
       label,
-      pctSim: v.total ? Math.round(v.sim  / v.total * 1000) / 10 : 0,
-      pctNao: v.total ? Math.round(v.nao  / v.total * 1000) / 10 : 0,
-      pctNR:  v.total ? Math.round(v.nr   / v.total * 1000) / 10 : 0,
+      pctSim: v.total ? Math.round(v.sim / v.total * 1000) / 10 : 0,
+      pctNao: v.total ? Math.round(v.nao / v.total * 1000) / 10 : 0,
+      pctNR:  v.total ? Math.round(v.nr  / v.total * 1000) / 10 : 0,
     }));
   }
 
   private computeTotals(): void {
     const rows = this.filteredRows;
-    this.totalDatas         = new Set(rows.map(r => r.data)).size;
+    this.totalDatas         = new Set(rows.map(r => this.formatDate(r.data))).size;
     this.totalVendedores    = new Set(rows.map(r => r.idVendedor)).size;
     this.totalQuestionarios = new Set(rows.map(r => r.idQuestionario)).size;
 
-    const total = rows.length;
+    const total  = rows.length;
     const sumSim = rows.reduce((s, r) => s + r.sim, 0);
     const sumNao = rows.reduce((s, r) => s + r.nao, 0);
     const sumNR  = rows.reduce((s, r) => s + r.naoRespondido, 0);
@@ -219,19 +204,19 @@ export class IndicadoresComponent implements OnInit, AfterViewInit, OnDestroy {
   // ─── Gráfico ──────────────────────────────────────────────────────────────
 
   private drawChart(): void {
-    if (!this.barChartRef) return;
+    if (!this.barChartRef?.nativeElement) return;
 
-    const dataMap = new Map<string, { sim: number; nao: number; nr: number }>();
+    const chartMap = new Map<string, { sim: number; nao: number; nr: number }>();
     this.filteredRows.forEach(r => {
-      const k = r.data ? this.formatDate(r.data) : 'Sem data';
-      const prev = dataMap.get(k) ?? { sim: 0, nao: 0, nr: 0 };
-      dataMap.set(k, { sim: prev.sim + r.sim, nao: prev.nao + r.nao, nr: prev.nr + r.naoRespondido });
+      const k    = this.formatDate(r.data);
+      const prev = chartMap.get(k) ?? { sim: 0, nao: 0, nr: 0 };
+      chartMap.set(k, { sim: prev.sim + r.sim, nao: prev.nao + r.nao, nr: prev.nr + r.naoRespondido });
     });
 
-    const labels   = Array.from(dataMap.keys()).sort();
-    const simData  = labels.map(l => dataMap.get(l)!.sim);
-    const naoData  = labels.map(l => dataMap.get(l)!.nao);
-    const nrData   = labels.map(l => dataMap.get(l)!.nr);
+    const labels  = Array.from(chartMap.keys()).sort();
+    const simData = labels.map(l => chartMap.get(l)!.sim);
+    const naoData = labels.map(l => chartMap.get(l)!.nao);
+    const nrData  = labels.map(l => chartMap.get(l)!.nr);
 
     this.chart?.destroy();
     this.chart = new Chart(this.barChartRef.nativeElement, {
@@ -251,22 +236,17 @@ export class IndicadoresComponent implements OnInit, AfterViewInit, OnDestroy {
         scales: { x: { stacked: false }, y: { stacked: false } },
         onClick: (_evt, elements) => {
           if (!elements.length) return;
+          // labels já são datas formatadas, que é o que filter.datas armazena
           const label = labels[elements[0].index];
-          const rawDate = this.findRawDateByFormatted(label);
-          if (rawDate) this.zone.run(() => this.toggle('datas', rawDate));
+          this.zone.run(() => this.toggle('datas', label));
         }
       }
     });
   }
 
-  private findRawDateByFormatted(formatted: string): string | null {
-    const found = this.filteredRows.find(r => r.data && this.formatDate(r.data) === formatted);
-    return found?.data ?? null;
-  }
-
   // ─── Helpers ──────────────────────────────────────────────────────────────
 
-  formatDate(iso: string | null): string {
+  formatDate(iso: string | null | undefined): string {
     if (!iso) return 'Sem data';
     const d = new Date(iso);
     if (isNaN(d.getTime())) return iso;
