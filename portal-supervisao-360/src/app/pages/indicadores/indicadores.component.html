@@ -1,0 +1,252 @@
+<div class="ind-root">
+
+  <!-- Loading overlay -->
+  <div *ngIf="isLoading" class="ind-loading">
+    <span>Carregando dados...</span>
+  </div>
+
+  <ng-container *ngIf="!isLoading">
+
+    <!-- Header toolbar -->
+    <div class="ind-toolbar">
+      <span class="ind-title">Indicadores</span>
+      <button class="btn-clear" (click)="clearAll()">Limpar filtros</button>
+    </div>
+
+    <div class="ind-body">
+
+      <!-- ═══════════════════════════════════════════
+           COLUNA 1
+      ═══════════════════════════════════════════ -->
+      <div class="col col1">
+
+        <!-- Row 1: Tipo + Supervisor -->
+        <div class="row1">
+
+          <div class="card">
+            <div class="card-header">Tipo Questionário</div>
+            <div class="card-body scroll">
+              <table class="ind-table">
+                <tbody>
+                  <tr *ngFor="let g of tipoGroups"
+                      [class.selected]="isSelected('tiposQuestionario', g.value)"
+                      (click)="toggle('tiposQuestionario', g.value, $event)">
+                    <td>{{ g.value }}</td>
+                    <td class="cnt">{{ g.count }}</td>
+                  </tr>
+                  <tr *ngIf="tipoGroups.length === 0">
+                    <td class="empty">Sem dados</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">Supervisor</div>
+            <div class="card-body scroll">
+              <table class="ind-table">
+                <tbody>
+                  <tr *ngFor="let g of superGroups"
+                      [class.selected]="isSelected('supervisores', g.value)"
+                      (click)="toggle('supervisores', g.value, $event)">
+                    <td>{{ g.value }}</td>
+                    <td class="cnt">{{ g.count }}</td>
+                  </tr>
+                  <tr *ngIf="superGroups.length === 0">
+                    <td class="empty">Sem dados</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Row 2: Data + Vendedor -->
+        <div class="row2">
+
+          <div class="card">
+            <div class="card-header">Data</div>
+            <div class="card-body scroll">
+              <table class="ind-table">
+                <tbody>
+                  <tr *ngFor="let g of dataGroups"
+                      [class.selected]="isSelected('datas', g.value)"
+                      (click)="toggle('datas', g.value, $event)">
+                    <td>{{ g.value }}</td>
+                    <td class="cnt">{{ g.count }}</td>
+                  </tr>
+                  <tr *ngIf="dataGroups.length === 0">
+                    <td class="empty">Sem dados</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">Vendedor</div>
+            <div class="card-body scroll">
+              <table class="ind-table">
+                <thead>
+                  <tr>
+                    <th>Cód</th>
+                    <th>Nome</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let g of vendGroups"
+                      [class.selected]="isSelected('vendedores', g.id)"
+                      (click)="toggle('vendedores', g.id, $event)">
+                    <td class="cod">{{ g.codVendedor }}</td>
+                    <td>{{ g.vendedor }}</td>
+                  </tr>
+                  <tr *ngIf="vendGroups.length === 0">
+                    <td class="empty" colspan="2">Sem dados</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Row 3: Grupo -->
+        <div class="row3">
+          <div class="card fill">
+            <div class="card-header">Grupo</div>
+            <div class="card-body scroll">
+              <table class="ind-table">
+                <thead>
+                  <tr>
+                    <th>Grupo</th>
+                    <th>%SIM</th>
+                    <th>%NÃO</th>
+                    <th>%N/R</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let g of grupoGroups"
+                      [class.selected]="isSelected('grupos', g.label)"
+                      (click)="toggle('grupos', g.label, $event)">
+                    <td>{{ g.label }}</td>
+                    <td class="pct sim">{{ g.pctSim | number:'1.1-1' }}%</td>
+                    <td class="pct nao">{{ g.pctNao | number:'1.1-1' }}%</td>
+                    <td class="pct nr" >{{ g.pctNR  | number:'1.1-1' }}%</td>
+                  </tr>
+                  <tr *ngIf="grupoGroups.length === 0">
+                    <td class="empty" colspan="4">Sem dados</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ═══════════════════════════════════════════
+           COLUNA 2
+      ═══════════════════════════════════════════ -->
+      <div class="col col2">
+
+        <!-- Row 1: Totalizadores -->
+        <div class="totals-row">
+          <div class="total-card">
+            <div class="total-value">{{ totalDatas }}</div>
+            <div class="total-label">Datas</div>
+          </div>
+          <div class="total-card">
+            <div class="total-value">{{ totalVendedores }}</div>
+            <div class="total-label">Vendedores</div>
+          </div>
+          <div class="total-card">
+            <div class="total-value">{{ totalQuestionarios }}</div>
+            <div class="total-label">Questionários</div>
+          </div>
+          <div class="total-card highlight-sim">
+            <div class="total-value">{{ pctSimTotal | number:'1.1-1' }}%</div>
+            <div class="total-label">% SIM</div>
+          </div>
+        </div>
+
+        <!-- Row 2: Gráfico de barras -->
+        <div class="chart-row">
+          <div class="card fill">
+            <div class="card-header">Respostas por Data</div>
+            <div class="card-body chart-wrap">
+              <canvas #barChart></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 3: Métrica + totalizadores de percentual -->
+        <div class="bottom-row">
+
+          <div class="card fill metrica-card">
+            <div class="card-header">Métrica</div>
+            <div class="card-body scroll">
+              <table class="ind-table">
+                <thead>
+                  <tr>
+                    <th>Métrica</th>
+                    <th>%SIM</th>
+                    <th>%NÃO</th>
+                    <th>%N/R</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let g of metricaGroups"
+                      [class.selected]="isSelected('metricas', g.label)"
+                      (click)="toggle('metricas', g.label, $event)">
+                    <td>{{ g.label }}</td>
+                    <td class="pct sim">{{ g.pctSim | number:'1.1-1' }}%</td>
+                    <td class="pct nao">{{ g.pctNao | number:'1.1-1' }}%</td>
+                    <td class="pct nr" >{{ g.pctNR  | number:'1.1-1' }}%</td>
+                  </tr>
+                  <tr *ngIf="metricaGroups.length === 0">
+                    <td class="empty" colspan="4">Sem dados</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="pct-cards">
+
+            <div class="pct-card pct-sim">
+              <div class="pct-label">% SIM</div>
+              <div class="pct-value">{{ pctSimTotal | number:'1.1-1' }}%</div>
+              <div class="pct-bar-track">
+                <div class="pct-bar" [style.width.%]="pctSimTotal"></div>
+              </div>
+            </div>
+
+            <div class="pct-card pct-nao">
+              <div class="pct-label">% NÃO</div>
+              <div class="pct-value">{{ pctNaoTotal | number:'1.1-1' }}%</div>
+              <div class="pct-bar-track">
+                <div class="pct-bar" [style.width.%]="pctNaoTotal"></div>
+              </div>
+            </div>
+
+            <div class="pct-card pct-nr">
+              <div class="pct-label">% N/R</div>
+              <div class="pct-value">{{ pctNRTotal | number:'1.1-1' }}%</div>
+              <div class="pct-bar-track">
+                <div class="pct-bar" [style.width.%]="pctNRTotal"></div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div><!-- .ind-body -->
+
+  </ng-container>
+
+</div>

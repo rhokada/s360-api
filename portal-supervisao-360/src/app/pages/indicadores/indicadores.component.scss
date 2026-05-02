@@ -1,0 +1,387 @@
+:host {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  font-family: inherit;
+}
+
+.ind-root {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background: #0f172a;
+  color: #e2e8f0;
+  overflow: hidden;
+}
+
+// ─── Loading ─────────────────────────────────────────────────────────────────
+
+.ind-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 1.1rem;
+  color: #94a3b8;
+}
+
+// ─── Toolbar ─────────────────────────────────────────────────────────────────
+
+.ind-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 16px;
+  background: #1e293b;
+  border-bottom: 1px solid #334155;
+  flex-shrink: 0;
+}
+
+.ind-title {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: .03em;
+  color: #f1f5f9;
+}
+
+.btn-clear {
+  font-size: 0.75rem;
+  padding: 4px 12px;
+  border: 1px solid #475569;
+  background: transparent;
+  color: #94a3b8;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover {
+    background: #334155;
+    color: #f1f5f9;
+  }
+}
+
+// ─── Body (2 colunas) ────────────────────────────────────────────────────────
+
+.ind-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  gap: 6px;
+  padding: 6px;
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow: hidden;
+}
+
+.col1 {
+  width: 35%;
+  min-width: 280px;
+}
+
+.col2 {
+  flex: 1;
+}
+
+// ─── Rows dentro das colunas ─────────────────────────────────────────────────
+
+.row1,
+.row2 {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+  height: 18vh;
+
+  .card {
+    flex: 1;
+  }
+}
+
+.row3 {
+  flex: 1;
+  overflow: hidden;
+
+  .card.fill {
+    height: 100%;
+  }
+}
+
+.totals-row {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+  height: 70px;
+}
+
+.chart-row {
+  flex: 1;
+  overflow: hidden;
+
+  .card.fill {
+    height: 100%;
+  }
+}
+
+.bottom-row {
+  display: flex;
+  gap: 6px;
+  height: 28vh;
+  flex-shrink: 0;
+}
+
+.metrica-card {
+  flex: 1;
+  overflow: hidden;
+}
+
+.pct-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 160px;
+  flex-shrink: 0;
+}
+
+// ─── Card base ───────────────────────────────────────────────────────────────
+
+.card {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  &.fill {
+    flex: 1;
+  }
+}
+
+.card-header {
+  padding: 5px 10px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: #94a3b8;
+  background: #0f172a;
+  border-bottom: 1px solid #334155;
+  flex-shrink: 0;
+}
+
+.card-body {
+  flex: 1;
+  overflow: hidden;
+
+  &.scroll {
+    overflow-y: auto;
+
+    &::-webkit-scrollbar { width: 4px; }
+    &::-webkit-scrollbar-track { background: transparent; }
+    &::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+  }
+
+  &.chart-wrap {
+    position: relative;
+    padding: 8px;
+
+    canvas {
+      width: 100% !important;
+      height: 100% !important;
+    }
+  }
+}
+
+// ─── Tabelas ─────────────────────────────────────────────────────────────────
+
+.ind-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+
+  th {
+    position: sticky;
+    top: 0;
+    background: #1e293b;
+    padding: 4px 8px;
+    text-align: left;
+    font-weight: 600;
+    color: #94a3b8;
+    border-bottom: 1px solid #334155;
+    z-index: 1;
+  }
+
+  td {
+    padding: 3px 8px;
+    border-bottom: 1px solid #1e293b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+  }
+
+  tr {
+    cursor: pointer;
+    transition: background 0.1s;
+
+    &:hover {
+      background: #334155;
+    }
+
+    &.selected {
+      background: #1d4ed8;
+      color: #fff;
+
+      td { color: #fff; }
+    }
+  }
+
+  td.cnt {
+    text-align: right;
+    color: #64748b;
+    width: 40px;
+  }
+
+  td.cod {
+    color: #64748b;
+    width: 60px;
+  }
+
+  td.pct {
+    text-align: right;
+    width: 54px;
+
+    &.sim { color: #4ade80; }
+    &.nao { color: #f87171; }
+    &.nr  { color: #94a3b8; }
+  }
+
+  td.empty {
+    color: #475569;
+    font-style: italic;
+    padding: 8px;
+  }
+}
+
+// ─── Totalizadores ───────────────────────────────────────────────────────────
+
+.total-card {
+  flex: 1;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+
+  &.highlight-sim {
+    border-color: #22c55e;
+    background: #052e16;
+  }
+}
+
+.total-value {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  line-height: 1;
+}
+
+.total-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+// ─── Cards de percentual (col2 row3) ─────────────────────────────────────────
+
+.pct-card {
+  flex: 1;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+
+  &.pct-sim { border-color: #22c55e; }
+  &.pct-nao { border-color: #ef4444; }
+  &.pct-nr  { border-color: #64748b; }
+}
+
+.pct-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: #94a3b8;
+}
+
+.pct-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #f1f5f9;
+}
+
+.pct-bar-track {
+  height: 4px;
+  background: #334155;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.pct-bar {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+
+  .pct-sim & { background: #22c55e; }
+  .pct-nao & { background: #ef4444; }
+  .pct-nr  & { background: #94a3b8; }
+}
+
+// ─── Responsividade (mobile) ─────────────────────────────────────────────────
+
+@media (max-width: 768px) {
+  .ind-body {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .col1,
+  .col2 {
+    width: 100%;
+  }
+
+  .row1,
+  .row2 {
+    height: auto;
+    min-height: 140px;
+  }
+
+  .row3,
+  .chart-row,
+  .bottom-row {
+    height: auto;
+    min-height: 200px;
+  }
+
+  .bottom-row {
+    flex-direction: column;
+  }
+
+  .pct-cards {
+    flex-direction: row;
+    width: 100%;
+  }
+}

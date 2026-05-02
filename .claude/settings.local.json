@@ -10,7 +10,10 @@
       "Read(//proc/**)",
       "Bash(ls /bin/)",
       "Bash(dotnet build:*)",
-      "Bash(cmd /c \"cd /d d:\\\\projetos\\\\s360-api && dotnet build 2>&1\")"
+      "Bash(cmd /c \"cd /d d:\\\\projetos\\\\s360-api && dotnet build 2>&1\")",
+      "Bash(npm list *)",
+      "Bash(npm install *)",
+      "Bash(npx tsc *)"
     ]
   }
 }

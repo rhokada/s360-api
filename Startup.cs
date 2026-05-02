@@ -126,6 +126,7 @@ namespace WebApi
             services.AddScoped<IAdmRoleService, AdmRoleService>();
             services.AddScoped<IAdmRolePermissionService, AdmRolePermissionService>();
             services.AddScoped<IAdmRoleUserService, AdmRoleUserService>();
+            services.AddScoped<IDashIndicadoresService, DashIndicadoresService>();
 
             // Adicionando VisionApiConfig
             var visionApiConfig = Configuration.GetSection("VisionApiConfig");

@@ -82,6 +82,12 @@ export const routes: Routes = [
     data: { slug: 'question' }
   },
   {
+    path: 'indicadores',
+    loadComponent: () =>
+      import('./pages/indicadores/indicadores.component').then(m => m.IndicadoresComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: 'unauthorized',
     loadComponent: () =>
       import('./pages/unauthorized/unauthorized.component').then(m => m.UnauthorizedComponent),
