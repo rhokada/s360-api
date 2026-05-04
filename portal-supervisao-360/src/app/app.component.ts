@@ -30,7 +30,7 @@ export class AppComponent implements OnInit {
     ).subscribe((event) => {
       const navEvent = event as NavigationEnd;
       const url = navEvent.urlAfterRedirects;
-      this.isLoginPage = url.includes('/login') || url.includes('/select-role') || url.includes('/indicadores');
+      this.isLoginPage = url.includes('/login') || url.includes('/select-role') || url.includes('/indicadores')  || url.includes('/indicadores-notas');
     });
   }
 

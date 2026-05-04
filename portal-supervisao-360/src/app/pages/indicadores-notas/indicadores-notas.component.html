@@ -1,0 +1,245 @@
+<div class="ind-root">
+
+  <div *ngIf="isLoading" class="ind-loading">
+    <span>Carregando dados...</span>
+  </div>
+
+  <ng-container *ngIf="!isLoading">
+
+    <div class="ind-toolbar">
+      <div class="toolbar-left">
+        <button class="btn-back" (click)="goBack()">&#8592;</button>
+        <span class="ind-title">Indicadores — Notas</span>
+      </div>
+      <button class="btn-clear" (click)="clearAll()">Limpar filtros</button>
+    </div>
+
+    <div class="ind-body">
+
+      <!-- ═══════════════════════════ TOP SECTION (2 colunas) ═══════════════════ -->
+      <div class="top-section">
+
+        <!-- COLUNA 1 -->
+        <div class="col col1">
+
+          <!-- Linha 1: Tipo + Supervisor -->
+          <div class="row-pair">
+            <div class="card">
+              <div class="card-header">Tipo Questionário</div>
+              <div class="card-body scroll">
+                <table class="ind-table">
+                  <tbody>
+                    <tr *ngFor="let g of tipoGroups"
+                        [class.selected]="isSelected('tiposQuestionario', g.value)"
+                        (click)="toggle('tiposQuestionario', g.value, $event)">
+                      <td>{{ g.value }}</td>
+                      <td class="cnt">{{ g.count }}</td>
+                    </tr>
+                    <tr *ngIf="tipoGroups.length === 0"><td class="empty">Sem dados</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">Supervisor</div>
+              <div class="card-body scroll">
+                <table class="ind-table">
+                  <tbody>
+                    <tr *ngFor="let g of superGroups"
+                        [class.selected]="isSelected('supervisores', g.value)"
+                        (click)="toggle('supervisores', g.value, $event)">
+                      <td>{{ g.value }}</td>
+                      <td class="cnt">{{ g.count }}</td>
+                    </tr>
+                    <tr *ngIf="superGroups.length === 0"><td class="empty">Sem dados</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Linha 2: Data + Vendedor -->
+          <div class="row-pair">
+            <div class="card">
+              <div class="card-header">Data</div>
+              <div class="card-body scroll">
+                <table class="ind-table">
+                  <tbody>
+                    <tr *ngFor="let g of dataGroups"
+                        [class.selected]="isSelected('datas', g.value)"
+                        (click)="toggle('datas', g.value, $event)">
+                      <td>{{ g.value }}</td>
+                      <td class="cnt">{{ g.count }}</td>
+                    </tr>
+                    <tr *ngIf="dataGroups.length === 0"><td class="empty">Sem dados</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">Vendedor</div>
+              <div class="card-body scroll">
+                <table class="ind-table">
+                  <thead>
+                    <tr><th>Cód</th><th>Nome</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let g of vendGroups"
+                        [class.selected]="isSelected('vendedores', g.id)"
+                        (click)="toggle('vendedores', g.id, $event)">
+                      <td class="cod">{{ g.codVendedor }}</td>
+                      <td>{{ g.vendedor }}</td>
+                    </tr>
+                    <tr *ngIf="vendGroups.length === 0"><td class="empty" colspan="2">Sem dados</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Linha 3: 4 pct-cards lado a lado -->
+          <div class="pct-row">
+            <div class="pct-card pct-sim">
+              <div class="pct-label">% SIM</div>
+              <div class="pct-value">{{ pctSimTotal | number:'1.1-1' }}%</div>
+              <div class="pct-bar-track"><div class="pct-bar" [style.width.%]="pctSimTotal"></div></div>
+            </div>
+            <div class="pct-card pct-nao">
+              <div class="pct-label">% NÃO</div>
+              <div class="pct-value">{{ pctNaoTotal | number:'1.1-1' }}%</div>
+              <div class="pct-bar-track"><div class="pct-bar" [style.width.%]="pctNaoTotal"></div></div>
+            </div>
+            <div class="pct-card pct-nr">
+              <div class="pct-label">% N/R</div>
+              <div class="pct-value">{{ pctNRTotal | number:'1.1-1' }}%</div>
+              <div class="pct-bar-track"><div class="pct-bar" [style.width.%]="pctNRTotal"></div></div>
+            </div>
+            <div class="pct-card pct-just">
+              <div class="pct-label">% JUST</div>
+              <div class="pct-value">{{ pctJustTotal | number:'1.1-1' }}%</div>
+              <div class="pct-bar-track"><div class="pct-bar" [style.width.%]="pctJustTotal"></div></div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- COLUNA 2 -->
+        <div class="col col2">
+
+          <!-- Linha 1: Métrica -->
+          <div class="card fill metrica-col2">
+            <div class="card-header">Métrica</div>
+            <div class="card-body scroll">
+              <table class="ind-table">
+                <thead>
+                  <tr><th>Métrica</th><th>%SIM</th><th>%NÃO</th><th>%N/R</th><th>%JUST</th></tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let g of metricaGroups"
+                      [class.selected]="isSelected('metricas', g.label)"
+                      (click)="toggle('metricas', g.label, $event)">
+                    <td>{{ g.label }}</td>
+                    <td class="pct sim" >{{ g.pctSim  | number:'1.1-1' }}%</td>
+                    <td class="pct nao" >{{ g.pctNao  | number:'1.1-1' }}%</td>
+                    <td class="pct nr"  >{{ g.pctNR   | number:'1.1-1' }}%</td>
+                    <td class="pct just">{{ g.pctJust | number:'1.1-1' }}%</td>
+                  </tr>
+                  <tr *ngIf="metricaGroups.length === 0">
+                    <td class="empty" colspan="5">Sem dados</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Linha 2: Questão Notas -->
+          <div class="card fill">
+            <div class="card-header">Questão — Notas</div>
+            <div class="card-body scroll">
+              <table class="ind-table">
+                <thead>
+                  <tr>
+                    <th>Questão</th>
+                    <th>Notas</th>
+                    <th class="th-link">Áudio</th>
+                    <th class="th-link">Imagem</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let r of questaoNotasRows" [class.row-selected]="isSelected('questoes', r.questao)">
+                    <td class="td-questao td-clickable" (click)="toggle('questoes', r.questao, $event)">{{ r.questao }}</td>
+                    <td class="td-texto td-clickable"   (click)="toggle('questoes', r.questao, $event)">{{ r.texto }}</td>
+                    <td class="td-link">
+                      <a *ngIf="r.audioArquivo" [href]="r.audioArquivo" target="_blank" class="link-icon" title="Áudio">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                      </a>
+                      <span *ngIf="!r.audioArquivo" class="empty-cell">—</span>
+                    </td>
+                    <td class="td-link">
+                      <a *ngIf="r.imagemArquivo" [href]="r.imagemArquivo" target="_blank" class="link-icon" title="Imagem">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                      </a>
+                      <span *ngIf="!r.imagemArquivo" class="empty-cell">—</span>
+                    </td>
+                  </tr>
+                  <tr *ngIf="questaoNotasRows.length === 0">
+                    <td class="empty" colspan="4">Sem notas para o filtro selecionado</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ═══════════════════════════ LINHA FINAL (largura total) ═════════════ -->
+      <div class="final-section">
+        <div class="card fill">
+          <div class="card-header">Feedback Final</div>
+          <div class="card-body scroll">
+            <table class="ind-table">
+              <thead>
+                <tr>
+                  <th>Métrica</th>
+                  <th>Questão</th>
+                  <th>Notas</th>
+                  <th class="th-link">Áudio</th>
+                  <th class="th-link">Imagem</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let r of feedbackFinalRows" [class.row-selected]="isSelected('questoes', r.questao)">
+                  <td class="td-metrica td-clickable" (click)="toggle('questoes', r.questao, $event)">{{ r.metrica }}</td>
+                  <td class="td-questao td-clickable" (click)="toggle('questoes', r.questao, $event)">{{ r.questao }}</td>
+                  <td class="td-texto td-clickable"   (click)="toggle('questoes', r.questao, $event)">{{ r.texto }}</td>
+                  <td class="td-link">
+                    <a *ngIf="r.audioArquivo" [href]="r.audioArquivo" target="_blank" class="link-icon" title="Áudio">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    </a>
+                    <span *ngIf="!r.audioArquivo" class="empty-cell">—</span>
+                  </td>
+                  <td class="td-link">
+                    <a *ngIf="r.imagemArquivo" [href]="r.imagemArquivo" target="_blank" class="link-icon" title="Imagem">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    </a>
+                    <span *ngIf="!r.imagemArquivo" class="empty-cell">—</span>
+                  </td>
+                </tr>
+                <tr *ngIf="feedbackFinalRows.length === 0">
+                  <td class="empty" colspan="5">Sem feedback final para o filtro selecionado</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </ng-container>
+
+</div>

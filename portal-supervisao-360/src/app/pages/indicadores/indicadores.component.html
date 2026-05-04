@@ -9,7 +9,10 @@
 
     <!-- Header toolbar -->
     <div class="ind-toolbar">
-      <span class="ind-title">Indicadores</span>
+      <div class="toolbar-left">
+        <button class="btn-back" (click)="goBack()">&#8592;</button>
+        <span class="ind-title">Indicadores</span>
+      </div>
       <button class="btn-clear" (click)="clearAll()">Limpar filtros</button>
     </div>
 
@@ -194,6 +197,7 @@
                     <th>%SIM</th>
                     <th>%NÃO</th>
                     <th>%N/R</th>
+                    <th>%JUST</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -201,12 +205,13 @@
                       [class.selected]="isSelected('metricas', g.label)"
                       (click)="toggle('metricas', g.label, $event)">
                     <td>{{ g.label }}</td>
-                    <td class="pct sim">{{ g.pctSim | number:'1.1-1' }}%</td>
-                    <td class="pct nao">{{ g.pctNao | number:'1.1-1' }}%</td>
-                    <td class="pct nr" >{{ g.pctNR  | number:'1.1-1' }}%</td>
+                    <td class="pct sim" >{{ g.pctSim  | number:'1.1-1' }}%</td>
+                    <td class="pct nao" >{{ g.pctNao  | number:'1.1-1' }}%</td>
+                    <td class="pct nr"  >{{ g.pctNR   | number:'1.1-1' }}%</td>
+                    <td class="pct just">{{ g.pctJust | number:'1.1-1' }}%</td>
                   </tr>
                   <tr *ngIf="metricaGroups.length === 0">
-                    <td class="empty" colspan="4">Sem dados</td>
+                    <td class="empty" colspan="5">Sem dados</td>
                   </tr>
                 </tbody>
               </table>
@@ -236,6 +241,14 @@
               <div class="pct-value">{{ pctNRTotal | number:'1.1-1' }}%</div>
               <div class="pct-bar-track">
                 <div class="pct-bar" [style.width.%]="pctNRTotal"></div>
+              </div>
+            </div>
+
+            <div class="pct-card pct-just">
+              <div class="pct-label">% JUST</div>
+              <div class="pct-value">{{ pctJustTotal | number:'1.1-1' }}%</div>
+              <div class="pct-bar-track">
+                <div class="pct-bar" [style.width.%]="pctJustTotal"></div>
               </div>
             </div>
 

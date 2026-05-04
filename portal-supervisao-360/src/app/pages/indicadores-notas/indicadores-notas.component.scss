@@ -64,13 +64,8 @@
   border-radius: 4px;
   cursor: pointer;
   font-size: 1rem;
-  line-height: 1;
   transition: background 0.15s;
-
-  &:hover {
-    background: #334155;
-    color: #f1f5f9;
-  }
+  &:hover { background: #334155; color: #f1f5f9; }
 }
 
 .btn-clear {
@@ -82,21 +77,28 @@
   border-radius: 4px;
   cursor: pointer;
   transition: background 0.15s;
-
-  &:hover {
-    background: #334155;
-    color: #f1f5f9;
-  }
+  &:hover { background: #334155; color: #f1f5f9; }
 }
 
-// ─── Body (2 colunas) ────────────────────────────────────────────────────────
+// ─── Body ────────────────────────────────────────────────────────────────────
 
 .ind-body {
   display: flex;
+  flex-direction: column;
   flex: 1;
   overflow: hidden;
   gap: 6px;
   padding: 6px;
+}
+
+// ─── Top section (2 colunas) ─────────────────────────────────────────────────
+
+.top-section {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  gap: 6px;
+  overflow: hidden;
 }
 
 .col {
@@ -106,74 +108,49 @@
   overflow: hidden;
 }
 
-.col1 {
-  width: 35%;
-  min-width: 280px;
-}
+.col1 { width: 35%; min-width: 260px; }
+.col2 { flex: 1; }
 
-.col2 {
-  flex: 1;
-}
+// ─── Linhas col1 ─────────────────────────────────────────────────────────────
 
-// ─── Rows dentro das colunas ─────────────────────────────────────────────────
-
-.row1,
-.row2 {
+.row-pair {
   display: flex;
   gap: 6px;
+  height: 20vh;
   flex-shrink: 0;
-  height: 18vh;
 
-  .card {
-    flex: 1;
-  }
+  .card { flex: 1; }
 }
 
-.row3 {
-  flex: 1;
-  overflow: hidden;
-
-  .card.fill {
-    height: 100%;
-  }
-}
-
-.totals-row {
+// Linha 3: pct-cards horizontais (altura fixa pequena)
+.pct-row {
   display: flex;
   gap: 6px;
+  height: 11vh;
   flex-shrink: 0;
-  height: 70px;
 }
 
-.chart-row {
+// ─── Linhas col2 ─────────────────────────────────────────────────────────────
+
+.col2 .card.fill {
+  flex: 1;
+  min-height: 0;
+}
+
+// Métrica com altura fixa menor; Questão Notas ocupa o restante
+.metrica-col2 {
+  flex: none !important;
+  height: 20vh;
+}
+
+// ─── Linha final (largura total) ─────────────────────────────────────────────
+
+.final-section {
   height: 42vh;
   flex-shrink: 0;
   overflow: hidden;
 
-  .card.fill {
-    height: 100%;
-  }
-}
-
-.bottom-row {
-  display: flex;
-  gap: 6px;
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-}
-
-.metrica-card {
-  flex: 1;
-  overflow: hidden;
-}
-
-.pct-cards {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  width: 160px;
-  flex-shrink: 0;
+  .card.fill { height: 100%; }
 }
 
 // ─── Card base ───────────────────────────────────────────────────────────────
@@ -186,9 +163,7 @@
   flex-direction: column;
   overflow: hidden;
 
-  &.fill {
-    flex: 1;
-  }
+  &.fill { flex: 1; }
 }
 
 .card-header {
@@ -209,20 +184,9 @@
 
   &.scroll {
     overflow-y: auto;
-
     &::-webkit-scrollbar { width: 4px; }
     &::-webkit-scrollbar-track { background: transparent; }
     &::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
-  }
-
-  &.chart-wrap {
-    position: relative;
-    padding: 8px;
-
-    canvas {
-      width: 100% !important;
-      height: 100% !important;
-    }
   }
 }
 
@@ -248,91 +212,58 @@
   td {
     padding: 3px 8px;
     border-bottom: 1px solid #1e293b;
-    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 200px;
   }
 
   tr {
-    cursor: pointer;
     transition: background 0.1s;
-
-    &:hover {
-      background: #334155;
-    }
-
-    &.selected {
-      background: #1d4ed8;
-      color: #fff;
-
-      td { color: #fff; }
-    }
+    &:hover { background: #2d3f55; }
+    &.selected     { background: #1d4ed8; color: #fff; td { color: #fff; } }
+    &.row-selected { background: #1d4ed8; color: #fff; td { color: #fff; } }
   }
 
-  td.cnt {
-    text-align: right;
-    color: #64748b;
-    width: 40px;
+  td.td-clickable {
+    cursor: pointer;
+    &:hover { background: #334155; }
   }
 
-  td.cod {
-    color: #64748b;
-    width: 60px;
-  }
+  td.cnt       { text-align: right; color: #64748b; width: 40px; white-space: nowrap; }
+  td.cod       { color: #64748b; width: 60px; white-space: nowrap; }
+  td.empty     { color: #475569; font-style: italic; padding: 8px; }
+  td.td-questao { max-width: 260px; white-space: nowrap; }
+  td.td-metrica { max-width: 160px; white-space: nowrap; }
+  td.td-texto  { max-width: 340px; white-space: pre-wrap; word-break: break-word; }
+  td.td-link   { width: 52px; text-align: center; white-space: nowrap; }
+
+  th.th-link   { width: 52px; text-align: center; }
 
   td.pct {
     text-align: right;
     width: 54px;
-
+    white-space: nowrap;
     &.sim  { color: #4ade80; }
     &.nao  { color: #f87171; }
     &.nr   { color: #94a3b8; }
     &.just { color: #fb923c; }
   }
 
-  td.empty {
-    color: #475569;
-    font-style: italic;
-    padding: 8px;
-  }
+  .empty-cell { color: #475569; }
 }
 
-// ─── Totalizadores ───────────────────────────────────────────────────────────
-
-.total-card {
-  flex: 1;
-  background: #1e293b;
-  border: 1px solid #334155;
-  border-radius: 6px;
-  display: flex;
-  flex-direction: column;
+.link-icon {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 6px;
+  color: #94a3b8;
+  text-decoration: none;
+  transition: color 0.15s;
+  &:hover { color: #f1f5f9; }
 
-  &.highlight-sim {
-    border-color: #22c55e;
-    background: #052e16;
-  }
+  svg { display: block; }
 }
 
-.total-value {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: #f1f5f9;
-  line-height: 1;
-}
-
-.total-label {
-  font-size: 0.65rem;
-  text-transform: uppercase;
-  letter-spacing: .06em;
-  color: #64748b;
-  margin-top: 2px;
-}
-
-// ─── Cards de percentual (col2 row3) ─────────────────────────────────────────
+// ─── Pct cards (linha 3 col1, horizontais) ────────────────────────────────────
 
 .pct-card {
   flex: 1;
@@ -344,6 +275,7 @@
   flex-direction: column;
   justify-content: center;
   gap: 4px;
+  min-width: 0;
 
   &.pct-sim  { border-color: #22c55e; }
   &.pct-nao  { border-color: #ef4444; }
@@ -359,7 +291,7 @@
 }
 
 .pct-value {
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 700;
   color: #f1f5f9;
 }
@@ -375,7 +307,6 @@
   height: 100%;
   border-radius: 2px;
   transition: width 0.3s ease;
-
   .pct-sim  & { background: #22c55e; }
   .pct-nao  & { background: #ef4444; }
   .pct-nr   & { background: #94a3b8; }
@@ -385,62 +316,22 @@
 // ─── Responsividade (mobile) ─────────────────────────────────────────────────
 
 @media (max-width: 768px) {
-  :host {
-    height: auto;
-    overflow: visible;
-  }
+  :host, .ind-root { height: auto; overflow: visible; }
 
-  .ind-root {
-    height: auto;
-    overflow: visible;
-  }
+  .ind-body { overflow: visible; height: auto; }
 
-  .ind-body {
-    flex-direction: column;
-    overflow: visible;
-    height: auto;
-  }
+  .top-section { flex-direction: column; overflow: visible; }
 
-  .col1,
-  .col2 {
-    width: 100%;
-    overflow: visible;
-  }
+  .col1, .col2 { width: 100%; overflow: visible; }
 
-  .row1,
-  .row2 {
-    height: auto;
-    min-height: 140px;
-  }
+  .row-pair { height: auto; min-height: 140px; }
 
-  .row3 {
-    height: auto;
-    min-height: 200px;
-    overflow: visible;
-  }
+  .pct-row { height: auto; min-height: 80px; flex: none; }
 
-  .chart-row {
-    height: 280px;
-    flex-shrink: 0;
-  }
+  .col2 .card.fill { min-height: 180px; flex: none; }
+  .metrica-col2 { height: auto !important; min-height: 180px; }
 
-  .bottom-row {
-    height: auto;
-    flex-direction: column;
-    overflow: visible;
-  }
+  .final-section { height: auto; min-height: 180px; }
 
-  .metrica-card {
-    min-height: 200px;
-  }
-
-  .pct-cards {
-    flex-direction: row;
-    width: 100%;
-    height: auto;
-  }
-
-  .pct-card {
-    min-height: 70px;
-  }
+  .ind-table td.td-texto { white-space: normal; }
 }

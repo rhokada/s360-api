@@ -2,80 +2,71 @@ import {
   Component, OnInit, OnDestroy,
   ViewChild, ElementRef, NgZone
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { Location } from '@angular/common';
-import { Subject } from 'rxjs';
+import { CommonModule, Location } from '@angular/common';
+import { Subject, forkJoin } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { Chart, registerables } from 'chart.js';
-import {
-  DashRow, FilterState,
-  TipoGroup, SuperGroup, DataGroup, VendGroup, PctGroup
-} from '../../shared/models/indicadores.interfaces';
+import { DashRow, TipoGroup, SuperGroup, DataGroup, VendGroup, PctGroup } from '../../shared/models/indicadores.interfaces';
+import { DashNotasRow, NotaJoinRow, NotasFilterState } from '../../shared/models/indicadores-notas.interfaces';
 import { IndicadoresService } from '../../core/services/indicadores.service';
+import { IndicadoresNotasService } from '../../core/services/indicadores-notas.service';
 
 Chart.register(...registerables);
 
 @Component({
-  selector: 'app-indicadores',
+  selector: 'app-indicadores-notas',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './indicadores.component.html',
-  styleUrls: ['./indicadores.component.scss']
+  templateUrl: './indicadores-notas.component.html',
+  styleUrls: ['./indicadores-notas.component.scss']
 })
-export class IndicadoresComponent implements OnInit, OnDestroy {
+export class IndicadoresNotasComponent implements OnInit, OnDestroy {
   @ViewChild('barChart') barChartRef!: ElementRef<HTMLCanvasElement>;
 
   private destroy$ = new Subject<void>();
   private chart: Chart | null = null;
 
-  allRows: DashRow[] = [];
+  allRows:  DashRow[]    = [];
+  allNotas: DashNotasRow[] = [];
   filteredRows: DashRow[] = [];
   isLoading = true;
 
-  filter: FilterState = {
-    tiposQuestionario: [],
-    supervisores: [],
-    datas: [],
-    vendedores: [],
-    grupos: [],
-    metricas: []
+  filter: NotasFilterState = {
+    tiposQuestionario: [], supervisores: [], datas: [], vendedores: [], metricas: [], questoes: []
   };
 
-  tipoGroups: TipoGroup[]   = [];
-  superGroups: SuperGroup[] = [];
-  dataGroups: DataGroup[]   = [];
-  vendGroups: VendGroup[]   = [];
-  grupoGroups: PctGroup[]   = [];
-  metricaGroups: PctGroup[] = [];
+  tipoGroups:    TipoGroup[]  = [];
+  superGroups:   SuperGroup[] = [];
+  dataGroups:    DataGroup[]  = [];
+  vendGroups:    VendGroup[]  = [];
+  metricaGroups: PctGroup[]   = [];
 
-  totalDatas = 0;
-  totalVendedores = 0;
-  totalQuestionarios = 0;
   pctSimTotal  = 0;
   pctNaoTotal  = 0;
   pctNRTotal   = 0;
   pctJustTotal = 0;
 
+  questaoNotasRows:  NotaJoinRow[] = [];
+  feedbackFinalRows: NotaJoinRow[] = [];
+
   constructor(
     private indicadoresService: IndicadoresService,
-    private zone: NgZone,
-    private location: Location
+    private indicadoresNotasService: IndicadoresNotasService,
+    private location: Location,
+    private zone: NgZone
   ) {}
 
-  goBack(): void {
-    this.location.back();
-  }
-
   ngOnInit(): void {
-    this.indicadoresService.select()
-      .pipe(takeUntil(this.destroy$))
+    forkJoin([
+      this.indicadoresService.select(),
+      this.indicadoresNotasService.select()
+    ]).pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: rows => {
-          this.allRows = rows;
+        next: ([rows, notas]) => {
+          this.allRows  = rows;
+          this.allNotas = notas;
           this.isLoading = false;
           this.applyFilters();
-          // Canvas só entra na DOM após Angular re-renderizar o *ngIf;
-          // setTimeout 0 aguarda o próximo ciclo de render para desenhar o gráfico.
           setTimeout(() => this.drawChart());
         },
         error: () => { this.isLoading = false; }
@@ -88,57 +79,49 @@ export class IndicadoresComponent implements OnInit, OnDestroy {
     this.chart?.destroy();
   }
 
+  goBack(): void { this.location.back(); }
+
   // ─── Filtros ──────────────────────────────────────────────────────────────
 
-  toggle(field: keyof FilterState, value: any, event?: MouseEvent): void {
+  toggle(field: keyof NotasFilterState, value: any, event?: MouseEvent): void {
     const arr = this.filter[field] as any[];
     const idx = arr.indexOf(value);
-
     if (event?.ctrlKey || event?.metaKey) {
-      // Ctrl+click: adiciona ou remove do multi-seleção
-      if (idx >= 0) arr.splice(idx, 1);
-      else arr.push(value);
+      if (idx >= 0) arr.splice(idx, 1); else arr.push(value);
     } else {
-      // Click simples: troca; se já era o único selecionado, limpa
-      if (idx >= 0 && arr.length === 1) {
-        (this.filter[field] as any[]) = [];
-      } else {
-        (this.filter[field] as any[]) = [value];
-      }
+      (this.filter[field] as any[]) = (idx >= 0 && arr.length === 1) ? [] : [value];
     }
     this.applyFilters();
   }
 
-  isSelected(field: keyof FilterState, value: any): boolean {
+  isSelected(field: keyof NotasFilterState, value: any): boolean {
     return (this.filter[field] as any[]).includes(value);
   }
 
   applyFilters(): void {
-    // filteredRows usa todos os filtros (gráfico, totalizadores)
     this.filteredRows = this.filterRows(this.allRows, this.filter);
 
-    // Cada card usa allRows filtrado por TODOS os campos EXCETO o seu próprio,
-    // para que o card não se auto-filtre (comportamento Power BI).
     const tipoRows    = this.filterRows(this.allRows, { ...this.filter, tiposQuestionario: [] });
     const superRows   = this.filterRows(this.allRows, { ...this.filter, supervisores: [] });
     const dataRows    = this.filterRows(this.allRows, { ...this.filter, datas: [] });
     const vendRows    = this.filterRows(this.allRows, { ...this.filter, vendedores: [] });
-    const grupoRows   = this.filterRows(this.allRows, { ...this.filter, grupos: [] });
     const metricaRows = this.filterRows(this.allRows, { ...this.filter, metricas: [] });
+    // questoes não tem card próprio, mas participa do filtro global
 
-    this.computeGroups(tipoRows, superRows, dataRows, vendRows, grupoRows, metricaRows);
-    this.computeTotals();
+    this.computeGroups(tipoRows, superRows, dataRows, vendRows, metricaRows);
+    this.computePcts();
+    this.computeJoinedRows();
     this.drawChart();
   }
 
-  private filterRows(rows: DashRow[], f: FilterState): DashRow[] {
+  private filterRows(rows: DashRow[], f: NotasFilterState): DashRow[] {
     return rows.filter(r => {
       if (f.tiposQuestionario.length && !f.tiposQuestionario.includes(r.tipoQuestionario ?? '')) return false;
       if (f.supervisores.length      && !f.supervisores.includes(r.supervisor))                  return false;
       if (f.datas.length             && !f.datas.includes(this.formatDate(r.data)))              return false;
       if (f.vendedores.length        && !f.vendedores.includes(r.idVendedor))                    return false;
-      if (f.grupos.length            && !f.grupos.includes(r.grupo ?? ''))                       return false;
       if (f.metricas.length          && !f.metricas.includes(r.metrica ?? ''))                   return false;
+      if (f.questoes.length          && !f.questoes.includes(r.questao ?? ''))                   return false;
       return true;
     });
   }
@@ -147,7 +130,7 @@ export class IndicadoresComponent implements OnInit, OnDestroy {
 
   private computeGroups(
     tipoRows: DashRow[], superRows: DashRow[], dataRows: DashRow[],
-    vendRows: DashRow[], grupoRows: DashRow[], metricaRows: DashRow[]
+    vendRows: DashRow[], metricaRows: DashRow[]
   ): void {
     const toMap = (rows: DashRow[], key: (r: DashRow) => string) => {
       const m = new Map<string, number>();
@@ -155,16 +138,9 @@ export class IndicadoresComponent implements OnInit, OnDestroy {
       return m;
     };
 
-    this.tipoGroups = Array.from(toMap(tipoRows, r => r.tipoQuestionario ?? '(sem tipo)').entries())
-      .map(([value, count]) => ({ value, count }));
-
-    this.superGroups = Array.from(toMap(superRows, r => r.supervisor ?? '(sem supervisor)').entries())
-      .map(([value, count]) => ({ value, count }));
-
-    // Datas: armazenar data formatada (filter.datas também usa formatada)
-    this.dataGroups = Array.from(toMap(dataRows, r => this.formatDate(r.data)).entries())
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([value, count]) => ({ value, count }));
+    this.tipoGroups  = Array.from(toMap(tipoRows,  r => r.tipoQuestionario ?? '(sem tipo)').entries()).map(([value, count]) => ({ value, count }));
+    this.superGroups = Array.from(toMap(superRows, r => r.supervisor       ?? '(sem supervisor)').entries()).map(([value, count]) => ({ value, count }));
+    this.dataGroups  = Array.from(toMap(dataRows,  r => this.formatDate(r.data)).entries()).sort(([a], [b]) => a.localeCompare(b)).map(([value, count]) => ({ value, count }));
 
     const vendMap = new Map<number, VendGroup>();
     vendRows.forEach(r => {
@@ -173,7 +149,6 @@ export class IndicadoresComponent implements OnInit, OnDestroy {
     });
     this.vendGroups = Array.from(vendMap.values()).sort((a, b) => a.vendedor.localeCompare(b.vendedor));
 
-    this.grupoGroups   = this.buildPctGroups(grupoRows,   r => r.grupo   ?? '(sem grupo)');
     this.metricaGroups = this.buildPctGroups(metricaRows, r => r.metrica ?? '(sem métrica)');
   }
 
@@ -193,12 +168,8 @@ export class IndicadoresComponent implements OnInit, OnDestroy {
     }));
   }
 
-  private computeTotals(): void {
-    const rows = this.filteredRows;
-    this.totalDatas         = new Set(rows.map(r => this.formatDate(r.data))).size;
-    this.totalVendedores    = new Set(rows.map(r => r.idVendedor)).size;
-    this.totalQuestionarios = new Set(rows.map(r => r.idQuestionario)).size;
-
+  private computePcts(): void {
+    const rows    = this.filteredRows;
     const total   = rows.length;
     const sumSim  = rows.reduce((s, r) => s + r.sim, 0);
     const sumNao  = rows.reduce((s, r) => s + r.nao, 0);
@@ -209,6 +180,42 @@ export class IndicadoresComponent implements OnInit, OnDestroy {
     this.pctNaoTotal  = total ? Math.round(sumNao  / total * 1000) / 10 : 0;
     this.pctNRTotal   = total ? Math.round(sumNR   / total * 1000) / 10 : 0;
     this.pctJustTotal = total ? Math.round(sumJust / total * 1000) / 10 : 0;
+  }
+
+  private computeJoinedRows(): void {
+    // Agrupa notas por submittedAnswerDetailId, acumulando texto/audio/imagem
+    const notaMap = new Map<number, { texto: string | null; audio: string | null; imagem: string | null }>();
+    this.allNotas.forEach(n => {
+      const prev = notaMap.get(n.submittedAnswerDetailId) ?? { texto: null, audio: null, imagem: null };
+      notaMap.set(n.submittedAnswerDetailId, {
+        texto:  prev.texto  || n.texto        || null,
+        audio:  prev.audio  || n.audioArquivo  || null,
+        imagem: prev.imagem || n.imagemArquivo || null,
+      });
+    });
+
+    const questaoRows:  NotaJoinRow[] = [];
+    const feedbackRows: NotaJoinRow[] = [];
+
+    this.filteredRows.forEach(row => {
+      const nota = notaMap.get(row.submittedAnswerDetailId);
+      if (!nota?.texto) return;
+
+      const joined: NotaJoinRow = {
+        submittedAnswerDetailId: row.submittedAnswerDetailId,
+        questao:      row.questao,
+        metrica:      row.metrica,
+        texto:        nota.texto,
+        audioArquivo: nota.audio,
+        imagemArquivo: nota.imagem,
+      };
+
+      questaoRows.push(joined);
+      if ((row.metrica ?? '').toUpperCase() === 'FEEDBACK FINAL') feedbackRows.push(joined);
+    });
+
+    this.questaoNotasRows  = questaoRows;
+    this.feedbackFinalRows = feedbackRows;
   }
 
   // ─── Gráfico ──────────────────────────────────────────────────────────────
@@ -246,7 +253,6 @@ export class IndicadoresComponent implements OnInit, OnDestroy {
         scales: { x: { stacked: false }, y: { stacked: false } },
         onClick: (_evt, elements) => {
           if (!elements.length) return;
-          // labels já são datas formatadas, que é o que filter.datas armazena
           const label = labels[elements[0].index];
           this.zone.run(() => this.toggle('datas', label));
         }
@@ -268,7 +274,7 @@ export class IndicadoresComponent implements OnInit, OnDestroy {
   }
 
   clearAll(): void {
-    this.filter = { tiposQuestionario: [], supervisores: [], datas: [], vendedores: [], grupos: [], metricas: [] };
+    this.filter = { tiposQuestionario: [], supervisores: [], datas: [], vendedores: [], metricas: [], questoes: [] };
     this.applyFilters();
   }
 }

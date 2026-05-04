@@ -88,6 +88,12 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'indicadores-notas',
+    loadComponent: () =>
+      import('./pages/indicadores-notas/indicadores-notas.component').then(m => m.IndicadoresNotasComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: 'unauthorized',
     loadComponent: () =>
       import('./pages/unauthorized/unauthorized.component').then(m => m.UnauthorizedComponent),

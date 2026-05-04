@@ -35,4 +35,4 @@ export interface TipoGroup   { value: string; count: number; }
 export interface SuperGroup  { value: string; count: number; }
 export interface DataGroup   { value: string; count: number; }
 export interface VendGroup   { id: number; codVendedor: string; vendedor: string; }
-export interface PctGroup    { label: string; pctSim: number; pctNao: number; pctNR: number; }
+export interface PctGroup    { label: string; pctSim: number; pctNao: number; pctNR: number; pctJust: number; }
