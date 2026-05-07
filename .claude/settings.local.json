@@ -13,7 +13,14 @@
       "Bash(cmd /c \"cd /d d:\\\\projetos\\\\s360-api && dotnet build 2>&1\")",
       "Bash(npm list *)",
       "Bash(npm install *)",
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "WebSearch",
+      "WebFetch(domain:docs.fireflies.ai)",
+      "WebFetch(domain:rollout.com)",
+      "WebFetch(domain:developers.fireflies.ai)",
+      "Bash(Get-ChildItem -Path \"d:\\\\projetos\\\\s360-api\" -Force)",
+      "Bash(Select-Object Name)",
+      "PowerShell(Get-ChildItem -Path \"d:\\\\projetos\\\\s360-api\" -Directory | Where-Object { $_.Name -match 'Controllers|Services|Helpers|Models|Jobs' } | Select-Object Name)"
     ]
   }
 }

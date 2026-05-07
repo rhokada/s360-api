@@ -129,6 +129,14 @@ namespace WebApi
             services.AddScoped<IDashIndicadoresService, DashIndicadoresService>();
             services.AddScoped<IDashIndicadoresNotasService, DashIndicadoresNotasService>();
 
+            // Adicionando FirefliesConfig
+            var firefliesConfig = Configuration.GetSection("FirefliesConfig");
+            services.Configure<FirefliesConfig>(firefliesConfig);
+
+            // Adicionando OpenAiConfig
+            var openAiConfig = Configuration.GetSection("OpenAiConfig");
+            services.Configure<OpenAiConfig>(openAiConfig);
+
             // Adicionando VisionApiConfig
             var visionApiConfig = Configuration.GetSection("VisionApiConfig");
             services.Configure<VisionApiConfig>(visionApiConfig);
@@ -148,6 +156,8 @@ namespace WebApi
             services.AddHangfireServer();
             services.AddScoped<VisionImportJob>();
             services.AddScoped<GenerateSellerQuestionnaireEmailsJob>();
+            services.AddScoped<AudioTranscriptionSubmissionJob>();
+            services.AddScoped<AudioTranscriptionCollectionJob>();
             
         }
 
@@ -178,6 +188,18 @@ namespace WebApi
                 "generate-seller-questionnaire-emails",
                 job => job.ExecutarGenerateSellerQuestionnaireEmailsAsync(),
                 Cron.Daily(8, 0) // roda todo dia às 03:00 — pode disparar manualmente a qualquer hora
+            );
+
+            RecurringJob.AddOrUpdate<AudioTranscriptionSubmissionJob>(
+                "audio-transcription-submission",
+                job => job.ExecutarAsync(),
+                 Cron.Daily(3, 0) //"0 */2 * * *" // a cada 2 horas
+            );
+
+            RecurringJob.AddOrUpdate<AudioTranscriptionCollectionJob>(
+                "audio-transcription-collection",
+                job => job.ExecutarAsync(),
+                Cron.Daily(3, 0) // a cada hora nos :30 (defasado da submissão)
             );
             
 
