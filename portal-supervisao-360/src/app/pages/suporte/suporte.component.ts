@@ -62,11 +62,11 @@ export class SuporteComponent {
   }
 
   openWhatsApp(): void {
-    const message = encodeURIComponent('Olá! Preciso de suporte com o Supervisão 360.');
+    const message = encodeURIComponent('Olá! Preciso de suporte com o Supervision 360.');
     window.open(`https://wa.me/${this.whatsappNumber}?text=${message}`, '_blank');
   }
 
   sendEmail(): void {
-    window.location.href = `mailto:${this.supportEmail}?subject=Suporte Supervisão 360`;
+    window.location.href = `mailto:${this.supportEmail}?subject=Suporte Supervision 360`;
   }
 }
