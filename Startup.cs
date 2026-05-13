@@ -128,6 +128,8 @@ namespace WebApi
             services.AddScoped<IAdmRoleUserService, AdmRoleUserService>();
             services.AddScoped<IDashIndicadoresService, DashIndicadoresService>();
             services.AddScoped<IDashIndicadoresNotasService, DashIndicadoresNotasService>();
+            services.AddScoped<IAiPromptService, AiPromptService>();
+            services.AddScoped<ITranscricaoAudioService, TranscricaoAudioService>();
 
             // Adicionando FirefliesConfig
             var firefliesConfig = Configuration.GetSection("FirefliesConfig");

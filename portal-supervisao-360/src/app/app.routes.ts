@@ -172,6 +172,16 @@ export const routes: Routes = [
         path: 'role/:roleId/permissions',
         loadComponent: () => import('./pages/adm/adm-role-permission/adm-role-permission.component').then(m => m.AdmRolePermissionComponent),
         data: { slug: 'adm-role' }
+      },
+      {
+        path: 'ai-prompt',
+        loadComponent: () => import('./pages/adm/adm-ai-prompt/adm-ai-prompt.component').then(m => m.AdmAiPromptComponent),
+        data: { slug: 'adm-ai-prompt' }
+      },
+      {
+        path: 'transcricao-audio',
+        loadComponent: () => import('./pages/adm/adm-transcricao-audio/adm-transcricao-audio.component').then(m => m.AdmTranscricaoAudioComponent),
+        data: { slug: 'adm-transcricao-audio' }
       }
     ]
   },

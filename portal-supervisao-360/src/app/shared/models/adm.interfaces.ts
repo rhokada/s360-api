@@ -183,3 +183,30 @@ export interface AdmRoleUser {
   userEmail: string;
   dhCreate: string | null;
 }
+
+export interface AiPromptItem {
+  aiPromptId: number;
+  aiProcessCd: string;
+  context: string | null;
+  prompt: string | null;
+  engine: string | null;
+  dhcreate: string | null;
+  active: boolean;
+  log: string | null;
+}
+
+export interface TranscricaoAudioItem {
+  submittedAnswerDetailId: number;
+  alternativeId: number | null;
+  answerText: string | null;
+  questionGroup: string | null;
+  metric: string | null;
+  audioTranscription: string | null;
+  aiAnalysis: string | null;
+}
+
+export interface TranscricaoSentence {
+  speakerName: string;
+  text: string;
+  startTime?: number;
+}

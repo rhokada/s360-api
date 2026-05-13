@@ -36,6 +36,7 @@ namespace WebApi.Jobs
         public async Task ExecutarAsync()
         {
             List<dynamic> records;
+            string aiPrompt;
 
             using (var con = new SqlConnection(_connectionStrings.Default))
             {
@@ -46,7 +47,19 @@ namespace WebApi.Jobs
                     WHERE  FirefliesMeetingId IS NOT NULL
                       AND  AudioTranscription IS NULL
                 ").ToList();
+
+                aiPrompt = con.QueryFirstOrDefault<string>(@"
+                    SELECT TOP 1 Prompt
+                    FROM   AiPrompt
+                    WHERE  Active = 1 AND AiProcessCd = 'FeedbackPendencias'
+                ");
                 con.Close();
+            }
+
+            if (string.IsNullOrEmpty(aiPrompt))
+            {
+                Console.WriteLine("[AudioTranscriptionCollectionJob] Prompt 'FeedbackPendencias' não encontrado na tabela AiPrompt. Execução cancelada.");
+                return;
             }
 
             Console.WriteLine($"[AudioTranscriptionCollectionJob] {records.Count} registros aguardando coleta.");
@@ -60,7 +73,7 @@ namespace WebApi.Jobs
                 {
                     var (status, sentences) = await GetFirefliesTranscriptAsync(meetingId);
 
-                    if (status != "completed" && status != "processed")
+                    if (status == "processing" || status == "failed")
                     {
                         Console.WriteLine($"[AudioTranscriptionCollectionJob] Registro {id}: status '{status}', aguardando próxima execução.");
                         continue;
@@ -81,8 +94,8 @@ namespace WebApi.Jobs
                         con.Close();
                     }
 
-                    // Análise com GPT-4o
-                    var analysis = await GetGptAnalysisAsync(transcriptJson);
+                    // Análise com GPT
+                    var analysis = await GetGptAnalysisAsync(transcriptJson, aiPrompt);
 
                     if (!string.IsNullOrEmpty(analysis))
                     {
@@ -150,31 +163,9 @@ namespace WebApi.Jobs
 
         // ─── OpenAI GPT-4o ────────────────────────────────────────────────────
 
-        private async Task<string> GetGptAnalysisAsync(string transcriptText)
+        private async Task<string> GetGptAnalysisAsync(string transcriptText, string systemPrompt)
         {
-            const string endpoint     = "https://api.openai.com/v1/chat/completions";
-            const string systemPrompt = @"o texto refere-se a uma conversa entre um supervisor e um vendedor, onde o supervisor fala sobre a atuação do vendedor durante o processo de venda. extraia do texto todas as pendências do vendedor, prioridade e prazo estimado de solução. também faça um resumo da conversa identificando pontos forte e fracos.
-               
-
-                Retorne APENAS um JSON válido.
-                Não escreva explicações.
-                Não utilize markdown.
-                Não utilize texto antes ou depois do JSON.
-
-                Formato obrigatório:
-                {
-                    ""resumo"": ""string"",
-                    ""pontos_fortes"": ""string"",
-                    ""pontos_fracos"": ""string"",
-                    ""pendencias"": [
-                      {
-                        ""pendencia"": ""string"",
-                        ""prioridade"": ""string"",
-                        ""prazo_estimado"": ""string""
-                      }
-                    ]
-                }
-            ";
+            const string endpoint = "https://api.openai.com/v1/chat/completions";
 
             var payload = new
             {
