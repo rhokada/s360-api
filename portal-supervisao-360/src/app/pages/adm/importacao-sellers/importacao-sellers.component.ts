@@ -5,7 +5,7 @@ import * as XLSX from 'xlsx';
 import { ToastService } from '../../../core/services/toast.service';
 import { environment } from '../../../../environments/environment';
 
-interface SallersRow {
+interface SellersRow {
   ID: string | null;
   CodCliente: string | null;
   NomeFantasia: string | null;
@@ -25,19 +25,19 @@ interface SallersRow {
 type UploadStep = 'idle' | 'preview' | 'uploading' | 'done' | 'error';
 
 @Component({
-  selector: 'app-importacao-sallers',
+  selector: 'app-importacao-sellers',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './importacao-sallers.component.html',
-  styleUrls: ['./importacao-sallers.component.scss']
+  templateUrl: './importacao-sellers.component.html',
+  styleUrls: ['./importacao-sellers.component.scss']
 })
-export class ImportacaoSallersComponent {
+export class ImportacaoSellersComponent {
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
   step: UploadStep = 'idle';
   isDragOver = false;
   selectedFile: File | null = null;
-  rows: SallersRow[] = [];
+  rows: SellersRow[] = [];
   uploadResult: { success: number; errors: string[] } | null = null;
   errorMessage = '';
 
@@ -52,7 +52,7 @@ export class ImportacaoSallersComponent {
   downloadModelo(): void {
     const link = document.createElement('a');
     link.href = this.modeloUrl;
-    link.download = 'modelo-sallers.xlsx';
+    link.download = 'modelo-sellers.xlsx';
     link.click();
   }
 
@@ -105,7 +105,7 @@ export class ImportacaoSallersComponent {
           return;
         }
 
-        this.rows = XLSX.utils.sheet_to_json<SallersRow>(sheet, { defval: null });
+        this.rows = XLSX.utils.sheet_to_json<SellersRow>(sheet, { defval: null });
         this.step = 'preview';
       } catch {
         this.toast.error('Erro ao ler o arquivo. Verifique se é um Excel válido.');
@@ -115,7 +115,7 @@ export class ImportacaoSallersComponent {
     reader.readAsArrayBuffer(file);
   }
 
-  get rowsPreview(): SallersRow[] {
+  get rowsPreview(): SellersRow[] {
     return this.rows.slice(0, this.maxPreviewRows);
   }
 
@@ -127,7 +127,7 @@ export class ImportacaoSallersComponent {
     formData.append('file', this.selectedFile, this.selectedFile.name);
 
     this.http.post<{ success: number; errors: string[] }>(
-      `${environment.apiUrl}/DataImportSallers/ImportarPlanilha`,
+      `${environment.apiUrl}/DataImportSellers/ImportarPlanilha`,
       formData
     ).subscribe({
       next: (res) => {

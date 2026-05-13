@@ -139,9 +139,9 @@ export const routes: Routes = [
         data: { slug: 'adm-importacao' }
       },
       {
-        path: 'importacao-sallers',
-        loadComponent: () => import('./pages/adm/importacao-sallers/importacao-sallers.component').then(m => m.ImportacaoSallersComponent),
-        data: { slug: 'adm-importacao-sallers' }
+        path: 'importacao-sellers',
+        loadComponent: () => import('./pages/adm/importacao-sellers/importacao-sellers.component').then(m => m.ImportacaoSellersComponent),
+        data: { slug: 'adm-importacao-sellers' }
       },
       {
         path: 'customers',
