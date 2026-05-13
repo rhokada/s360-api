@@ -15,18 +15,20 @@ namespace WebApi.Jobs
     public class VisionImportJob
     {
         private readonly ConnectionStrings _connectionStrings;
-        private readonly VisionApiConfig _apiConfig;
+        private readonly VisionApiConfig   _apiConfig;
 
         public VisionImportJob(IOptions<ConnectionStrings> connectionStrings, IOptions<VisionApiConfig> apiConfig)
         {
             _connectionStrings = connectionStrings.Value;
-            _apiConfig = apiConfig.Value;
+            _apiConfig         = apiConfig.Value;
         }
 
         public async Task ExecutarImportacaoVisionAsync()
         {
-            int logId = 0;
-            int totalRows = 0, processedRows = 0, errorRows = 0;
+            int logId         = 0;
+            int totalRows     = 0;
+            int processedRows = 0;
+            int errorRows     = 0;
 
             using var con = new SqlConnection(_connectionStrings.Default);
             con.Open();
@@ -41,8 +43,12 @@ namespace WebApi.Jobs
                 }, commandType: CommandType.StoredProcedure);
                 logId = (int)(logResult?.DataImportSallersLogId ?? 0);
 
-                // 2. Consumir API com paginação
-                using var httpClient = new HttpClient();
+                // 2. Consumir API com paginação e bulk insert por página
+                var handler = new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                };
+                using var httpClient = new HttpClient(handler);
                 httpClient.DefaultRequestHeaders.Add("APIKEY", _apiConfig.ApiKey);
 
                 int currentPage = 1;
@@ -59,36 +65,24 @@ namespace WebApi.Jobs
                     totalPages = result.Pagination?.TotalPage ?? 1;
                     totalRows += result.Data.Count;
 
-                    foreach (var row in result.Data)
+                    try
                     {
-                        try
+                        var table = BuildDataTable(logId, result.Data);
+
+                        using var bulk = new SqlBulkCopy(con)
                         {
-                            // Cada linha da API vira uma linha em DataImportSallersRow
-                            // combinando os dados do vendedor, supervisor e cliente
-                            con.Execute("sp_DataImportSallersRow_Insert", new
-                            {
-                                DataImportSallersLogId = logId,
-                                ID                  = row.CodigoVendedor?.ToString(),
-                                CodCliente          = row.CodigoCliente?.ToString(),
-                                NomeFantasia        = (string)null,
-                                CNPJ                = (string)null,
-                                CodProfissional     = row.CodigoVendedor?.ToString(),
-                                Email               = row.EmailVendedor,
-                                Nome                = row.NomeVendedor,
-                                Celular             = row.TelefoneVendedor,
-                                CodEquipe           = (string)null,
-                                Vendedor            = true,
-                                CodSuperior         = row.CodigoSupervisor?.ToString(),
-                                row.NomeSupervisor,
-                                row.TelefoneSupervisor,
-                                row.EmailSupervisor
-                            }, commandType: CommandType.StoredProcedure);
-                            processedRows++;
-                        }
-                        catch
-                        {
-                            errorRows++;
-                        }
+                            DestinationTableName = "DataImportSallersRow",
+                            BatchSize            = 1000
+                        };
+                        MapBulkColumns(bulk);
+                        await bulk.WriteToServerAsync(table);
+
+                        processedRows += result.Data.Count;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[VisionImportJob] Erro no bulk insert da página {currentPage}: {ex.Message}");
+                        errorRows += result.Data.Count;
                     }
 
                     currentPage++;
@@ -109,10 +103,10 @@ namespace WebApi.Jobs
                 if (logId > 0)
                     con.Execute("SP_Adm_DataImportSallersLog", new
                     {
-                        TypeRequest              = "UPDATE",
-                        DataImportSallersLogId   = logId,
-                        Status                   = "ERROR",
-                        ErrorMessage             = ex.Message
+                        TypeRequest            = "UPDATE",
+                        DataImportSallersLogId = logId,
+                        Status                 = "ERROR",
+                        ErrorMessage           = ex.Message
                     }, commandType: CommandType.StoredProcedure);
                 throw;
             }
@@ -121,9 +115,70 @@ namespace WebApi.Jobs
                 con.Close();
             }
         }
+
+        private static DataTable BuildDataTable(int logId, List<VisionApiRow> rows)
+        {
+            var table = new DataTable();
+            table.Columns.Add("DataImportSallersLogId", typeof(int));
+            table.Columns.Add("ID",                     typeof(string));
+            table.Columns.Add("CodCliente",             typeof(string));
+            table.Columns.Add("NomeFantasia",           typeof(string));
+            table.Columns.Add("CNPJ",                   typeof(string));
+            table.Columns.Add("CodProfissional",        typeof(string));
+            table.Columns.Add("Email",                  typeof(string));
+            table.Columns.Add("Nome",                   typeof(string));
+            table.Columns.Add("Celular",                typeof(string));
+            table.Columns.Add("CodEquipe",              typeof(string));
+            table.Columns.Add("Vendedor",               typeof(bool));
+            table.Columns.Add("CodSuperior",            typeof(string));
+            table.Columns.Add("NomeSupervisor",         typeof(string));
+            table.Columns.Add("TelefoneSupervisor",     typeof(string));
+            table.Columns.Add("EmailSupervisor",        typeof(string));
+            table.Columns.Add("Status",                 typeof(string));
+            table.Columns.Add("DhCreate",               typeof(DateTime));
+
+            var now = DateTime.Now;
+            foreach (var row in rows)
+            {
+                table.Rows.Add(
+                    logId,
+                    row.CodigoVendedor?.ToString(),
+                    row.CodigoCliente?.ToString(),
+                    row.Fantasia,
+                    DBNull.Value,
+                    row.CodigoVendedor?.ToString(),
+                    row.EmailVendedor,
+                    row.NomeVendedor,
+                    row.TelefoneVendedor,
+                    DBNull.Value,
+                    true,
+                    row.CodigoSupervisor?.ToString(),
+                    row.NomeSupervisor,
+                    row.TelefoneSupervisor,
+                    row.EmailSupervisor,
+                    "PENDING",
+                    now
+                );
+            }
+
+            return table;
+        }
+
+        private static void MapBulkColumns(SqlBulkCopy bulk)
+        {
+            foreach (var col in new[]
+            {
+                "DataImportSallersLogId", "ID", "CodCliente", "NomeFantasia", "CNPJ",
+                "CodProfissional", "Email", "Nome", "Celular", "CodEquipe", "Vendedor",
+                "CodSuperior", "NomeSupervisor", "TelefoneSupervisor", "EmailSupervisor",
+                "Status", "DhCreate"
+            })
+            {
+                bulk.ColumnMappings.Add(col, col);
+            }
+        }
     }
 
-    // Classes de desserialização da API
     public class VisionApiResponse
     {
         [JsonProperty("data")]
@@ -135,22 +190,23 @@ namespace WebApi.Jobs
 
     public class VisionApiRow
     {
-        [JsonProperty("codigo_vendedor")]     public int? CodigoVendedor { get; set; }
-        [JsonProperty("nome_vendedor")]       public string NomeVendedor { get; set; }
-        [JsonProperty("telefone_vendedor")]   public string TelefoneVendedor { get; set; }
-        [JsonProperty("email_vendedor")]      public string EmailVendedor { get; set; }
-        [JsonProperty("codigo_supervisor")]   public int? CodigoSupervisor { get; set; }
-        [JsonProperty("nome_supervisor")]     public string NomeSupervisor { get; set; }
-        [JsonProperty("telefone_supervisor")] public string TelefoneSupervisor { get; set; }
-        [JsonProperty("email_supervisor")]    public string EmailSupervisor { get; set; }
-        [JsonProperty("codigo_cliente")]      public int? CodigoCliente { get; set; }
+        [JsonProperty("codigo_vendedor")]     public int?   CodigoVendedor     { get; set; }
+        [JsonProperty("nome_vendedor")]       public string NomeVendedor        { get; set; }
+        [JsonProperty("telefone_vendedor")]   public string TelefoneVendedor    { get; set; }
+        [JsonProperty("email_vendedor")]      public string EmailVendedor        { get; set; }
+        [JsonProperty("codigo_supervisor")]   public int?   CodigoSupervisor    { get; set; }
+        [JsonProperty("nome_supervisor")]     public string NomeSupervisor       { get; set; }
+        [JsonProperty("telefone_supervisor")] public string TelefoneSupervisor   { get; set; }
+        [JsonProperty("email_supervisor")]    public string EmailSupervisor       { get; set; }
+        [JsonProperty("codigo_cliente")]      public int?   CodigoCliente        { get; set; }
+        [JsonProperty("fantasia")]            public string Fantasia              { get; set; }
     }
 
     public class VisionApiPagination
     {
         [JsonProperty("currentPage")] public int CurrentPage { get; set; }
-        [JsonProperty("perPage")]     public int PerPage { get; set; }
-        [JsonProperty("totalPage")]   public int TotalPage { get; set; }
-        [JsonProperty("totalItems")]  public int TotalItems { get; set; }
+        [JsonProperty("perPage")]     public int PerPage     { get; set; }
+        [JsonProperty("totalPage")]   public int TotalPage   { get; set; }
+        [JsonProperty("totalItems")]  public int TotalItems  { get; set; }
     }
 }
