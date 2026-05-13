@@ -143,15 +143,28 @@ namespace WebApi.Jobs
 
         private byte[] ConvertToMp3(byte[] audioBytes)
         {
-            // MediaFoundationReader precisa de um arquivo em disco; a saída é via MemoryStream.
-            // O suporte a webm depende dos codecs instalados no Windows (Media Foundation).
+            // MediaFoundationReader decodifica webm/Opus corretamente (duração detectada OK).
+            // MediaFoundationEncoder.EncodeToMp3 gera frames inválidos — o encoder MP3 do WMF
+            // não produz MP3 raw válido via NAudio. Solução: LAME via NAudio.Lame, que escreve
+            // corretamente em MemoryStream (MP3 não precisa de seek no output).
             var tempInputPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.webm");
             try
             {
                 File.WriteAllBytes(tempInputPath, audioBytes);
-                using var reader       = new MediaFoundationReader(tempInputPath);
+                using var reader = new MediaFoundationReader(tempInputPath);
+
+                // Resample para PCM padrão (44100 Hz, 16-bit, stereo) antes do LAME
+                var targetFormat = new WaveFormat(44100, 16, 2);
+                using var resampled    = new MediaFoundationResampler(reader, targetFormat);
                 using var outputStream = new MemoryStream();
-                MediaFoundationEncoder.EncodeToMp3(reader, outputStream, 128000);
+                using (var mp3Writer   = new NAudio.Lame.LameMP3FileWriter(outputStream, targetFormat, 128))
+                {
+                    var buffer = new byte[targetFormat.AverageBytesPerSecond];
+                    int bytesRead;
+                    while ((bytesRead = resampled.Read(buffer, 0, buffer.Length)) > 0)
+                        mp3Writer.Write(buffer, 0, bytesRead);
+                }
+
                 return outputStream.ToArray();
             }
             finally
