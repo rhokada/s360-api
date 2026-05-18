@@ -160,6 +160,7 @@ namespace WebApi
             services.AddScoped<GenerateSellerQuestionnaireEmailsJob>();
             services.AddScoped<AudioTranscriptionSubmissionJob>();
             services.AddScoped<AudioTranscriptionCollectionJob>();
+            services.AddScoped<MsgSendEmailJob>();
             
         }
 
@@ -190,6 +191,12 @@ namespace WebApi
                 "generate-seller-questionnaire-emails",
                 job => job.ExecutarGenerateSellerQuestionnaireEmailsAsync(),
                 Cron.Daily(8, 0) // roda todo dia às 03:00 — pode disparar manualmente a qualquer hora
+            );
+
+            RecurringJob.AddOrUpdate<MsgSendEmailJob>(
+                "msg-send-email",
+                job => job.ExecutarAsync(),
+                Cron.Daily(9, 0)
             );
 
             RecurringJob.AddOrUpdate<AudioTranscriptionSubmissionJob>(
