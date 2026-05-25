@@ -41,7 +41,7 @@ namespace WebApi.Jobs
             {
                 con.Open();
                 records = con.Query(@"
-                    SELECT TOP 1 SubmittedAnswerDetailId, TimeLineJson
+                    SELECT SubmittedAnswerDetailId, TimeLineJson
                     FROM   SubmittedAnswerDetails
                     WHERE  AudioTranscription  IS NULL
                       AND  FirefliesSubmittedAt IS NULL
