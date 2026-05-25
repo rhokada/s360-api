@@ -1,9 +1,9 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { takeUntil, take } from 'rxjs/operators';
 import { AdmCustomerService } from '../../../core/services/adm-customer.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { Customer } from '../../../shared/models/adm.interfaces';
@@ -18,52 +18,70 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
   styleUrls: ['./adm-customer.component.scss']
 })
 export class AdmCustomerComponent implements OnInit, OnDestroy {
-  allCustomers: Customer[] = [];
   customers: Customer[] = [];
-  isLoading = false;
-  isSaving = false;
+  totalCount  = 0;
+  currentPage = 1;
+  pageSize    = 20;
+  isLoading   = false;
+  isSaving    = false;
   panelVisible = false;
-  panelTitle = '';
-  isEditing = false;
+  panelTitle   = '';
+  isEditing    = false;
   editingId: number | null = null;
-  showConfirm = false;
+  showConfirm  = false;
   deleteTargetId: number | null = null;
   filterForm!: FormGroup;
   form!: FormGroup;
+  readonly pageSizeOptions = [10, 20, 50, 100];
   private destroy$ = new Subject<void>();
 
   constructor(
     private fb: FormBuilder,
     private admCustomerService: AdmCustomerService,
     private toastService: ToastService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
     this.filterForm = this.fb.group({
-      name: [''],
-      customerCode: [''],
-      city: [''],
-      state: [''],
-      toBeConfirmed: ['']
+      name:          [''],
+      customerCode:  [''],
+      city:          [''],
+      state:         [''],
+      toBeConfirmed: [''],
+      sellerFilter:  ['']
     });
 
     this.form = this.fb.group({
-      companyId: [null, [Validators.required, Validators.min(1)]],
-      name: ['', Validators.required],
+      companyId:    [null, [Validators.required, Validators.min(1)]],
+      name:         ['', Validators.required],
       customerCode: [''],
-      cnpj: [''],
-      toBeConfirmed: [false],
-      street: [''],
-      street2: [''],
+      cnpj:         [''],
+      toBeConfirmed:[false],
+      street:       [''],
+      street2:      [''],
       neighborhood: [''],
-      city: [''],
-      state: [''],
-      zipCode: [''],
-      originCd: ['']
+      city:         [''],
+      state:        [''],
+      zipCode:      [''],
+      originCd:     ['']
     });
 
-    this.loadCustomers();
+    // Restaura estado a partir dos query params
+    this.route.queryParams.pipe(take(1)).subscribe(params => {
+      this.currentPage = Number(params['page']     || 1);
+      this.pageSize    = Number(params['pageSize'] || 20);
+      this.filterForm.patchValue({
+        name:          params['name']          || '',
+        customerCode:  params['customerCode']  || '',
+        city:          params['city']          || '',
+        state:         params['state']         || '',
+        toBeConfirmed: params['toBeConfirmed'] || '',
+        sellerFilter:  params['sellerFilter']  || ''
+      });
+      this.loadCustomers();
+    });
   }
 
   ngOnDestroy(): void {
@@ -71,13 +89,64 @@ export class AdmCustomerComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  get pageEnd(): number {
+    return Math.min(this.currentPage * this.pageSize, this.totalCount);
+  }
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.totalCount / this.pageSize));
+  }
+
+  get pages(): number[] {
+    const total = this.totalPages;
+    const cur   = this.currentPage;
+    const delta = 2;
+    const range: number[] = [];
+    for (let i = Math.max(1, cur - delta); i <= Math.min(total, cur + delta); i++) {
+      range.push(i);
+    }
+    return range;
+  }
+
+  private buildFilters(): Record<string, any> {
+    const { name, customerCode, city, state, toBeConfirmed, sellerFilter } = this.filterForm.value;
+    return {
+      ...(name          ? { name }          : {}),
+      ...(customerCode  ? { customerCode }  : {}),
+      ...(city          ? { city }          : {}),
+      ...(state         ? { state }         : {}),
+      ...(toBeConfirmed ? { toBeConfirmed } : {}),
+      ...(sellerFilter  ? { sellerFilter }  : {}),
+      pageNumber: this.currentPage,
+      pageSize:   this.pageSize
+    };
+  }
+
+  private syncQueryParams(): void {
+    const { name, customerCode, city, state, toBeConfirmed, sellerFilter } = this.filterForm.value;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        ...(name          ? { name }          : {}),
+        ...(customerCode  ? { customerCode }  : {}),
+        ...(city          ? { city }          : {}),
+        ...(state         ? { state }         : {}),
+        ...(toBeConfirmed ? { toBeConfirmed } : {}),
+        ...(sellerFilter  ? { sellerFilter }  : {}),
+        page:     this.currentPage,
+        pageSize: this.pageSize
+      },
+      replaceUrl: true
+    });
+  }
+
   loadCustomers(): void {
     this.isLoading = true;
-    this.admCustomerService.select({}).pipe(takeUntil(this.destroy$)).subscribe({
-      next: (data) => {
-        this.allCustomers = data;
-        this.applyFilters();
-        this.isLoading = false;
+    this.admCustomerService.selectPaged(this.buildFilters()).pipe(takeUntil(this.destroy$)).subscribe({
+      next: ({ items, totalCount }) => {
+        this.customers   = items;
+        this.totalCount  = totalCount;
+        this.isLoading   = false;
       },
       error: () => {
         this.toastService.error('Erro ao carregar clientes.');
@@ -87,51 +156,55 @@ export class AdmCustomerComponent implements OnInit, OnDestroy {
   }
 
   applyFilters(): void {
-    const { name, customerCode, city, state, toBeConfirmed } = this.filterForm.value;
-    this.customers = this.allCustomers.filter(c => {
-      const matchName = !name || c.name.toLowerCase().includes(name.toLowerCase());
-      const matchCode = !customerCode || (c.customerCode ?? '').toLowerCase().includes(customerCode.toLowerCase());
-      const matchCity = !city || (c.city ?? '').toLowerCase().includes(city.toLowerCase());
-      const matchState = !state || (c.state ?? '').toLowerCase().includes(state.toLowerCase());
-      let matchConfirmed = true;
-      if (toBeConfirmed === 'true') matchConfirmed = c.toBeConfirmed === true;
-      else if (toBeConfirmed === 'false') matchConfirmed = c.toBeConfirmed === false;
-      return matchName && matchCode && matchCity && matchState && matchConfirmed;
-    });
+    this.currentPage = 1;
+    this.syncQueryParams();
+    this.loadCustomers();
+  }
+
+  changePage(page: number): void {
+    if (page < 1 || page > this.totalPages) return;
+    this.currentPage = page;
+    this.syncQueryParams();
+    this.loadCustomers();
+  }
+
+  changePageSize(size: number): void {
+    this.pageSize    = size;
+    this.currentPage = 1;
+    this.syncQueryParams();
+    this.loadCustomers();
   }
 
   openCreate(): void {
-    this.isEditing = false;
-    this.editingId = null;
+    this.isEditing   = false;
+    this.editingId   = null;
     this.form.reset({ toBeConfirmed: false, companyId: null });
-    this.panelTitle = 'Novo Cliente';
+    this.panelTitle  = 'Novo Cliente';
     this.panelVisible = true;
   }
 
   openEdit(customer: Customer): void {
-    this.isEditing = true;
-    this.editingId = customer.customerId;
+    this.isEditing  = true;
+    this.editingId  = customer.customerId;
     this.form.patchValue({
-      companyId: customer.companyId,
-      name: customer.name,
+      companyId:    customer.companyId,
+      name:         customer.name,
       customerCode: customer.customerCode,
-      cnpj: customer.cnpj,
-      toBeConfirmed: customer.toBeConfirmed ?? false,
-      street: customer.street,
-      street2: customer.street2,
+      cnpj:         customer.cnpj,
+      toBeConfirmed:customer.toBeConfirmed ?? false,
+      street:       customer.street,
+      street2:      customer.street2,
       neighborhood: customer.neighborhood,
-      city: customer.city,
-      state: customer.state,
-      zipCode: customer.zipCode,
-      originCd: customer.originCd
+      city:         customer.city,
+      state:        customer.state,
+      zipCode:      customer.zipCode,
+      originCd:     customer.originCd
     });
-    this.panelTitle = 'Editar Cliente';
+    this.panelTitle  = 'Editar Cliente';
     this.panelVisible = true;
   }
 
-  closePanel(): void {
-    this.panelVisible = false;
-  }
+  closePanel(): void { this.panelVisible = false; }
 
   save(): void {
     if (this.form.invalid || this.isSaving) return;
@@ -146,7 +219,7 @@ export class AdmCustomerComponent implements OnInit, OnDestroy {
     request$.pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
         this.toastService.success(this.isEditing ? 'Cliente atualizado!' : 'Cliente criado!');
-        this.isSaving = false;
+        this.isSaving     = false;
         this.panelVisible = false;
         this.loadCustomers();
       },
@@ -160,7 +233,7 @@ export class AdmCustomerComponent implements OnInit, OnDestroy {
   confirmDelete(id: number, event: Event): void {
     event.stopPropagation();
     this.deleteTargetId = id;
-    this.showConfirm = true;
+    this.showConfirm    = true;
   }
 
   onDeleteConfirmed(): void {
@@ -168,7 +241,7 @@ export class AdmCustomerComponent implements OnInit, OnDestroy {
     this.admCustomerService.delete(this.deleteTargetId).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
         this.toastService.success('Cliente excluído!');
-        this.showConfirm = false;
+        this.showConfirm    = false;
         this.deleteTargetId = null;
         this.loadCustomers();
       },
@@ -180,7 +253,7 @@ export class AdmCustomerComponent implements OnInit, OnDestroy {
   }
 
   onDeleteCancelled(): void {
-    this.showConfirm = false;
+    this.showConfirm    = false;
     this.deleteTargetId = null;
   }
 

@@ -36,12 +36,12 @@ namespace WebApi.Jobs
             try
             {
                 // 1. Criar log de importação
-                var logResult = con.QueryFirstOrDefault("sp_DataImportSallersLog_Create", new
+                var logResult = con.QueryFirstOrDefault("sp_DataImportSellersLog_Create", new
                 {
                     FileName = $"vision-api-{DateTime.Now:yyyyMMdd-HHmmss}",
                     UserId   = (int?)null
                 }, commandType: CommandType.StoredProcedure);
-                logId = (int)(logResult?.DataImportSallersLogId ?? 0);
+                logId = (int)(logResult?.DataImportSellersLogId ?? 0);
 
                 // 2. Consumir API com paginação e bulk insert por página
                 var handler = new HttpClientHandler
@@ -71,7 +71,7 @@ namespace WebApi.Jobs
 
                         using var bulk = new SqlBulkCopy(con)
                         {
-                            DestinationTableName = "DataImportSallersRow",
+                            DestinationTableName = "DataImportSellersRow",
                             BatchSize            = 1000
                         };
                         MapBulkColumns(bulk);
@@ -90,9 +90,9 @@ namespace WebApi.Jobs
                 } while (currentPage <= totalPages);
 
                 // 3. Finalizar log
-                con.Execute("sp_DataImportSallersLog_Finalize", new
+                con.Execute("sp_DataImportSellersLog_Finalize", new
                 {
-                    DataImportSallersLogId = logId,
+                    DataImportSellersLogId = logId,
                     TotalRows              = totalRows,
                     ProcessedRows          = processedRows,
                     ErrorRows              = errorRows
@@ -101,10 +101,10 @@ namespace WebApi.Jobs
             catch (Exception ex)
             {
                 if (logId > 0)
-                    con.Execute("SP_Adm_DataImportSallersLog", new
+                    con.Execute("SP_Adm_DataImportSellersLog", new
                     {
                         TypeRequest            = "UPDATE",
-                        DataImportSallersLogId = logId,
+                        DataImportSellersLogId = logId,
                         Status                 = "ERROR",
                         ErrorMessage           = ex.Message
                     }, commandType: CommandType.StoredProcedure);
@@ -119,7 +119,7 @@ namespace WebApi.Jobs
         private static DataTable BuildDataTable(int logId, List<VisionApiRow> rows)
         {
             var table = new DataTable();
-            table.Columns.Add("DataImportSallersLogId", typeof(int));
+            table.Columns.Add("DataImportSellersLogId", typeof(int));
             table.Columns.Add("ID",                     typeof(string));
             table.Columns.Add("CodCliente",             typeof(string));
             table.Columns.Add("NomeFantasia",           typeof(string));
@@ -168,7 +168,7 @@ namespace WebApi.Jobs
         {
             foreach (var col in new[]
             {
-                "DataImportSallersLogId", "ID", "CodCliente", "NomeFantasia", "CNPJ",
+                "DataImportSellersLogId", "ID", "CodCliente", "NomeFantasia", "CNPJ",
                 "CodProfissional", "Email", "Nome", "Celular", "CodEquipe", "Vendedor",
                 "CodSuperior", "NomeSupervisor", "TelefoneSupervisor", "EmailSupervisor",
                 "Status", "DhCreate"

@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 namespace WebApi.Models
 {
-    public class DataImportSallersLogModel
+    public class DataImportSellersLogModel
     {
-        public int DataImportSallersLogId { get; set; }
+        public int DataImportSellersLogId { get; set; }
         public string FileName { get; set; }
         public string Status { get; set; }
         public int? TotalRows { get; set; }
@@ -17,14 +17,14 @@ namespace WebApi.Models
         public DateTime? DhUpdate { get; set; }
     }
 
-    public class DataImportSallersFilterModel
+    public class DataImportSellersFilterModel
     {
-        public int? DataImportSallersLogId { get; set; }
+        public int? DataImportSellersLogId { get; set; }
         public string Status { get; set; }
         public int? UserId { get; set; }
     }
 
-    public class ImportacaoSallersResultado
+    public class ImportacaoSellersResultado
     {
         public int Success { get; set; }
         public List<string> Errors { get; set; } = new();

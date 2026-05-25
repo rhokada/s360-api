@@ -26,6 +26,19 @@
             <span class="w-2 h-2 rounded-full" [ngClass]="showActiveOnly ? 'bg-green-500' : 'bg-gray-400'"></span>
             {{ showActiveOnly ? 'Apenas Ativos' : 'Todos' }}
           </button>
+
+          <!-- Botão Adicionar Supervisor -->
+          <button
+            *ngIf="selectedHierarchyId"
+            type="button"
+            class="inline-flex items-center gap-2 px-3 py-2 text-sm rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors font-medium"
+            (click)="onAddSupervisor()"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            Adicionar Supervisor
+          </button>
         </div>
       </div>
     </div>
@@ -51,7 +64,17 @@
     *ngIf="!isLoadingTeam && selectedHierarchyId && tree.length === 0"
     class="bg-white rounded-xl border border-gray-100 py-16 flex flex-col items-center justify-center text-center"
   >
-    <p class="text-gray-400 text-sm">Nenhum membro encontrado para esta hierarquia.</p>
+    <p class="text-gray-400 text-sm mb-3">Nenhum membro encontrado para esta hierarquia.</p>
+    <button
+      type="button"
+      class="inline-flex items-center gap-2 px-4 py-2 text-sm rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors font-medium"
+      (click)="onAddSupervisor()"
+    >
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+      </svg>
+      Adicionar primeiro Supervisor
+    </button>
   </div>
 
   <!-- Árvore -->
@@ -70,51 +93,113 @@
 <!-- SidePanel -->
 <app-side-panel [title]="panelTitle" [visible]="panelVisible" (closed)="closePanel()">
   <form [formGroup]="form" (ngSubmit)="save()" class="flex flex-col gap-4">
-    <!-- Autocomplete de usuário -->
-    <div class="relative">
-      <label class="block text-xs font-medium text-gray-600 mb-1">Usuário *</label>
-      <input
-        type="text"
-        [value]="selectedUserName"
-        (input)="onUserInput($event)"
-        (blur)="closeDropdown()"
-        class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
-        placeholder="Digite o nome para buscar..."
-      />
-      <div
-        *ngIf="showUserDropdown"
-        class="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto"
-      >
-        <button
-          *ngFor="let user of userSearchResults"
-          type="button"
-          class="w-full text-left px-3 py-2 text-sm hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
-          (mousedown)="selectUser(user)"
+
+    <!-- ── Modo Supervisor: dois autocompletes ────────────────────────────── -->
+    <ng-container *ngIf="panelMode === 'supervisor'">
+      <p class="text-xs text-gray-500 -mt-1">
+        O supervisor será o líder direto. Informe também o primeiro membro da equipe.
+      </p>
+
+      <!-- Autocomplete: Supervisor -->
+      <div class="relative">
+        <label class="block text-xs font-medium text-gray-600 mb-1">Supervisor *</label>
+        <input
+          type="text"
+          [value]="selectedSupervisorName"
+          (input)="onSupervisorInput($event)"
+          (blur)="closeSupervisorDropdown()"
+          class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
+          placeholder="Digite o nome para buscar..."
+        />
+        <div
+          *ngIf="showSupervisorDropdown"
+          class="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto"
         >
-          <div class="font-medium">{{ user.name }}</div>
-          <div class="text-xs text-gray-500">{{ user.email }}</div>
-        </button>
+          <button
+            *ngFor="let user of supervisorSearchResults"
+            type="button"
+            class="w-full text-left px-3 py-2 text-sm hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
+            (mousedown)="selectSupervisor(user)"
+          >
+            <div class="font-medium">{{ user.name }}</div>
+            <div class="text-xs text-gray-500">{{ user.email }}</div>
+          </button>
+        </div>
       </div>
-    </div>
 
-    <!-- Boss ID -->
-    <div>
-      <label class="block text-xs font-medium text-gray-600 mb-1">ID do Líder (bossId) *</label>
-      <input
-        formControlName="bossId"
-        type="number"
-        class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
-        placeholder="ID do líder direto"
-      />
-    </div>
+      <!-- Autocomplete: Primeiro Membro -->
+      <div class="relative">
+        <label class="block text-xs font-medium text-gray-600 mb-1">Primeiro Membro *</label>
+        <input
+          type="text"
+          [value]="selectedMemberName"
+          (input)="onMemberInput($event)"
+          (blur)="closeMemberDropdown()"
+          class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
+          placeholder="Digite o nome para buscar..."
+        />
+        <div
+          *ngIf="showMemberDropdown"
+          class="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto"
+        >
+          <button
+            *ngFor="let user of memberSearchResults"
+            type="button"
+            class="w-full text-left px-3 py-2 text-sm hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
+            (mousedown)="selectMember(user)"
+          >
+            <div class="font-medium">{{ user.name }}</div>
+            <div class="text-xs text-gray-500">{{ user.email }}</div>
+          </button>
+        </div>
+      </div>
+    </ng-container>
 
-    <!-- Ativo -->
+    <!-- ── Modo Membro: um autocomplete + boss pré-definido ───────────────── -->
+    <ng-container *ngIf="panelMode === 'member'">
+      <!-- Boss pré-definido (read-only) -->
+      <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1">Líder</label>
+        <div class="px-3 py-2 text-sm border border-gray-100 bg-gray-50 rounded-lg text-gray-700 font-medium">
+          {{ bossPrefillName || '—' }}
+        </div>
+      </div>
+
+      <!-- Autocomplete: Membro -->
+      <div class="relative">
+        <label class="block text-xs font-medium text-gray-600 mb-1">{{ isEditing ? 'Usuário *' : 'Novo Membro *' }}</label>
+        <input
+          type="text"
+          [value]="selectedMemberName"
+          (input)="onMemberInput($event)"
+          (blur)="closeMemberDropdown()"
+          class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
+          placeholder="Digite o nome para buscar..."
+        />
+        <div
+          *ngIf="showMemberDropdown"
+          class="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto"
+        >
+          <button
+            *ngFor="let user of memberSearchResults"
+            type="button"
+            class="w-full text-left px-3 py-2 text-sm hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
+            (mousedown)="selectMember(user)"
+          >
+            <div class="font-medium">{{ user.name }}</div>
+            <div class="text-xs text-gray-500">{{ user.email }}</div>
+          </button>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Ativo (comum) -->
     <div class="flex items-center gap-3">
       <label class="relative inline-flex items-center cursor-pointer">
         <input formControlName="active" type="checkbox" class="sr-only peer" />
         <div class="w-10 h-5 bg-gray-200 rounded-full peer peer-checked:bg-indigo-600 peer-focus:ring-2 peer-focus:ring-indigo-300 transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-transform peer-checked:after:translate-x-5"></div>
       </label>
-      <span class="text-sm text-gray-600">Membro ativo</span>
+      <span class="text-sm text-gray-600">Ativo</span>
     </div>
 
     <div class="pt-2">

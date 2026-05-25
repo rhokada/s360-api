@@ -127,6 +127,7 @@ export interface Customer {
   guId: string | null;
   originCd: string | null;
   dataImportId: number | null;
+  totalCount?: number;
 }
 
 export interface CustomerSeller {

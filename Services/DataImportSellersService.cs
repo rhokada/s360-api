@@ -14,25 +14,25 @@ using WebApi.Services.Interfaces;
 
 namespace WebApi.Services
 {
-    public class DataImportSallersService : IDataImportSallersService
+    public class DataImportSellersService : IDataImportSellersService
     {
         private readonly ConnectionStrings _connectionStrings;
 
-        public DataImportSallersService(IOptions<ConnectionStrings> connectionStrings)
+        public DataImportSellersService(IOptions<ConnectionStrings> connectionStrings)
         {
             _connectionStrings = connectionStrings.Value;
         }
 
-        public dynamic Select(DataImportSallersFilterModel filtro, string tokenUsuario)
+        public dynamic Select(DataImportSellersFilterModel filtro, string tokenUsuario)
         {
             using var con = new SqlConnection(_connectionStrings.Default);
             try
             {
                 con.Open();
-                return con.Query("SP_Adm_DataImportSallersLog", new
+                return con.Query("SP_Adm_DataImportSellersLog", new
                 {
                     TypeRequest = "SELECT",
-                    filtro.DataImportSallersLogId,
+                    filtro.DataImportSellersLogId,
                     filtro.Status,
                     filtro.UserId,
                     token_usuario = tokenUsuario
@@ -50,10 +50,10 @@ namespace WebApi.Services
             try
             {
                 con.Open();
-                return con.Query("SP_Adm_DataImportSallersLog", new
+                return con.Query("SP_Adm_DataImportSellersLog", new
                 {
                     TypeRequest = "DELETE",
-                    DataImportSallersLogId = id,
+                    DataImportSellersLogId = id,
                     token_usuario = tokenUsuario
                 }, commandType: CommandType.StoredProcedure).ToList();
             }
@@ -63,7 +63,7 @@ namespace WebApi.Services
             }
         }
 
-        public async Task<ImportacaoSallersResultado> ImportarAsync(Stream stream, string fileName, int? userId)
+        public async Task<ImportacaoSellersResultado> ImportarAsync(Stream stream, string fileName, int? userId)
         {
             var erros = new List<string>();
             int logId = 0;
@@ -76,10 +76,10 @@ namespace WebApi.Services
             try
             {
                 // 1. Criar registro de log
-                var logResult = con.QueryFirstOrDefault("sp_DataImportSallersLog_Create",
+                var logResult = con.QueryFirstOrDefault("sp_DataImportSellersLog_Create",
                     new { FileName = fileName, UserId = userId },
                     commandType: CommandType.StoredProcedure);
-                logId = (int)(logResult?.DataImportSallersLogId ?? 0);
+                logId = (int)(logResult?.DataImportSellersLogId ?? 0);
 
                 // 2. Ler Excel com EPPlus
                 stream.Position = 0;
@@ -111,9 +111,9 @@ namespace WebApi.Services
                         var vendedorText = ws.Cells[i, 10].Text?.Trim().ToLower(); // coluna J = Vendedor
                         bool? vendedor = string.IsNullOrWhiteSpace(vendedorText) ? null : vendedorText == "sim";
 
-                        con.Execute("sp_DataImportSallersRow_Insert", new
+                        con.Execute("sp_DataImportSellersRow_Insert", new
                         {
-                            DataImportSallersLogId = logId,
+                            DataImportSellersLogId = logId,
                             ID                  = ws.Cells[i, 1].Text,
                             CodCliente          = ws.Cells[i, 2].Text,
                             NomeFantasia        = ws.Cells[i, 3].Text,
@@ -134,9 +134,9 @@ namespace WebApi.Services
                 }
 
                 // 3. Finalizar log
-                con.Execute("sp_DataImportSallersLog_Finalize", new
+                con.Execute("sp_DataImportSellersLog_Finalize", new
                 {
-                    DataImportSallersLogId = logId,
+                    DataImportSellersLogId = logId,
                     TotalRows     = totalRows,
                     ProcessedRows = sucessos,
                     ErrorRows     = erros.Count
@@ -145,10 +145,10 @@ namespace WebApi.Services
             catch (Exception ex)
             {
                 if (logId > 0)
-                    con.Execute("SP_Adm_DataImportSallersLog", new
+                    con.Execute("SP_Adm_DataImportSellersLog", new
                     {
                         TypeRequest = "UPDATE",
-                        DataImportSallersLogId = logId,
+                        DataImportSellersLogId = logId,
                         Status = "ERROR",
                         ErrorMessage = ex.Message
                     }, commandType: CommandType.StoredProcedure);
@@ -159,7 +159,7 @@ namespace WebApi.Services
                 con.Close();
             }
 
-            return new ImportacaoSallersResultado { Success = sucessos, Errors = erros };
+            return new ImportacaoSellersResultado { Success = sucessos, Errors = erros };
         }
     }
 }

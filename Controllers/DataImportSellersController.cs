@@ -11,16 +11,16 @@ namespace WebApi.Controllers
     [Authorize]
     [ApiController]
     [Route("[controller]")]
-    public class DataImportSallersController : ControllerBase
+    public class DataImportSellersController : ControllerBase
     {
-        private readonly IDataImportSallersService _service;
+        private readonly IDataImportSellersService _service;
 
         private static readonly JsonSerializerSettings _camelCase = new()
         {
             ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver()
         };
 
-        public DataImportSallersController(IDataImportSallersService service)
+        public DataImportSellersController(IDataImportSellersService service)
         {
             _service = service;
         }
@@ -32,7 +32,7 @@ namespace WebApi.Controllers
         }
 
         [HttpGet("Select")]
-        public IActionResult Select([FromQuery] DataImportSallersFilterModel filtro)
+        public IActionResult Select([FromQuery] DataImportSellersFilterModel filtro)
         {
             string tokenUsuario = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
             return OkDyn(_service.Select(filtro, tokenUsuario));

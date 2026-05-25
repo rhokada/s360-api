@@ -1,14 +1,15 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { Subject, forkJoin } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { AdmUserService } from '../../../core/services/adm-user.service';
 import { AdmRoleService } from '../../../core/services/adm-role.service';
 import { AdmRoleUserService } from '../../../core/services/adm-role-user.service';
+import { AdmDeptUserService } from '../../../core/services/adm-dept-user.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { AdmUser } from '../../../shared/models/adm.interfaces';
+import { AdmUser, AdmDeptUser } from '../../../shared/models/adm.interfaces';
 import { AdmRoleItem, AdmRoleUser } from '../../../shared/models/adm.interfaces';
 import { SidePanelComponent } from '../../../shared/components/side-panel/side-panel.component';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
@@ -16,7 +17,7 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
 @Component({
   selector: 'app-adm-user-permissions',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, SidePanelComponent, ConfirmDialogComponent],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, SidePanelComponent, ConfirmDialogComponent],
   templateUrl: './adm-user-permissions.component.html',
   styleUrls: ['./adm-user-permissions.component.scss']
 })
@@ -36,6 +37,16 @@ export class AdmUserPermissionsComponent implements OnInit, OnDestroy {
   showConfirm = false;
   deleteTargetId: number | null = null;
 
+  // dept users no painel de edição
+  userDeptUsers: AdmDeptUser[] = [];
+  isLoadingDeptUsers = false;
+  editingDeptUserId: number | null = null;
+  deptUserEditTitle = '';
+  deptUserEditCompanyCodeUser = '';
+  isSavingDeptUser = false;
+  showConfirmDeptUser = false;
+  deleteDeptUserTargetId: number | null = null;
+
   // painel de permissões
   permPanelVisible = false;
   permPanelUser: AdmUser | null = null;
@@ -51,6 +62,7 @@ export class AdmUserPermissionsComponent implements OnInit, OnDestroy {
     private admUserService: AdmUserService,
     private admRoleService: AdmRoleService,
     private admRoleUserService: AdmRoleUserService,
+    private admDeptUserService: AdmDeptUserService,
     private toastService: ToastService
   ) {}
 
@@ -58,14 +70,11 @@ export class AdmUserPermissionsComponent implements OnInit, OnDestroy {
     this.filterForm = this.fb.group({ name: [''], email: [''], active: [''] });
 
     this.editForm = this.fb.group({
-      name:       ['', Validators.required],
-      email:      ['', [Validators.required, Validators.email]],
-      dddCell:    [''],
-      nrCell:     [''],
-      appId:      [''],
-      pbiLogin:   [''],
-      contractId: [null],
-      active:     [true]
+      name:    ['', Validators.required],
+      email:   ['', [Validators.required, Validators.email]],
+      dddCell: [''],
+      nrCell:  [''],
+      active:  [true]
     });
 
     this.loadUsers();
@@ -80,7 +89,7 @@ export class AdmUserPermissionsComponent implements OnInit, OnDestroy {
 
     this.filterForm.get('active')!.valueChanges.pipe(
       takeUntil(this.destroy$)
-    ).subscribe(() => this.applyFilters());
+    ).subscribe((active: string) => this.applyFilters(active));
   }
 
   ngOnDestroy(): void {
@@ -103,12 +112,15 @@ export class AdmUserPermissionsComponent implements OnInit, OnDestroy {
     });
   }
 
-  applyFilters(): void {
-    const { name, email, active } = this.filterForm.value;
+  applyFilters(overrideActive?: string): void {
+    const { name, email, active: formActive } = this.filterForm.value;
+    const active = overrideActive !== undefined ? overrideActive : formActive;
     this.users = this.allUsers.filter(u => {
       const matchName   = !name   || u.name.toLowerCase().includes(name.toLowerCase());
       const matchEmail  = !email  || u.email.toLowerCase().includes(email.toLowerCase());
-      const matchActive = active === '' || u.active === (active === 'true');
+      const matchActive = active === ''
+        || (active === 'true' && !!u.active)
+        || (active === 'false' && !u.active);
       return matchName && matchEmail && matchActive;
     });
   }
@@ -119,11 +131,12 @@ export class AdmUserPermissionsComponent implements OnInit, OnDestroy {
     this.editingId = user.userId;
     this.editForm.patchValue({
       name: user.name, email: user.email, dddCell: user.dddCell,
-      nrCell: user.nrCell, appId: user.appId, pbiLogin: user.pbiLogin,
-      contractId: user.contractId, active: user.active
+      nrCell: user.nrCell, active: user.active
     });
     this.editPanelTitle = 'Editar Usuário';
     this.editPanelVisible = true;
+    this.editingDeptUserId = null;
+    this.loadUserDeptUsers(user.userId);
   }
 
   openCreate(): void {
@@ -132,6 +145,7 @@ export class AdmUserPermissionsComponent implements OnInit, OnDestroy {
     this.editForm.reset({ active: true });
     this.editPanelTitle = 'Novo Usuário';
     this.editPanelVisible = true;
+    this.userDeptUsers = [];
   }
 
   closeEditPanel(): void { this.editPanelVisible = false; }
@@ -185,6 +199,75 @@ export class AdmUserPermissionsComponent implements OnInit, OnDestroy {
   onDeleteCancelled(): void {
     this.showConfirm = false;
     this.deleteTargetId = null;
+  }
+
+  // ── Dept Users no painel de edição ───────────────────────────────────────
+  loadUserDeptUsers(userId: number): void {
+    this.isLoadingDeptUsers = true;
+    this.admDeptUserService.select({ userId }).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (data) => { this.userDeptUsers = data; this.isLoadingDeptUsers = false; },
+      error: () => { this.isLoadingDeptUsers = false; }
+    });
+  }
+
+  openEditDeptUser(du: AdmDeptUser): void {
+    this.editingDeptUserId = du.deptUserId;
+    this.deptUserEditTitle = du.title ?? '';
+    this.deptUserEditCompanyCodeUser = du.companyCodeUser ?? '';
+  }
+
+  cancelEditDeptUser(): void {
+    this.editingDeptUserId = null;
+  }
+
+  saveDeptUser(du: AdmDeptUser): void {
+    if (this.isSavingDeptUser) return;
+    this.isSavingDeptUser = true;
+    const body = {
+      deptUserId: du.deptUserId,
+      userId: du.userId,
+      companyDeptId: du.companyDeptId,
+      title: this.deptUserEditTitle,
+      companyCodeUser: this.deptUserEditCompanyCodeUser
+    };
+    this.admDeptUserService.update(body).pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => {
+        this.toastService.success('Departamento atualizado!');
+        this.isSavingDeptUser = false;
+        this.editingDeptUserId = null;
+        this.loadUserDeptUsers(du.userId);
+      },
+      error: () => {
+        this.toastService.error('Erro ao atualizar departamento.');
+        this.isSavingDeptUser = false;
+      }
+    });
+  }
+
+  confirmDeleteDeptUser(id: number): void {
+    this.deleteDeptUserTargetId = id;
+    this.showConfirmDeptUser = true;
+  }
+
+  onDeleteDeptUserConfirmed(): void {
+    if (this.deleteDeptUserTargetId == null) return;
+    this.admDeptUserService.delete(this.deleteDeptUserTargetId).pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => {
+        this.toastService.success('Departamento removido!');
+        this.showConfirmDeptUser = false;
+        this.deleteDeptUserTargetId = null;
+        if (this.editingId) this.loadUserDeptUsers(this.editingId);
+      },
+      error: () => {
+        this.toastService.error('Erro ao remover departamento.');
+        this.showConfirmDeptUser = false;
+      }
+    });
+  }
+
+  onDeleteDeptUserCancelled(): void {
+    this.showConfirmDeptUser = false;
+    this.deleteDeptUserTargetId = null;
   }
 
   // ── Painel de permissões ──────────────────────────────────────────────────

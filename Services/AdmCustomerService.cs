@@ -28,7 +28,8 @@ namespace WebApi.Services
                     con.Open();
                     var ret = con.Query("SP_Adm_Customer", new
                     {
-                        TypeRequest = "SELECT",
+                        TypeRequest   = "SELECT",
+                        filtro.CustomerId,
                         filtro.CompanyId,
                         filtro.Name,
                         filtro.CustomerCode,
@@ -36,6 +37,9 @@ namespace WebApi.Services
                         filtro.City,
                         filtro.State,
                         filtro.ToBeConfirmed,
+                        filtro.SellerFilter,
+                        PageNumber    = filtro.PageNumber ?? 1,
+                        PageSize      = filtro.PageSize  ?? 20,
                         token_usuario = tokenUsuario
                     }, commandType: CommandType.StoredProcedure).ToList();
                     return ret;

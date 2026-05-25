@@ -29,6 +29,7 @@ namespace WebApi.Models
     /// <summary>Filtros opcionais para consulta de Customer.</summary>
     public class AdmCustomerFilterModel
     {
+        public int?    CustomerId    { get; set; }
         public int?    CompanyId     { get; set; }
         public string  Name          { get; set; }
         public string  CustomerCode  { get; set; }
@@ -36,6 +37,9 @@ namespace WebApi.Models
         public string  City          { get; set; }
         public string  State         { get; set; }
         public bool?   ToBeConfirmed { get; set; }
+        public string  SellerFilter  { get; set; }
+        public int?    PageNumber    { get; set; }
+        public int?    PageSize      { get; set; }
     }
 
     /// <summary>Campos necessários para criação de um Customer.</summary>

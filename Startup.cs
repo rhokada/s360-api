@@ -121,7 +121,7 @@ namespace WebApi
             services.AddScoped<IAdmCustomerService, AdmCustomerService>();
             services.AddScoped<IAdmCustomerSellerService, AdmCustomerSellerService>();
             services.AddScoped<IDataImportProLogService, DataImportProLogService>();
-            services.AddScoped<IDataImportSallersService, DataImportSallersService>();
+            services.AddScoped<IDataImportSellersService, DataImportSellersService>();
             services.AddScoped<IAdmPageService, AdmPageService>();
             services.AddScoped<IAdmRoleService, AdmRoleService>();
             services.AddScoped<IAdmRolePermissionService, AdmRolePermissionService>();

@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterModule, ActivatedRoute } from '@angular/router';
+import { Location } from '@angular/common';
 import { Subject } from 'rxjs';
 import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { AdmCustomerSellerService } from '../../../core/services/adm-customer-seller.service';
@@ -43,11 +44,14 @@ export class AdmCustomerSellerComponent implements OnInit, OnDestroy {
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
+    private location: Location,
     private admCustomerSellerService: AdmCustomerSellerService,
     private admCustomerService: AdmCustomerService,
     private admUserService: AdmUserService,
     private toastService: ToastService
   ) {}
+
+  goBack(): void { this.location.back(); }
 
   ngOnInit(): void {
     this.customerId = Number(this.route.snapshot.params['customerId']);

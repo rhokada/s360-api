@@ -23,29 +23,35 @@
       formControlName="name"
       type="text"
       placeholder="Nome..."
-      class="flex-1 min-w-[160px] px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
+      class="flex-1 min-w-[140px] px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
     />
     <input
       formControlName="customerCode"
       type="text"
       placeholder="Código..."
-      class="w-40 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
+      class="w-36 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
     />
     <input
       formControlName="city"
       type="text"
       placeholder="Cidade..."
-      class="w-40 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
+      class="w-36 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
     />
     <input
       formControlName="state"
       type="text"
       placeholder="Estado..."
-      class="w-32 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
+      class="w-28 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
+    />
+    <input
+      formControlName="sellerFilter"
+      type="text"
+      placeholder="Vendedor (nome ou e-mail)..."
+      class="w-52 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
     />
     <select
       formControlName="toBeConfirmed"
-      class="w-40 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white"
+      class="w-44 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white"
     >
       <option value="">A confirmar: Todos</option>
       <option value="true">A confirmar: Sim</option>
@@ -92,14 +98,10 @@
             {{ customer.city || '—' }}<span *ngIf="customer.state"> / {{ customer.state }}</span>
           </td>
           <td class="py-3 px-3">
-            <span
-              *ngIf="customer.toBeConfirmed === true"
-              class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-700"
-            >Sim</span>
-            <span
-              *ngIf="customer.toBeConfirmed !== true"
-              class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600"
-            >Não</span>
+            <span *ngIf="customer.toBeConfirmed === true"
+              class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-700">Sim</span>
+            <span *ngIf="customer.toBeConfirmed !== true"
+              class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">Não</span>
           </td>
           <td class="py-3 px-3 text-gray-500">{{ customer.dhCreate | date:'dd/MM/yyyy HH:mm' }}</td>
           <td class="py-3 px-3">
@@ -136,6 +138,63 @@
       </tbody>
     </table>
   </div>
+
+  <!-- Paginação -->
+  <div *ngIf="!isLoading && totalCount > 0" class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-5">
+    <!-- Info + pageSize -->
+    <div class="flex items-center gap-3 text-sm text-gray-500">
+      <span>{{ (currentPage - 1) * pageSize + 1 }}–{{ pageEnd }} de {{ totalCount }}</span>
+      <select
+        class="px-2 py-1 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white"
+        [value]="pageSize"
+        (change)="changePageSize(+$any($event.target).value)"
+      >
+        <option *ngFor="let s of pageSizeOptions" [value]="s">{{ s }} / pág.</option>
+      </select>
+    </div>
+
+    <!-- Botões de página -->
+    <div class="flex items-center gap-1">
+      <button
+        type="button"
+        class="px-2.5 py-1.5 text-sm rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        [disabled]="currentPage === 1"
+        (click)="changePage(1)"
+      >«</button>
+      <button
+        type="button"
+        class="px-2.5 py-1.5 text-sm rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        [disabled]="currentPage === 1"
+        (click)="changePage(currentPage - 1)"
+      >‹</button>
+
+      <button
+        *ngFor="let p of pages"
+        type="button"
+        class="px-3 py-1.5 text-sm rounded-lg border transition-colors"
+        [class.bg-indigo-600]="p === currentPage"
+        [class.text-white]="p === currentPage"
+        [class.border-indigo-600]="p === currentPage"
+        [class.border-gray-200]="p !== currentPage"
+        [class.text-gray-600]="p !== currentPage"
+        [class.hover:bg-gray-50]="p !== currentPage"
+        (click)="changePage(p)"
+      >{{ p }}</button>
+
+      <button
+        type="button"
+        class="px-2.5 py-1.5 text-sm rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        [disabled]="currentPage === totalPages"
+        (click)="changePage(currentPage + 1)"
+      >›</button>
+      <button
+        type="button"
+        class="px-2.5 py-1.5 text-sm rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        [disabled]="currentPage === totalPages"
+        (click)="changePage(totalPages)"
+      >»</button>
+    </div>
+  </div>
 </div>
 
 <!-- SidePanel -->
@@ -145,133 +204,93 @@
     <div class="grid grid-cols-2 gap-4">
       <div>
         <label class="block text-xs font-medium text-gray-600 mb-1">ID da Empresa *</label>
-        <input
-          formControlName="companyId"
-          type="number"
+        <input formControlName="companyId" type="number"
           class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
-          placeholder="Ex: 1"
-        />
+          placeholder="Ex: 1"/>
       </div>
       <div>
         <label class="block text-xs font-medium text-gray-600 mb-1">Código do Cliente</label>
-        <input
-          formControlName="customerCode"
-          type="text"
+        <input formControlName="customerCode" type="text"
           class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
-          placeholder="Código"
-        />
+          placeholder="Código"/>
       </div>
     </div>
 
     <div>
       <label class="block text-xs font-medium text-gray-600 mb-1">Nome *</label>
-      <input
-        formControlName="name"
-        type="text"
+      <input formControlName="name" type="text"
         class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
-        placeholder="Nome do cliente"
-      />
+        placeholder="Nome do cliente"/>
     </div>
 
     <div>
       <label class="block text-xs font-medium text-gray-600 mb-1">CNPJ</label>
-      <input
-        formControlName="cnpj"
-        type="text"
+      <input formControlName="cnpj" type="text"
         class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
-        placeholder="00.000.000/0000-00"
-      />
+        placeholder="00.000.000/0000-00"/>
     </div>
 
     <div>
       <label class="block text-xs font-medium text-gray-600 mb-1">Logradouro</label>
-      <input
-        formControlName="street"
-        type="text"
+      <input formControlName="street" type="text"
         class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
-        placeholder="Rua, Av..."
-      />
+        placeholder="Rua, Av..."/>
     </div>
 
     <div>
       <label class="block text-xs font-medium text-gray-600 mb-1">Complemento</label>
-      <input
-        formControlName="street2"
-        type="text"
+      <input formControlName="street2" type="text"
         class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
-        placeholder="Sala, Bloco..."
-      />
+        placeholder="Sala, Bloco..."/>
     </div>
 
     <div>
       <label class="block text-xs font-medium text-gray-600 mb-1">Bairro</label>
-      <input
-        formControlName="neighborhood"
-        type="text"
+      <input formControlName="neighborhood" type="text"
         class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
-        placeholder="Bairro"
-      />
+        placeholder="Bairro"/>
     </div>
 
     <div class="grid grid-cols-2 gap-4">
       <div>
         <label class="block text-xs font-medium text-gray-600 mb-1">Cidade</label>
-        <input
-          formControlName="city"
-          type="text"
+        <input formControlName="city" type="text"
           class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
-          placeholder="Cidade"
-        />
+          placeholder="Cidade"/>
       </div>
       <div>
         <label class="block text-xs font-medium text-gray-600 mb-1">Estado</label>
-        <input
-          formControlName="state"
-          type="text"
+        <input formControlName="state" type="text"
           class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
-          placeholder="UF"
-          maxlength="2"
-        />
+          placeholder="UF" maxlength="2"/>
       </div>
     </div>
 
     <div class="grid grid-cols-2 gap-4">
       <div>
         <label class="block text-xs font-medium text-gray-600 mb-1">CEP</label>
-        <input
-          formControlName="zipCode"
-          type="text"
+        <input formControlName="zipCode" type="text"
           class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
-          placeholder="00000-000"
-        />
+          placeholder="00000-000"/>
       </div>
       <div>
         <label class="block text-xs font-medium text-gray-600 mb-1">Origem</label>
-        <input
-          formControlName="originCd"
-          type="text"
+        <input formControlName="originCd" type="text"
           class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
-          placeholder="Código de origem"
-        />
+          placeholder="Código de origem"/>
       </div>
     </div>
 
     <div class="flex items-center gap-2">
-      <input
-        formControlName="toBeConfirmed"
-        id="toBeConfirmed"
-        type="checkbox"
-        class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-      />
+      <input formControlName="toBeConfirmed" id="toBeConfirmed" type="checkbox"
+        class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"/>
       <label for="toBeConfirmed" class="text-sm text-gray-700">A confirmar</label>
     </div>
 
     <div class="pt-2">
-      <button
-        type="submit"
+      <button type="submit"
         class="w-full py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2"
-        [disabled]="form.invalid || isSaving"
-      >
+        [disabled]="form.invalid || isSaving">
         <svg *ngIf="isSaving" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
