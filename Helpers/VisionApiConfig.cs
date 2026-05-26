@@ -6,5 +6,6 @@ namespace WebApi.Helpers
         public string ApiKey { get; set; }
         public string Object { get; set; }
         public int PerPage { get; set; }
+        public int ContractId { get; set; }
     }
 }

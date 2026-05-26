@@ -97,6 +97,15 @@ namespace WebApi.Jobs
                     ProcessedRows          = processedRows,
                     ErrorRows              = errorRows
                 }, commandType: CommandType.StoredProcedure);
+
+                // 4. Processar dados importados
+                con.Execute("SP_Process_DataImportCustomerSellers", new
+                {
+                    DataImportLogId = logId,
+                    ContractId      = _apiConfig.ContractId
+                }, commandType: CommandType.StoredProcedure, commandTimeout: 1800);
+
+
             }
             catch (Exception ex)
             {
