@@ -131,6 +131,7 @@ namespace WebApi
             services.AddScoped<IAiPromptService, AiPromptService>();
             services.AddScoped<ITranscricaoAudioService, TranscricaoAudioService>();
             services.AddScoped<IScoreSellerService, ScoreSellerService>();
+            services.AddScoped<IAdmHomeService, AdmHomeService>();
 
             // Adicionando FirefliesConfig
             var firefliesConfig = Configuration.GetSection("FirefliesConfig");
