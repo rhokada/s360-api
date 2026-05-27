@@ -33,7 +33,7 @@ namespace WebApi.Jobs
             con.Open();
             try
             {
-                con.Execute("GenerateSellerQuestionnaireEmails", commandType: CommandType.StoredProcedure , commandTimeout: 1800);
+                con.Execute("SP_ProcessMsgsToSend", commandType: CommandType.StoredProcedure , commandTimeout: 1800);
             }
             catch 
             {                

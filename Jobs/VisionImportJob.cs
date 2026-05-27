@@ -39,7 +39,8 @@ namespace WebApi.Jobs
                 var logResult = con.QueryFirstOrDefault("sp_DataImportSellersLog_Create", new
                 {
                     FileName = $"vision-api-{DateTime.Now:yyyyMMdd-HHmmss}",
-                    UserId   = (int?)null
+                    UserId   = (int?)null,
+                    ContractId = _apiConfig.ContractId
                 }, commandType: CommandType.StoredProcedure);
                 logId = (int)(logResult?.DataImportSellersLogId ?? 0);
 

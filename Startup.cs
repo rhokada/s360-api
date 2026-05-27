@@ -143,6 +143,10 @@ namespace WebApi
             var visionApiConfig = Configuration.GetSection("VisionApiConfig");
             services.Configure<VisionApiConfig>(visionApiConfig);
 
+            // Adicionando WhatsAppConfig
+            var whatsAppConfig = Configuration.GetSection("WhatsAppConfig");
+            services.Configure<WhatsAppConfig>(whatsAppConfig);
+
             // Hangfire com SQL Server (schema criado manualmente pelo DBA via SqlScripts/Hangfire_Schema.sql)
             services.AddHangfire(config => config
                 .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
@@ -161,7 +165,8 @@ namespace WebApi
             services.AddScoped<AudioTranscriptionSubmissionJob>();
             services.AddScoped<AudioTranscriptionCollectionJob>();
             services.AddScoped<MsgSendEmailJob>();
-            
+            services.AddScoped<MsgSendWhatsAppJob>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -195,6 +200,12 @@ namespace WebApi
 
             RecurringJob.AddOrUpdate<MsgSendEmailJob>(
                 "msg-send-email",
+                job => job.ExecutarAsync(),
+                Cron.Daily(9, 0)
+            );
+
+            RecurringJob.AddOrUpdate<MsgSendWhatsAppJob>(
+                "msg-send-whatsapp",
                 job => job.ExecutarAsync(),
                 Cron.Daily(9, 0)
             );
