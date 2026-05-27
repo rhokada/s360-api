@@ -130,6 +130,7 @@ namespace WebApi
             services.AddScoped<IDashIndicadoresNotasService, DashIndicadoresNotasService>();
             services.AddScoped<IAiPromptService, AiPromptService>();
             services.AddScoped<ITranscricaoAudioService, TranscricaoAudioService>();
+            services.AddScoped<IScoreSellerService, ScoreSellerService>();
 
             // Adicionando FirefliesConfig
             var firefliesConfig = Configuration.GetSection("FirefliesConfig");
