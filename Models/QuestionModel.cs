@@ -43,6 +43,7 @@ namespace WebApi.Models
         public bool?    IsStandardMetric    { get; set; }
         public bool?    IsSglYesNoType      { get; set; }
         public bool?    IsFeedback          { get; set; }
+        public int?     SurveyTypeId        { get; set; }
     }
 
     /// <summary>Campos necessários para criação de uma Question.</summary>

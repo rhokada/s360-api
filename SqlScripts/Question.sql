@@ -27,6 +27,7 @@ CREATE PROCEDURE SP_Adm_Question
     @IsStandardMetric   BIT             = NULL,
     @IsSglYesNoType     BIT             = NULL,
     @IsFeedback         BIT             = NULL,
+    @SurveyTypeId       INT             = NULL,
     @token_usuario      NVARCHAR(MAX)   = NULL
 AS
 BEGIN
@@ -69,7 +70,13 @@ BEGIN
             AND (@IsFinishEarly     IS NULL OR IsFinishEarly      = @IsFinishEarly)
             AND (@IsStandardMetric  IS NULL OR IsStandardMetric   = @IsStandardMetric)
             AND (@IsSglYesNoType    IS NULL OR IsSglYesNoType     = @IsSglYesNoType)
-            AND (@IsFeedback        IS NULL OR IsFeedback         = @IsFeedback);
+            AND (@IsFeedback        IS NULL OR IsFeedback         = @IsFeedback)
+            AND (@SurveyTypeId IS NULL OR EXISTS (
+                SELECT 1 FROM SurveyQuestion sq
+                JOIN Survey s ON sq.SurveyId = s.SurveyId
+                WHERE sq.QuestionId = Question.QuestionId
+                  AND s.SurveyTypeId = @SurveyTypeId
+            ));
     END
     ELSE IF @TypeRequest = 'INSERT'
     BEGIN

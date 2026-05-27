@@ -166,6 +166,7 @@ namespace WebApi
             services.AddScoped<AudioTranscriptionCollectionJob>();
             services.AddScoped<MsgSendEmailJob>();
             services.AddScoped<MsgSendWhatsAppJob>();
+            services.AddScoped<AutomaticFupJob>();
 
         }
 
@@ -208,6 +209,12 @@ namespace WebApi
                 "msg-send-whatsapp",
                 job => job.ExecutarAsync(),
                 Cron.Daily(9, 0)
+            );
+
+            RecurringJob.AddOrUpdate<AutomaticFupJob>(
+                "automatic-fup",
+                job => job.ExecutarAsync(),
+                Cron.Daily(8, 0)
             );
 
             RecurringJob.AddOrUpdate<AudioTranscriptionSubmissionJob>(

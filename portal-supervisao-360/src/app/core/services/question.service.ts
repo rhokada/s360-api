@@ -19,6 +19,7 @@ export interface QuestionFilter {
   isStandardMetric?: boolean;
   isSglYesNoType?: boolean;
   isFeedback?: boolean;
+  surveyTypeId?: number;
 }
 
 @Injectable({ providedIn: 'root' })

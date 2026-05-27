@@ -43,6 +43,7 @@ namespace WebApi.Services
                         filtro.IsStandardMetric,
                         filtro.IsSglYesNoType,
                         filtro.IsFeedback,
+                        filtro.SurveyTypeId,
                         token_usuario = tokenUsuario
                     }, commandType: CommandType.StoredProcedure).ToList();
                     return ret;

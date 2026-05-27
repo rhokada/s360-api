@@ -4,7 +4,9 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { QuestionService } from '../../core/services/question.service';
+import { SurveyTypeService } from '../../core/services/survey-type.service';
 import { QuestionModel } from '../../shared/models/survey-admin.models';
+import { SurveyTypeModel } from '../../shared/models/survey-admin.models';
 import { QuestionOptionComponent } from './question-option/question-option.component';
 
 @Component({
@@ -28,6 +30,10 @@ export class QuestionComponent implements OnInit {
   filterIsFirstSurvey = '';
   filterIsFinalSurvey = '';
   filterIsFeedback = '';
+  filterSurveyTypeId: number | null = null;
+
+  // Dados auxiliares
+  surveyTypes: SurveyTypeModel[] = [];
 
   // Criação
   showCreateForm = false;
@@ -41,7 +47,11 @@ export class QuestionComponent implements OnInit {
   showOptionsPanel = false;
   selectedQuestionId: number | null = null;
 
-  constructor(private service: QuestionService, private fb: FormBuilder) {
+  constructor(
+    private service: QuestionService,
+    private surveyTypeService: SurveyTypeService,
+    private fb: FormBuilder
+  ) {
     this.createForm = this.fb.group({
       rank: ['', [Validators.required, Validators.min(0)]],
       question: ['', Validators.required],
@@ -63,6 +73,7 @@ export class QuestionComponent implements OnInit {
 
   ngOnInit(): void {
     this.load();
+    this.loadSurveyTypes();
   }
 
   load(): void {
@@ -76,9 +87,17 @@ export class QuestionComponent implements OnInit {
     if (this.filterIsFirstSurvey !== '') filtro['isFirstSurvey'] = this.filterIsFirstSurvey === 'true';
     if (this.filterIsFinalSurvey !== '') filtro['isFinalSurvey'] = this.filterIsFinalSurvey === 'true';
     if (this.filterIsFeedback !== '') filtro['isFeedback'] = this.filterIsFeedback === 'true';
+    if (this.filterSurveyTypeId != null) filtro['surveyTypeId'] = this.filterSurveyTypeId;
     this.service.select(filtro).subscribe({
       next: data => { this.items = data; this.loading = false; },
       error: err => { this.errorMessage = err.message; this.loading = false; }
+    });
+  }
+
+  loadSurveyTypes(): void {
+    this.surveyTypeService.select().subscribe({
+      next: data => { this.surveyTypes = data; },
+      error: () => { this.surveyTypes = []; }
     });
   }
 
