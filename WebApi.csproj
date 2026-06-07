@@ -5,6 +5,12 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="portal-supervisao-360\**" />
+    <Content Remove="portal-supervisao-360\**" />
+    <EmbeddedResource Remove="portal-supervisao-360\**" />
+    <None Remove="portal-supervisao-360\**" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Azure.Storage.Blobs" Version="12.23.0" />
     <PackageReference Include="Dapper" Version="2.1.35" />
     <PackageReference Include="Google.Apis.Vision.v1" Version="1.60.0.3326" />

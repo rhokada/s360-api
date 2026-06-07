@@ -72,7 +72,7 @@ namespace WebApi.Jobs
 
                         using var bulk = new SqlBulkCopy(con)
                         {
-                            DestinationTableName = "DataImportSellersRow",
+                            DestinationTableName = "DataImportSallersRow",
                             BatchSize            = 1000
                         };
                         MapBulkColumns(bulk);
@@ -129,7 +129,7 @@ namespace WebApi.Jobs
         private static DataTable BuildDataTable(int logId, List<VisionApiRow> rows)
         {
             var table = new DataTable();
-            table.Columns.Add("DataImportSellersLogId", typeof(int));
+            table.Columns.Add("DataImportSallersLogId", typeof(int));
             table.Columns.Add("ID",                     typeof(string));
             table.Columns.Add("CodCliente",             typeof(string));
             table.Columns.Add("NomeFantasia",           typeof(string));
@@ -178,7 +178,7 @@ namespace WebApi.Jobs
         {
             foreach (var col in new[]
             {
-                "DataImportSellersLogId", "ID", "CodCliente", "NomeFantasia", "CNPJ",
+                "DataImportSallersLogId", "ID", "CodCliente", "NomeFantasia", "CNPJ",
                 "CodProfissional", "Email", "Nome", "Celular", "CodEquipe", "Vendedor",
                 "CodSuperior", "NomeSupervisor", "TelefoneSupervisor", "EmailSupervisor",
                 "Status", "DhCreate"
