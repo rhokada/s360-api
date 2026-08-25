@@ -49,7 +49,10 @@ namespace WebApi.Jobs
                 {
                     ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
                 };
-                using var httpClient = new HttpClient(handler);
+                using var httpClient = new HttpClient(handler)
+                {
+                    Timeout = TimeSpan.FromMinutes(5)
+                }; 
                 httpClient.DefaultRequestHeaders.Add("APIKEY", _apiConfig.ApiKey);
 
                 int currentPage = 1;
