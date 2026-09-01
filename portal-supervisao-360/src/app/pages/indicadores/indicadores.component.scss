@@ -17,7 +17,6 @@
 }
 
 // ─── Loading ─────────────────────────────────────────────────────────────────
-
 .ind-loading {
   display: flex;
   align-items: center;
@@ -28,7 +27,6 @@
 }
 
 // ─── Toolbar ─────────────────────────────────────────────────────────────────
-
 .ind-toolbar {
   display: flex;
   align-items: center;
@@ -90,7 +88,6 @@
 }
 
 // ─── Body (2 colunas) ────────────────────────────────────────────────────────
-
 .ind-body {
   display: flex;
   flex: 1;
@@ -104,40 +101,29 @@
   flex-direction: column;
   gap: 6px;
   overflow: hidden;
+  min-height: 0;
 }
 
-.col1 {
-  width: 35%;
-  min-width: 280px;
-}
-
-.col2 {
-  flex: 1;
-}
-
-// ─── Rows dentro das colunas ─────────────────────────────────────────────────
-
-.row1,
-.row2 {
-  display: flex;
-  gap: 6px;
+// Coluna esquerda: TIPO QUESTIONÁRIO, DATA e SUPERVISOR empilhados,
+// ocupando toda a altura vertical da tela
+.col-left {
+  width: 30%;
+  min-width: 260px;
   flex-shrink: 0;
-  height: 18vh;
 
   .card {
     flex: 1;
+    min-height: 0;
   }
 }
 
-.row3 {
+// Coluna direita
+.col-right {
   flex: 1;
-  overflow: hidden;
-
-  .card.fill {
-    height: 100%;
-  }
+  min-width: 0;
 }
 
+// ─── Totalizadores ───────────────────────────────────────────────────────────
 .totals-row {
   display: flex;
   gap: 6px;
@@ -145,17 +131,8 @@
   height: 70px;
 }
 
-.chart-row {
-  height: 42vh;
-  flex-shrink: 0;
-  overflow: hidden;
-
-  .card.fill {
-    height: 100%;
-  }
-}
-
-.bottom-row {
+// ─── Linha central: VENDEDOR+CLIENTES | GRÁFICO | % ───────────────────────────
+.chart-area {
   display: flex;
   gap: 6px;
   flex: 1;
@@ -163,21 +140,56 @@
   overflow: hidden;
 }
 
-.metrica-card {
+// Painel lateral esquerdo (VENDEDOR em cima, CLIENTES embaixo)
+.side-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 24%;
+  min-width: 200px;
+  flex-shrink: 0;
+
+  .card {
+    flex: 1;
+    min-height: 0;
+  }
+}
+
+// Gráfico central
+.chart-card {
   flex: 1;
+  min-width: 0;
   overflow: hidden;
 }
 
+// Indicadores percentuais à direita do gráfico
 .pct-cards {
   display: flex;
   flex-direction: column;
   gap: 6px;
   width: 160px;
   flex-shrink: 0;
+
+  .pct-card {
+    flex: 1;
+    min-height: 0;
+  }
 }
 
-// ─── Card base ───────────────────────────────────────────────────────────────
+// ─── Linha inferior: GRUPO | MÉTRICA lado a lado ──────────────────────────────
+.bottom-row {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+  height: 22vh;
 
+  .card {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+// ─── Card base ────────────────────────────────────────────────────────────────
 .card {
   background: #1e293b;
   border: 1px solid #334155;
@@ -227,7 +239,6 @@
 }
 
 // ─── Tabelas ─────────────────────────────────────────────────────────────────
-
 .ind-table {
   width: 100%;
   border-collapse: collapse;
@@ -281,6 +292,13 @@
     width: 60px;
   }
 
+  td.media {
+    text-align: right;
+    font-weight: 600;
+    color: #f1f5f9;
+    white-space: nowrap;
+  }
+
   td.pct {
     text-align: right;
     width: 54px;
@@ -298,8 +316,7 @@
   }
 }
 
-// ─── Totalizadores ───────────────────────────────────────────────────────────
-
+// ─── Totalizadores ────────────────────────────────────────────────────────────
 .total-card {
   flex: 1;
   background: #1e293b;
@@ -332,8 +349,7 @@
   margin-top: 2px;
 }
 
-// ─── Cards de percentual (col2 row3) ─────────────────────────────────────────
-
+// ─── Cards de percentual ─────────────────────────────────────────────────────
 .pct-card {
   flex: 1;
   background: #1e293b;
@@ -382,8 +398,7 @@
   .pct-just & { background: #fb923c; }
 }
 
-// ─── Responsividade (mobile) ─────────────────────────────────────────────────
-
+// ─── Responsividade (mobile) ────────────────────────────────────────────────
 @media (max-width: 768px) {
   :host {
     height: auto;
@@ -401,37 +416,25 @@
     height: auto;
   }
 
-  .col1,
-  .col2 {
+  .col-left,
+  .col-right {
     width: 100%;
     overflow: visible;
   }
 
-  .row1,
-  .row2 {
-    height: auto;
-    min-height: 140px;
+  .col-left {
+    min-width: 0;
   }
 
-  .row3 {
-    height: auto;
-    min-height: 200px;
-    overflow: visible;
-  }
-
-  .chart-row {
-    height: 280px;
-    flex-shrink: 0;
-  }
-
-  .bottom-row {
-    height: auto;
+  .chart-area {
     flex-direction: column;
+    height: auto;
     overflow: visible;
   }
 
-  .metrica-card {
-    min-height: 200px;
+  .side-panel {
+    width: 100%;
+    min-width: 0;
   }
 
   .pct-cards {
@@ -442,5 +445,11 @@
 
   .pct-card {
     min-height: 70px;
+  }
+
+  .bottom-row {
+    height: auto;
+    flex-direction: column;
+    overflow: visible;
   }
 }

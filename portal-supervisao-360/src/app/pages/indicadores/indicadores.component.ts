@@ -37,6 +37,7 @@ export class IndicadoresComponent implements OnInit, OnDestroy {
     supervisores: [],
     datas: [],
     vendedores: [],
+    clientes: [], 
     grupos: [],
     metricas: []
   };
@@ -47,6 +48,7 @@ export class IndicadoresComponent implements OnInit, OnDestroy {
   vendGroups: VendGroup[]   = [];
   grupoGroups: PctGroup[]   = [];
   metricaGroups: PctGroup[] = [];
+  clienteGroups: TipoGroup[] = [];
 
   totalDatas = 0;
   totalVendedores = 0;
@@ -123,10 +125,13 @@ export class IndicadoresComponent implements OnInit, OnDestroy {
     const superRows   = this.filterRows(this.allRows, { ...this.filter, supervisores: [] });
     const dataRows    = this.filterRows(this.allRows, { ...this.filter, datas: [] });
     const vendRows    = this.filterRows(this.allRows, { ...this.filter, vendedores: [] });
+    const clienteRows = this.filterRows(this.allRows, { ...this.filter, clientes: [] });
     const grupoRows   = this.filterRows(this.allRows, { ...this.filter, grupos: [] });
     const metricaRows = this.filterRows(this.allRows, { ...this.filter, metricas: [] });
 
     this.computeGroups(tipoRows, superRows, dataRows, vendRows, grupoRows, metricaRows);
+    this.computeClienteGroups(clienteRows); // NOVO: monta o card CLIENTES
+    this.computeMediaPonderada(vendRows);   // NOVO: média ponderada por vendedor
     this.computeTotals();
     this.drawChart();
   }
@@ -137,6 +142,7 @@ export class IndicadoresComponent implements OnInit, OnDestroy {
       if (f.supervisores.length      && !f.supervisores.includes(r.supervisor))                  return false;
       if (f.datas.length             && !f.datas.includes(this.formatDate(r.data)))              return false;
       if (f.vendedores.length        && !f.vendedores.includes(r.idVendedor))                    return false;
+      if (f.clientes.length          && !f.clientes.includes(r.codCliente ?? ''))                return false;
       if (f.grupos.length            && !f.grupos.includes(r.grupo ?? ''))                       return false;
       if (f.metricas.length          && !f.metricas.includes(r.metrica ?? ''))                   return false;
       return true;
@@ -173,8 +179,21 @@ export class IndicadoresComponent implements OnInit, OnDestroy {
     });
     this.vendGroups = Array.from(vendMap.values()).sort((a, b) => a.vendedor.localeCompare(b.vendedor));
 
+    this.computeMediaPonderada(vendRows);
+
     this.grupoGroups   = this.buildPctGroups(grupoRows,   r => r.grupo   ?? '(sem grupo)');
     this.metricaGroups = this.buildPctGroups(metricaRows, r => r.metrica ?? '(sem métrica)');
+  }
+
+  private computeClienteGroups(rows: DashRow[]): void {
+    const map = new Map<string, number>();
+    rows.forEach(r => {
+      const c = r.codCliente?.trim() || '(sem cliente)';
+      map.set(c, (map.get(c) ?? 0) + 1);
+    });
+    this.clienteGroups = Array.from(map.entries())
+      .map(([value, count]) => ({ value, count }))
+      .sort((a, b) => a.value.localeCompare(b.value));
   }
 
   private buildPctGroups(rows: DashRow[], keyFn: (r: DashRow) => string): PctGroup[] {
@@ -191,6 +210,47 @@ export class IndicadoresComponent implements OnInit, OnDestroy {
       pctNR:   v.total ? Math.round(v.nr   / v.total * 1000) / 10 : 0,
       pctJust: v.total ? Math.round(v.just / v.total * 1000) / 10 : 0,
     }));
+  }
+
+  // ─── Média ponderada por vendedor ─────────────────────────────────────────
+  // Usa SOMENTE respostas cuja pergunta possui weight (peso > 0).
+  // Se o vendedor não tiver nenhuma resposta com weight, usa média simples.
+  private computeMediaPonderada(vendRows: DashRow[]): void {
+    const acc = new Map<number, {
+      somaPesos: number;
+      somaNotasPonderadas: number;
+      total: number;
+      somaNotas: number;
+    }>();
+
+    vendRows.forEach(r => {
+      const nota = r.sim ? 1 : 0; // SIM=1; NÃO/JUSTIFICADO/N-R = 0
+      const prev = acc.get(r.idVendedor) ?? { somaPesos: 0, somaNotasPonderadas: 0, total: 0, somaNotas: 0 };
+
+      prev.total += 1;
+      prev.somaNotas += nota;
+
+      const peso = r.peso ?? 0; // Question.Weight, vindo da procedure como [PESO]
+      if (peso > 0) {
+        prev.somaPesos += peso;
+        prev.somaNotasPonderadas += nota * peso;
+      }
+
+      acc.set(r.idVendedor, prev);
+    });
+
+    this.vendGroups.forEach(g => {
+      const v = acc.get(g.id);
+      if (!v || v.total === 0) { g.mediaPonderada = 0; return; }
+
+      if (v.somaPesos > 0) {
+        // Média ponderada: Σ(nota × peso) / Σ(peso), apenas perguntas com weight
+        g.mediaPonderada = Math.round(v.somaNotasPonderadas / v.somaPesos * 1000) / 10;
+      } else {
+        // Fallback: média simples sobre todas as respostas do vendedor
+        g.mediaPonderada = Math.round(v.somaNotas / v.total * 1000) / 10;
+      }
+    });
   }
 
   private computeTotals(): void {
@@ -268,7 +328,7 @@ export class IndicadoresComponent implements OnInit, OnDestroy {
   }
 
   clearAll(): void {
-    this.filter = { tiposQuestionario: [], supervisores: [], datas: [], vendedores: [], grupos: [], metricas: [] };
+    this.filter = { tiposQuestionario: [], supervisores: [], datas: [], vendedores: [], clientes: [], grupos: [], metricas: [] };
     this.applyFilters();
   }
 }
