@@ -13,6 +13,10 @@ export interface DashRow {
   rank: number | null;
   metricaPadrao: boolean;
   tipoSN: boolean;
+  nivelCompetencia: boolean;       // NOVO: [Nível de competencia] (q.IsCompetenceLevel)
+  terminoAntecipado: boolean;      // NOVO: [Término antecipado] (q.IsFinishEarly)
+  feedback: boolean;               // NOVO: [Feedback] (q.IsFeedback)
+  tipoCompetencia: string | null;  // NOVO: [Tipo de Competencia] — 'INICIAL' | 'FINAL'
   resposta: string | null;
   sim: number;
   nao: number;

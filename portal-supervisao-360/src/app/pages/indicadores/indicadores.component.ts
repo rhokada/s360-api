@@ -3,6 +3,7 @@ import {
   ViewChild, ElementRef, NgZone
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Location } from '@angular/common';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -18,7 +19,7 @@ Chart.register(...registerables);
 @Component({
   selector: 'app-indicadores',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './indicadores.component.html',
   styleUrls: ['./indicadores.component.scss']
 })
@@ -73,6 +74,19 @@ export class IndicadoresComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: rows => {
+                  // ─── DEBUG: ver o resultado da API ───
+        console.log('Total de registros:', rows.length);
+        console.log('Primeiro registro:', rows[0]);
+        console.log('Campos de competência do 1º registro:', {
+          nivelCompetencia: rows[0]?.nivelCompetencia,
+          terminoAntecipado: rows[0]?.terminoAntecipado,
+          feedback: rows[0]?.feedback,
+          tipoCompetencia: rows[0]?.tipoCompetencia
+        });
+        // Registros que têm nivelCompetencia = true
+        console.log('Registros com nivelCompetencia=true:',
+          rows.filter(r => r.nivelCompetencia).length);
+        // ─── Fim DEBUG ───
           this.allRows = rows;
           this.isLoading = false;
           this.applyFilters();
@@ -125,10 +139,15 @@ export class IndicadoresComponent implements OnInit, OnDestroy {
     const superRows   = this.filterRows(this.allRows, { ...this.filter, supervisores: [] });
     const dataRows    = this.filterRows(this.allRows, { ...this.filter, datas: [] });
     const vendRows    = this.filterRows(this.allRows, { ...this.filter, vendedores: [] });
-    const clienteRows = this.filterRows(this.allRows, { ...this.filter, clientes: [] });
-    const grupoRows   = this.filterRows(this.allRows, { ...this.filter, grupos: [] });
-    const metricaRows = this.filterRows(this.allRows, { ...this.filter, metricas: [] });
-
+    // const clienteRows = this.filterRows(this.allRows, { ...this.filter, clientes: [] });
+    // const grupoRows   = this.filterRows(this.allRows, { ...this.filter, grupos: [] });
+    // const metricaRows = this.filterRows(this.allRows, { ...this.filter, metricas: [] });
+    const grupoRows   = this.filterRows(this.allRows, { ...this.filter, grupos: [] })
+                          .filter(r => !this.isSpecialRow(r));
+    const metricaRows = this.filterRows(this.allRows, { ...this.filter, metricas: [] })
+                          .filter(r => !this.isSpecialRow(r));
+    const clienteRows = this.filterRows(this.allRows, { ...this.filter, clientes: [] })
+                          .filter(r => !this.isSpecialRow(r));
     this.computeGroups(tipoRows, superRows, dataRows, vendRows, grupoRows, metricaRows);
     this.computeClienteGroups(clienteRows); // NOVO: monta o card CLIENTES
     this.computeMediaPonderada(vendRows);   // NOVO: média ponderada por vendedor
@@ -188,7 +207,8 @@ export class IndicadoresComponent implements OnInit, OnDestroy {
   private computeClienteGroups(rows: DashRow[]): void {
     const map = new Map<string, number>();
     rows.forEach(r => {
-      const c = r.codCliente?.trim() || '(sem cliente)';
+      const c = r.codCliente?.trim();
+      if (!c) return; // ignora clientes vazios
       map.set(c, (map.get(c) ?? 0) + 1);
     });
     this.clienteGroups = Array.from(map.entries())
@@ -276,17 +296,21 @@ export class IndicadoresComponent implements OnInit, OnDestroy {
   private drawChart(): void {
     if (!this.barChartRef?.nativeElement) return;
 
+    // Barras: exclui questões de competência/término antecipado/feedback
+    const chartRows = this.filteredRows.filter(r => !this.isSpecialRow(r));
     const chartMap = new Map<string, { sim: number; nao: number; nr: number }>();
-    this.filteredRows.forEach(r => {
+    chartRows.forEach(r => {
       const k    = this.formatDate(r.data);
       const prev = chartMap.get(k) ?? { sim: 0, nao: 0, nr: 0 };
       chartMap.set(k, { sim: prev.sim + r.sim, nao: prev.nao + r.nao, nr: prev.nr + r.naoRespondido });
     });
-
     const labels  = Array.from(chartMap.keys()).sort();
     const simData = labels.map(l => chartMap.get(l)!.sim);
     const naoData = labels.map(l => chartMap.get(l)!.nao);
     const nrData  = labels.map(l => chartMap.get(l)!.nr);
+
+    // Nível de competência (INICIAL/FINAL) por data: % SIM entre questões de competência
+    const compMap = this.buildCompetenciaMap(this.filteredRows);
 
     this.chart?.destroy();
     this.chart = new Chart(this.barChartRef.nativeElement, {
@@ -303,10 +327,33 @@ export class IndicadoresComponent implements OnInit, OnDestroy {
         responsive: true,
         maintainAspectRatio: false,
         plugins: { legend: { position: 'top' } },
-        scales: { x: { stacked: false }, y: { stacked: false } },
+        scales: {
+          x: {
+            stacked: false,
+            ticks: {
+              autoSkip: false,
+              color: '#e2e8f0',  
+              font: { size: 12 },
+              // Escreve o nível de competência logo abaixo de cada data
+              callback: (value, index) => {
+                const date = labels[index];
+                const c = compMap.get(date);
+                if (!c) return date;
+                const lines = [date];
+                if (c.inicial !== null) lines.push(`INICIAL: ${c.inicial}`);
+                if (c.final !== null)   lines.push(`FINAL: ${c.final}`);
+                return lines;
+              }
+            }
+          },
+          y: {
+            stacked: false,
+            ticks: { color: '#cbd5e1' },        // eixo Y mais claro
+            grid: { color: 'rgba(148, 163, 184, 0.2)' }  // grid suave
+          }
+        },
         onClick: (_evt, elements) => {
           if (!elements.length) return;
-          // labels já são datas formatadas, que é o que filter.datas armazena
           const label = labels[elements[0].index];
           this.zone.run(() => this.toggle('datas', label));
         }
@@ -314,6 +361,28 @@ export class IndicadoresComponent implements OnInit, OnDestroy {
     });
   }
 
+  // % SIM das questões de competência (nivelCompetencia=1), por data e tipo
+  // de competência (INICIAL/FINAL). null = sem dados para aquele tipo na data.
+  // Valores das questões de competência (nivelCompetencia=1), por data e tipo
+  // de competência (INICIAL/FINAL). Mostra a resposta (string), não cálculo.
+  private buildCompetenciaMap(rows: DashRow[]):
+    Map<string, { inicial: string | null; final: string | null }> {
+    const acc = new Map<string, { inicial: string | null; final: string | null }>();
+    rows.forEach(r => {
+      if (!r.nivelCompetencia) return; // só questões de competência
+      const k = this.formatDate(r.data);
+      const prev = acc.get(k) ?? { inicial: null, final: null };
+      const tipo = (r.tipoCompetencia ?? '').trim().toUpperCase();
+      const valor = r.resposta?.trim() || null;
+      if (tipo === 'INICIAL') {
+        prev.inicial = valor;
+      } else if (tipo === 'FINAL') {
+        prev.final = valor;
+      }
+      acc.set(k, prev);
+    });
+    return acc;
+  }
   // ─── Helpers ──────────────────────────────────────────────────────────────
 
   formatDate(iso: string | null | undefined): string {
@@ -327,8 +396,24 @@ export class IndicadoresComponent implements OnInit, OnDestroy {
     return iso;
   }
 
+  trackByValue(_index: number, g: TipoGroup): string {
+    return g.value;
+  }
+
   clearAll(): void {
     this.filter = { tiposQuestionario: [], supervisores: [], datas: [], vendedores: [], clientes: [], grupos: [], metricas: [] };
+    this.applyFilters();
+  }
+
+  // Questões especiais (competência, término antecipado, feedback) ficam fora
+  // dos quadros GRUPO, MÉTRICA, do gráfico e do quadro CLIENTES.
+  private isSpecialRow(r: DashRow): boolean {
+    return !!(r.nivelCompetencia || r.terminoAntecipado || r.feedback);
+  }
+
+  // ─── Dropdowns (TIPO QUESTIONÁRIO e SUPERVISOR) ────────────────────────────
+  onSelectChange(field: keyof FilterState, value: string): void {
+    (this.filter[field] as any[]) = value ? [value] : [];
     this.applyFilters();
   }
 }

@@ -59,6 +59,11 @@ namespace WebApi.Services
                             Justificado             = d.ContainsKey("JUSTIFICADO") ? Convert.ToInt32(d["JUSTIFICADO"] ?? 0) : d.ContainsKey("Justificado") ? Convert.ToInt32(d["Justificado"] ?? 0) : 0,
                             Grupo                   = d["Grupo"]?.ToString(),
                             Metrica                 = d.ContainsKey("Métrica") ? d["Métrica"]?.ToString() : d.ContainsKey("Metrica") ? d["Metrica"]?.ToString() : null,
+                            Peso                    = d.ContainsKey("PESO") ? Convert.ToDecimal(d["PESO"] ?? 0) : d.ContainsKey("Peso") ? Convert.ToDecimal(d["Peso"] ?? 0) : 0,
+                            NivelCompetencia        = d.ContainsKey("Nível de competencia") ? Convert.ToBoolean(d["Nível de competencia"] ?? false) : d.ContainsKey("NivelCompetencia") ? Convert.ToBoolean(d["NivelCompetencia"] ?? false) : false,
+                            TerminoAntecipado       = d.ContainsKey("Término antecipado") ? Convert.ToBoolean(d["Término antecipado"] ?? false) : d.ContainsKey("TerminoAntecipado") ? Convert.ToBoolean(d["TerminoAntecipado"] ?? false) : false,
+                            Feedback                = d.ContainsKey("Feedback") ? Convert.ToBoolean(d["Feedback"] ?? false) : false,
+                            TipoCompetencia     = d.ContainsKey("Tipo de Competencia") ? d["Tipo de Competencia"]?.ToString() : d.ContainsKey("TipoCompetencia") ? d["TipoCompetencia"]?.ToString() : null,
                         };
                     }).ToList();
                 }

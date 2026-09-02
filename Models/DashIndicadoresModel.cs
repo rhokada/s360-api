@@ -23,5 +23,10 @@ namespace WebApi.Models
         public int     Justificado             { get; set; }
         public string  Grupo                   { get; set; }
         public string  Metrica                 { get; set; }
+        public decimal? Peso                   { get; set; }
+        public bool NivelCompetencia           { get; set; }
+        public bool TerminoAntecipado          { get; set; }
+        public bool Feedback                   { get; set; }
+        public string? TipoCompetencia         { get; set; }
     }
 }

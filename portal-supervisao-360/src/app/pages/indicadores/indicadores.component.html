@@ -3,9 +3,7 @@
   <div *ngIf="isLoading" class="ind-loading">
     <span>Carregando dados...</span>
   </div>
-
   <ng-container *ngIf="!isLoading">
-
     <!-- Toolbar -->
     <div class="ind-toolbar">
       <div class="toolbar-left">
@@ -14,77 +12,119 @@
       </div>
       <button class="btn-clear" (click)="clearAll()">Limpar filtros</button>
     </div>
-
     <div class="ind-body">
-
-      <!-- ═══ COLUNA ESQUERDA — TIPO QUESTIONÁRIO, DATA, SUPERVISOR empilhados ═══ -->
+      <!-- ═══ COLUNA ESQUERDA — filtros ═══ -->
       <div class="col col-left">
+        <!-- Linha 1: TIPO QUESTIONÁRIO | SUPERVISOR (lado a lado) -->
+        <div class="filter-row-top">
 
-        <!-- TIPO QUESTIONÁRIO -->
-        <div class="card">
-          <div class="card-header">Tipo Questionário</div>
+          <div class="card">
+            <div class="card-header">Tipo Questionário</div>
+            <div class="card-body">
+              <select class="ind-select"
+                      [ngModel]="filter.tiposQuestionario[0] ?? ''"
+                      (ngModelChange)="onSelectChange('tiposQuestionario', $event)">
+                <option value="">Todos</option>
+                <option *ngFor="let g of tipoGroups; trackBy: trackByValue" [value]="g.value">
+                  {{ g.value }} ({{ g.count }})
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">Supervisor</div>
+            <div class="card-body">
+              <select class="ind-select"
+                      [ngModel]="filter.supervisores[0] ?? ''"
+                      (ngModelChange)="onSelectChange('supervisores', $event)">
+                <option value="">Todos</option>
+                <option *ngFor="let g of superGroups; trackBy: trackByValue" [value]="g.value">
+                  {{ g.value }} ({{ g.count }})
+                </option>
+              </select>
+            </div>
+          </div>
+
+        </div>
+        <!-- VENDEDOR: largura total, altura 30% maior -->
+        <div class="card vend-card">
+          <div class="card-header">Vendedor</div>
           <div class="card-body scroll">
             <table class="ind-table">
-              <tbody>
-                <tr *ngFor="let g of tipoGroups"
-                    [class.selected]="isSelected('tiposQuestionario', g.value)"
-                    (click)="toggle('tiposQuestionario', g.value, $event)">
-                  <td>{{ g.value }}</td>
-                  <td class="cnt">{{ g.count }}</td>
+              <thead>
+                <tr>
+                  <th>Cód</th>
+                  <th>Nome</th>
+                  <th>Média</th>
                 </tr>
-                <tr *ngIf="tipoGroups.length === 0">
-                  <td class="empty">Sem dados</td>
+              </thead>
+              <tbody>
+                <tr *ngFor="let g of vendGroups"
+                    [class.selected]="isSelected('vendedores', g.id)"
+                    (click)="toggle('vendedores', g.id, $event)">
+                  <td class="cod">{{ g.codVendedor }}</td>
+                  <td>{{ g.vendedor }}</td>
+                  <td class="media">
+                    <span class="media-badge"
+                          [class.high]="(g.mediaPonderada ?? 0) >= 70"
+                          [class.mid]="(g.mediaPonderada ?? 0) >= 50 && (g.mediaPonderada ?? 0) < 70"
+                          [class.low]="(g.mediaPonderada ?? 0) < 50">
+                      {{ (g.mediaPonderada ?? 0) | number:'1.1-1' }}%
+                    </span>
+                  </td>
+                </tr>
+                <tr *ngIf="vendGroups.length === 0">
+                  <td class="empty" colspan="3">Sem dados</td>
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
 
-        <!-- DATA -->
-        <div class="card">
-          <div class="card-header">Data</div>
-          <div class="card-body scroll">
-            <table class="ind-table">
-              <tbody>
-                <tr *ngFor="let g of dataGroups"
-                    [class.selected]="isSelected('datas', g.value)"
-                    (click)="toggle('datas', g.value, $event)">
-                  <td>{{ g.value }}</td>
-                  <td class="cnt">{{ g.count }}</td>
-                </tr>
-                <tr *ngIf="dataGroups.length === 0">
-                  <td class="empty">Sem dados</td>
-                </tr>
-              </tbody>
-            </table>
+        <!-- Linha 2: DATA | CLIENTES (lado a lado, largura total) -->
+        <div class="filter-row-bottom">
+          <div class="card">
+            <div class="card-header">Data</div>
+            <div class="card-body scroll">
+              <table class="ind-table">
+                <tbody>
+                  <tr *ngFor="let g of dataGroups"
+                      [class.selected]="isSelected('datas', g.value)"
+                      (click)="toggle('datas', g.value, $event)">
+                    <td>{{ g.value }}</td>
+                    <td class="cnt">{{ g.count }}</td>
+                  </tr>
+                  <tr *ngIf="dataGroups.length === 0">
+                    <td class="empty">Sem dados</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">Clientes</div>
+            <div class="card-body scroll">
+              <table class="ind-table">
+                <tbody>
+                  <tr *ngFor="let g of clienteGroups"
+                      [class.selected]="isSelected('clientes', g.value)"
+                      (click)="toggle('clientes', g.value, $event)">
+                    <td>{{ g.value }}</td>
+                    <td class="cnt">{{ g.count }}</td>
+                  </tr>
+                  <tr *ngIf="clienteGroups.length === 0">
+                    <td class="empty">Sem dados</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
-
-        <!-- SUPERVISOR -->
-        <div class="card">
-          <div class="card-header">Supervisor</div>
-          <div class="card-body scroll">
-            <table class="ind-table">
-              <tbody>
-                <tr *ngFor="let g of superGroups"
-                    [class.selected]="isSelected('supervisores', g.value)"
-                    (click)="toggle('supervisores', g.value, $event)">
-                  <td>{{ g.value }}</td>
-                  <td class="cnt">{{ g.count }}</td>
-                </tr>
-                <tr *ngIf="superGroups.length === 0">
-                  <td class="empty">Sem dados</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
       </div>
 
       <!-- ═══ COLUNA DIREITA ═══ -->
       <div class="col col-right">
-
         <!-- Totalizadores -->
         <div class="totals-row">
           <div class="total-card">
@@ -100,105 +140,45 @@
             <div class="total-label">Questionários</div>
           </div>
           <div class="total-card highlight-sim">
-            <div class="total-value">{{ pctSimTotal }}%</div>
+            <div class="total-value">{{ pctSimTotal | number:'1.1-1' }}%</div>
             <div class="total-label">% SIM</div>
           </div>
         </div>
 
-        <!-- Linha central: VENDEDOR+CLIENTES | GRÁFICO | % -->
+        <!-- GRÁFICO (logo abaixo dos totalizadores) + indicadores percentuais -->
         <div class="chart-area">
-
-          <!-- Painel lateral esquerdo -->
-          <div class="side-panel">
-
-            <!-- VENDEDOR -->
-            <div class="card">
-              <div class="card-header">Vendedor</div>
-              <div class="card-body scroll">
-                <table class="ind-table">
-                  <thead>
-                    <tr>
-                      <th>Cód</th>
-                      <th>Nome</th>
-                      <th>Média</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let g of vendGroups"
-                        [class.selected]="isSelected('vendedores', g.id)"
-                        (click)="toggle('vendedores', g.id, $event)">
-                      <td class="cod">{{ g.codVendedor }}</td>
-                      <td>{{ g.vendedor }}</td>
-                      <td class="media">{{ g.mediaPonderada | number:'1.1-1' }}%</td>
-                    </tr>
-                    <tr *ngIf="vendGroups.length === 0">
-                      <td class="empty" colspan="3">Sem dados</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            <!-- CLIENTES -->
-            <div class="card">
-              <div class="card-header">Clientes</div>
-              <div class="card-body scroll">
-                <table class="ind-table">
-                  <tbody>
-                    <tr *ngFor="let g of clienteGroups"
-                        [class.selected]="isSelected('clientes', g.value)"
-                        (click)="toggle('clientes', g.value, $event)">
-                      <td>{{ g.value }}</td>
-                      <td class="cnt">{{ g.count }}</td>
-                    </tr>
-                    <tr *ngIf="clienteGroups.length === 0">
-                      <td class="empty">Sem dados</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-          </div>
-
-          <!-- GRÁFICO -->
           <div class="card chart-card">
             <div class="card-header">Respostas por Data</div>
             <div class="card-body chart-wrap">
               <canvas #barChart></canvas>
             </div>
           </div>
-
-          <!-- Indicadores percentuais -->
           <div class="pct-cards">
             <div class="pct-card pct-sim">
               <div class="pct-label">% SIM</div>
-              <div class="pct-value">{{ pctSimTotal }}%</div>
+              <div class="pct-value">{{ pctSimTotal | number:'1.1-1' }}%</div>
               <div class="pct-bar-track"><div class="pct-bar" [style.width.%]="pctSimTotal"></div></div>
             </div>
             <div class="pct-card pct-nao">
               <div class="pct-label">% NÃO</div>
-              <div class="pct-value">{{ pctNaoTotal }}%</div>
+              <div class="pct-value">{{ pctNaoTotal | number:'1.1-1' }}%</div>
               <div class="pct-bar-track"><div class="pct-bar" [style.width.%]="pctNaoTotal"></div></div>
             </div>
             <div class="pct-card pct-nr">
               <div class="pct-label">% N/R</div>
-              <div class="pct-value">{{ pctNRTotal }}%</div>
+              <div class="pct-value">{{ pctNRTotal | number:'1.1-1' }}%</div>
               <div class="pct-bar-track"><div class="pct-bar" [style.width.%]="pctNRTotal"></div></div>
             </div>
             <div class="pct-card pct-just">
               <div class="pct-label">% JUST</div>
-              <div class="pct-value">{{ pctJustTotal }}%</div>
+              <div class="pct-value">{{ pctJustTotal | number:'1.1-1' }}%</div>
               <div class="pct-bar-track"><div class="pct-bar" [style.width.%]="pctJustTotal"></div></div>
             </div>
           </div>
-
         </div>
 
-        <!-- Linha inferior: GRUPO | MÉTRICA -->
+        <!-- GRUPO | MÉTRICA (logo abaixo do gráfico) -->
         <div class="bottom-row">
-
-          <!-- GRUPO -->
           <div class="card">
             <div class="card-header">Grupo</div>
             <div class="card-body scroll">
@@ -227,8 +207,6 @@
               </table>
             </div>
           </div>
-
-          <!-- MÉTRICA -->
           <div class="card">
             <div class="card-header">Métrica</div>
             <div class="card-body scroll">
@@ -257,9 +235,7 @@
               </table>
             </div>
           </div>
-
         </div>
-
       </div>
     </div>
   </ng-container>
